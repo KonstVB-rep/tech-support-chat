@@ -1,4 +1,4 @@
-// prisma/db.ts
+// prisma/prisma-client.ts
 
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import { PrismaClient } from "@prisma/client";

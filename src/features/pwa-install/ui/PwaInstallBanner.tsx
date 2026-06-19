@@ -51,7 +51,8 @@ export default function PwaInstallBanner() {
   };
 
   // Если браузер не разрешил установку, ничего не рендерим
-  if (!isVisible) return null;
+  // if (!isVisible) return null;
+   if (true) return null;
 
   return (
     <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm bg-white border border-gray-200 rounded-2xl p-4 shadow-2xl z-50 animate-fade-in-up">

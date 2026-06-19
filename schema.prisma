@@ -6,71 +6,177 @@ datasource db {
   provider = "mysql"
 }
 
-// ==========================================
-// ТАБЛИЦЫ АВТОРИЗАЦИИ (Стандарт для NextAuth)
-// ==========================================
+// =========================================================================
+// 1. ПРОФИЛЬ
+// =========================================================================
+model Profile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  name      String
+  imageUrl  String   @db.Text
+  email     String   @db.Text
+  username  String?  @unique
+  lastSeen  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-model User {
-  id            String    @id @default(uuid())
-  name          String?
-  email         String?   @unique
-  password      String?   // Для обычной авторизации по паролю (например, для операторов)
-  role          String    @default("user") // "user" (клиент) или "admin"/"support" (оператор)
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  
-  // Связь с комнатами чата (чтобы знать, чьи это чаты)
-  chatRooms     ChatRoom[]
-}
-
-model Account {
-  id                 String  @id @default(uuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String? @db.Text
-  access_token       String? @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String? @db.Text
-  session_state      String?
+  // ✅ Все обратные связи:
+  createdChats Chat[]       @relation("ChatCreator")
+  memberships  ChatMember[]
+  messages     Message[]    // ← ОБРАТНАЯ СВЯЗЬ ДЛЯ Message.profile
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([provider, providerAccountId])
+  @@map("profile")
 }
 
-model Session {
-  id           String   @id @default(uuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
+// =========================================================================
+// 2. ЧАТ
+// =========================================================================
+model Chat {
+  id          String   @id @default(uuid())
+  title       String?
+  imageUrl    String?  @db.Text
+  type        ChatType @default(PRIVATE)
+  creatorId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-// ==========================================
-// ТАБЛИЦЫ ЧАТА (Связаны с пользователями)
-// ==========================================
-
-model ChatRoom {
-  id        String    @id @default(uuid())
-  userId    String    // Теперь это четкая связь с таблицей User
-  status    String    @default("open") // open, closed
-  createdAt DateTime  @default(now())
-  
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  creator   Profile      @relation("ChatCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  members   ChatMember[]
   messages  Message[]
+
+  @@index([creatorId])
+  @@map("chat")
 }
 
+// =========================================================================
+// 3. УЧАСТНИК ЧАТА
+// =========================================================================
+model ChatMember {
+  id        String     @id @default(cuid())
+  chatId    String
+  profileId String
+  role      ChatRole   @default(MEMBER)
+  joinedAt  DateTime   @default(now())
+
+  chat    Chat    @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([chatId, profileId])
+  @@index([chatId])
+  @@index([profileId])
+  @@map("chat_member")
+}
+
+// =========================================================================
+// 4. СООБЩЕНИЕ
+// =========================================================================
 model Message {
   id        String   @id @default(uuid())
   text      String   @db.Text
-  sender    String   // "user" или "support"
+  chatId    String
+  profileId String
   createdAt DateTime @default(now())
-  roomId    String
-  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  updatedAt DateTime @updatedAt
+
+  chat    Chat    @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
+  @@index([profileId])
+  @@map("message")
+}
+
+// =========================================================================
+// 5. BETTER AUTH
+// =========================================================================
+model User {
+  id               String    @id
+  name             String    @db.Text
+  email            String    @unique
+  emailVerified    Boolean   @default(false)
+  image            String?   @db.Text
+  role             String    @default("user")
+
+  canCreateGroups  Boolean   @default(true)
+  twoFactorEnabled Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+  profile  Profile?
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?  @db.Text
+  userAgent String?  @db.Text
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String    @db.Text
+  providerId            String    @db.Text
+  userId                String
+  accessToken           String?   @db.Text
+  refreshToken          String?   @db.Text
+  idToken               String?   @db.Text
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?   @db.Text
+  password              String?   @db.Text
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String   @db.Text
+  value      String   @db.Text
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier(length: 191)])
+  @@map("verification")
+}
+
+model twoFactor {
+  id          String  @id @default(cuid())
+  secret      String  @db.Text
+  backupCodes String  @db.Text
+  userId      String  @unique
+  verified    Boolean @default(false)
+}
+
+// =========================================================================
+// ENUMS
+// =========================================================================
+enum ChatType {
+  PRIVATE
+  GROUP
+  CHANNEL
+}
+
+enum ChatRole {
+  OWNER
+  ADMIN
+  MEMBER
 }

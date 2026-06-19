@@ -3,6 +3,9 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+import RootProvider from "./providers/root-provider";
+import { MainHeader } from "@/widgets/main-header";
+
 
 
 export const viewport: Viewport = {
@@ -43,11 +46,16 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="ru"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}
-        <PwaInstallBanner />
+      <body className="min-h-full flex flex-col">
+        <RootProvider>
+          <MainHeader />
+          <div className="overflow-hidden">{children}</div>
+            <PwaInstallBanner />
+        </RootProvider>
       </body>
 
     </html>
