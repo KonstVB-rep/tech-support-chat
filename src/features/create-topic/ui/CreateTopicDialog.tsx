@@ -3,9 +3,6 @@
 import { useState } from "react";
 
 import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { toast } from "sonner";
-import { PlusCircle } from "lucide-react"; // Красивая иконка плюса из пресета Nova
 import {
   Dialog,
   DialogContent,
@@ -15,6 +12,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/shared/ui/dialog";
+import { Input } from "@/shared/ui/input";
+import { Plus } from "lucide-react"; // Красивая иконка плюса из пресета Nova
+import { toast } from "sonner";
 import { useCreateTopic } from "../api/useCreateTopic";
 
 
@@ -43,15 +43,13 @@ const CreateTopicDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      {/* Кнопка-триггер, которая открывает модалку (будет стоять в шапке сайдбара) */}
       <DialogTrigger asChild>
         <Button 
-          variant="outline" 
-          size="sm" 
-          className="w-full gap-2 rounded-xl border-dashed border-primary/40 hover:border-primary transition-colors text-xs font-medium mt-3"
+          size="icon" 
+          title="Создать чат"
+          className="bg-blue-700"
         >
-          <PlusCircle className="w-4 h-4 text-primary" />
-          <span>Создать тему / Объект</span>
+          <Plus  className="text-primary" />
         </Button>
       </DialogTrigger>
 

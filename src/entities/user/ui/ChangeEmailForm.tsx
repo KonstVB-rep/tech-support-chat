@@ -1,19 +1,19 @@
 
-import ButtonSubmitForm from "@/shared/ui/ButtonSubmitForm";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
 } from "@/shared/ui/card";
+import ButtonSubmitForm from "@/shared/ui/custom/ButtonSubmitForm";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 
 const ChangeEmailForm = () => {
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full max-w-md">
       <CardHeader className="border-b-blue-200 border-b">
         <CardTitle>Изменить адрес электронной почты</CardTitle>
         <CardDescription>

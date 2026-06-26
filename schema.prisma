@@ -7,106 +7,55 @@ datasource db {
 }
 
 // =========================================================================
-// 1. ПРОФИЛЬ
+// ENUMS
 // =========================================================================
-model Profile {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  name      String
-  imageUrl  String   @db.Text
-  email     String   @db.Text
-  username  String?  @unique
-  lastSeen  DateTime @default(now())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
-  // ✅ Все обратные связи:
-  createdChats Chat[]       @relation("ChatCreator")
-  memberships  ChatMember[]
-  messages     Message[]    // ← ОБРАТНАЯ СВЯЗЬ ДЛЯ Message.profile
+enum Role {
+  ADMIN       // Админ системы
+  SUPPORT     // Инженер поддержки
+  RESPONSIBLE // Ответственное лицо
+  MEMBER      // Сотрудник
+}
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+enum OrgRole {
+  RESPONSIBLE // Ответственное лицо (назначает ТОЛЬКО админ)
+  MEMBER      // Сотрудник
+}
 
-  @@map("profile")
+enum ChatType {
+  PRIVATE
+  GROUP
+  CHANNEL
+}
+
+enum ChatRole {
+  OWNER
+  ADMIN
+  MEMBER
 }
 
 // =========================================================================
-// 2. ЧАТ
+// 1. USER (Better Auth) — НЕЗАВИСИМАЯ
 // =========================================================================
-model Chat {
-  id          String   @id @default(uuid())
-  title       String?
-  imageUrl    String?  @db.Text
-  type        ChatType @default(PRIVATE)
-  creatorId   String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 
-  creator   Profile      @relation("ChatCreator", fields: [creatorId], references: [id], onDelete: Cascade)
-  members   ChatMember[]
-  messages  Message[]
-
-  @@index([creatorId])
-  @@map("chat")
-}
-
-// =========================================================================
-// 3. УЧАСТНИК ЧАТА
-// =========================================================================
-model ChatMember {
-  id        String     @id @default(cuid())
-  chatId    String
-  profileId String
-  role      ChatRole   @default(MEMBER)
-  joinedAt  DateTime   @default(now())
-
-  chat    Chat    @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-
-  @@unique([chatId, profileId])
-  @@index([chatId])
-  @@index([profileId])
-  @@map("chat_member")
-}
-
-// =========================================================================
-// 4. СООБЩЕНИЕ
-// =========================================================================
-model Message {
-  id        String   @id @default(uuid())
-  text      String   @db.Text
-  chatId    String
-  profileId String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  chat    Chat    @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-
-  @@index([chatId])
-  @@index([profileId])
-  @@map("message")
-}
-
-// =========================================================================
-// 5. BETTER AUTH
-// =========================================================================
 model User {
   id               String    @id
   name             String    @db.Text
   email            String    @unique
   emailVerified    Boolean   @default(false)
   image            String?   @db.Text
-  role             String    @default("user")
-
-  canCreateGroups  Boolean   @default(true)
+  role             Role      @default(MEMBER)
+  isActive         Boolean   @default(true)
+  
+  canCreateGroups  Boolean   @default(false)
   twoFactorEnabled Boolean   @default(false)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  accounts Account[]
-  sessions Session[]
-  profile  Profile?
+  accounts  Account[]
+  sessions  Session[]
+  profile   Profile?
+  twoFactor TwoFactor?
 
   @@map("user")
 }
@@ -158,25 +107,158 @@ model Verification {
   @@map("verification")
 }
 
-model twoFactor {
+model TwoFactor {
   id          String  @id @default(cuid())
   secret      String  @db.Text
   backupCodes String  @db.Text
   userId      String  @unique
   verified    Boolean @default(false)
+  
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("two_factor")
 }
 
 // =========================================================================
-// ENUMS
+// 2. PROFILE — НЕЗАВИСИМАЯ (связана только с User)
 // =========================================================================
-enum ChatType {
-  PRIVATE
-  GROUP
-  CHANNEL
+
+model Profile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  name      String
+  imageUrl  String?  @db.Text
+  email     String   @db.Text
+  username  String?  @unique
+  lastSeen  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // ✅ Связи с другими сущностями (все обратные)
+  createdChats       Chat[]             @relation("ChatCreator")
+  memberships        ChatMember[]
+  messages           Message[]
+  organizationMember OrganizationMember?
+
+  @@map("profile")
 }
 
-enum ChatRole {
-  OWNER
-  ADMIN
-  MEMBER
+// =========================================================================
+// 3. ORGANIZATION — НЕЗАВИСИМАЯ (создаётся первой)
+// =========================================================================
+
+model Organization {
+  id           String   @id @default(uuid())
+  name         String   @db.Text
+  inn          String   @unique
+  contractNumber  String   @unique
+  contractStart DateTime   
+  contractEnd  DateTime
+  supportHours String
+  description  String?  @db.Text
+  legalAddress    String   @db.Text   // Юридический адрес
+  actualAddress   String?  @db.Text   // Фактический адрес (если отличается)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  members OrganizationMember[]
+  chats   Chat[]  
+
+  @@index([inn])
+  @@map("organization")
+}
+
+// =========================================================================
+// 4. ORGANIZATION MEMBER — СВЯЗЫВАЕТ Profile и Organization
+// =========================================================================
+
+model OrganizationMember {
+  id             String   @id @default(cuid())
+  organizationId String
+  profileId      String   @unique  // Один Profile = один OrganizationMember
+  role           OrgRole  @default(MEMBER)
+  position       String?  @db.Text
+  phone          String?  @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  // ✅ Связи
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  profile      Profile      @relation(fields: [profileId], references: [id], onDelete: Restrict)
+
+  @@index([organizationId])
+  @@index([organizationId, role])
+  @@map("organization_member")
+}
+
+// =========================================================================
+// 5. CHAT — ПРИНАДЛЕЖИТ Organization, создается Profile
+// =========================================================================
+
+model Chat {
+  id             String   @id @default(uuid())
+  title          String?
+  imageUrl       String?  @db.Text
+  type           ChatType @default(GROUP)
+  
+  // ✅ Кто создал
+  creatorId      String
+  
+  // ✅ Кому принадлежит (может быть null для личных чатов)
+  organizationId String?
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // ✅ Связи
+  creator      Profile       @relation("ChatCreator", fields: [creatorId], references: [id], onDelete: Restrict)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  members      ChatMember[]
+  messages     Message[]
+
+  @@index([creatorId])
+  @@index([organizationId])
+  @@map("chat")
+}
+
+// =========================================================================
+// 6. CHAT MEMBER — СВЯЗЫВАЕТ Profile и Chat
+// =========================================================================
+
+model ChatMember {
+  id        String   @id @default(cuid())
+  chatId    String
+  profileId String
+  role      ChatRole @default(MEMBER)
+  joinedAt  DateTime @default(now())
+
+  chat    Chat    @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([chatId, profileId])
+  @@index([chatId])
+  @@index([profileId])
+  @@map("chat_member")
+}
+
+// =========================================================================
+// 7. MESSAGE — ПРИНАДЛЕЖИТ Chat, создается Profile
+// =========================================================================
+
+model Message {
+  id        String   @id @default(uuid())
+  text      String   @db.Text
+  chatId    String
+  profileId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chat    Chat    @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Restrict)
+
+  @@index([chatId])
+  @@index([profileId])
+  @@map("message")
 }

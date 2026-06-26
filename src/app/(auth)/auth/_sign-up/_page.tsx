@@ -1,15 +1,15 @@
 "use client"
 
 
+import { signUpAction } from "@/app/actions/auth"
+import ButtonSubmitForm from "@/shared/ui/custom/ButtonSubmitForm"
+import { Field, FieldError } from "@/shared/ui/field"
+import { Input } from "@/shared/ui/input"
 import { zodResolver } from "@hookform/resolvers/zod"
 import Link from "next/link"
 import { useActionState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { type SchemaPropsSignUp, validationSchemaSignUp } from "../model/schema"
-import { signUpAction } from "@/app/actions/auth"
-import ButtonSubmitForm from "@/shared/ui/ButtonSubmitForm"
-import { Field, FieldError } from "@/shared/ui/field"
-import { Input } from "@/shared/ui/input"
 
 
 const initialState = {

@@ -1,6 +1,6 @@
 "use client"
 import { sendVerificationEmail } from "@/app/actions/auth";
-import ButtonSubmitForm from "@/shared/ui/ButtonSubmitForm";
+import ButtonSubmitForm from "@/shared/ui/custom/ButtonSubmitForm";
 
 import { useActionState } from "react";
 

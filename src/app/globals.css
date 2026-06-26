@@ -46,6 +46,7 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --header-height: 48px;
 }
 
 :root {
@@ -129,6 +130,14 @@
   }
 }
 
+.field-height{
+  height: 48px;
+}
+
+
+/* body{
+  background: url('../../public/1.jpg') center center /contain repeat;
+} */
 
 
 

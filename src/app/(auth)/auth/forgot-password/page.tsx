@@ -1,15 +1,15 @@
 "use client"
 
-import ButtonSubmitForm from "@/shared/ui/ButtonSubmitForm"
+import { resetPasswordAction } from "@/app/actions/auth"
+import ButtonSubmitForm from "@/shared/ui/custom/ButtonSubmitForm"
+import { Field, FieldError } from "@/shared/ui/field"
+import { Input } from "@/shared/ui/input"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { MailCheck } from "lucide-react"
 import Link from "next/link"
 import { useActionState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { type SchemaPropsResetPassword, validationSchemaResetPassword } from "../model/schema"; // ← добавь схему
-import { resetPasswordAction } from "@/app/actions/auth"
-import { Field, FieldError } from "@/shared/ui/field"
-import { Input } from "@/shared/ui/input"
-import { MailCheck } from "lucide-react"
 
 
 const initialState = {

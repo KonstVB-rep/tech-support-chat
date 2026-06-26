@@ -10,6 +10,7 @@ const withPWA = withPWAInit({
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
+  cacheComponents: true,
   images: {
     remotePatterns: [
       {
@@ -22,7 +23,6 @@ const nextConfig: NextConfig = {
     if (dev && !isServer) {
       config.watchOptions = {
         ...config.watchOptions,
-        // Одно чистое регулярное выражение вместо массива регулярных выражений:
         ignored:
           /node_modules|public\/sw\.js|public\/workbox-.*\.js|public\/manifest\.json/,
       };

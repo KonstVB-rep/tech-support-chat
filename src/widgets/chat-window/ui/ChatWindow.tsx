@@ -3,14 +3,19 @@
 import { authClient } from "@/app/lib/auth-client"; // Клиент Better Auth
 import { MessageItem } from "@/entities/message";
 import { MessageInput } from "@/features/send-message";
+import { useCurrentUser } from "@/shared/lib/useCurrentUser";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
+import WrapperHeaderScreen from "@/shared/ui/custom/WrapperHeaderScreen";
+import WrapperScreen from "@/shared/ui/custom/WrapperScreen";
 import { ScrollArea } from "@/shared/ui/scroll-area";
 import { useActiveTicketId, useActiveTicketTitle } from "@/store/useChatStore"; // Наш топ-селектор
+import { ChevronLeft } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useGetMessages } from "../api/useGetMessages";
-import { ChevronLeft } from "lucide-react";
 
 export const ChatWindow = () => {
+
+  useCurrentUser();
   const activeTicketId = useActiveTicketId(); // В контексте кода это наш chatId объекта/проекта
   const activeTicketTitle = useActiveTicketTitle();
   
@@ -45,9 +50,9 @@ export const ChatWindow = () => {
   const currentUserId = session?.user?.id;
 
   return (
-    <div className="flex flex-col h-screen bg-background border-x border-border shadow-xl">
+    <WrapperScreen>
       {/* Шапка чата */}
-      <div className="flex items-center bg-primary p-4 text-primary-foreground shadow-md select-none">
+      <WrapperHeaderScreen>
         <Avatar className="w-10 h-10 border border-primary-foreground/20">
           <AvatarFallback className="bg-primary-foreground/10 text-primary-foreground font-bold">
             О
@@ -56,7 +61,7 @@ export const ChatWindow = () => {
         <div className="ml-3 flex items-center gap-2">
           <ChevronLeft /><h2 className="font-semibold text-sm">{activeTicketTitle}</h2>
         </div>
-      </div>
+      </WrapperHeaderScreen>
 
       {/* Список сообщений из базы Beget */}
       <ScrollArea ref={scrollRef} className="flex-1 p-4 w-full max-w-2xl mx-auto">
@@ -98,7 +103,7 @@ export const ChatWindow = () => {
 
       {/* Поле ввода */}
       <MessageInput />
-    </div>
+    </WrapperScreen>
   );
 };
 

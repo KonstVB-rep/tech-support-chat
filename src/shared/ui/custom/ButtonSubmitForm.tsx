@@ -1,8 +1,11 @@
+"use client";
+
 import type React from "react";
 import { Loader } from "lucide-react";
 import { useFormStatus } from "react-dom";
-import { Button } from "./button";
-import { cn } from "../lib/utils";
+import { Button } from "../button";
+import { cn } from "@/shared/lib/utils";
+;
 
 
 type SubmitButtonProps = { text?: string } & React.ComponentProps<"button">;

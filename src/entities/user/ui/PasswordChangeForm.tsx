@@ -1,26 +1,11 @@
-import ButtonSubmitForm from "@/shared/ui/ButtonSubmitForm";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import CardForm from "./CardForm";
 
 const PasswordChangeForm = () => {
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader className="border-b-blue-200 border-b">
-        <CardTitle>Изменить пароль</CardTitle>
-        <CardDescription>
-          Введите ваш текущий пароль и новый пароль.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form>
+    <CardForm cardTitle="Изменить пароль" cardDescription="Введите ваш текущий пароль и новый пароль.">
+            <form>
           <div className="flex flex-col gap-6">
             <div className="grid gap-2">
               <Label htmlFor="current_password">Текущий пароль</Label>
@@ -32,15 +17,7 @@ const PasswordChangeForm = () => {
             </div>
           </div>
         </form>
-      </CardContent>
-      <CardFooter className="flex justify-end gap-2">
-        <ButtonSubmitForm
-          className="w-fit"
-          text="Сохранение"
-          title="Сохранить"
-        />
-      </CardFooter>
-    </Card>
+    </CardForm>
   );
 };
 

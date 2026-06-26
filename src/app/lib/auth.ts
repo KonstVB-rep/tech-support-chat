@@ -2,7 +2,7 @@ import { getResetPasswordHtml } from "@/shared/ui/email-templates/getResetPasswo
 import { APIError, betterAuth, type User } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
-import { prisma } from "../../../prisma/prisma-client";
+import { prisma } from "@/prisma/prisma-client";
 import { sendEmail } from "./sendEmail";
 
 export const auth = betterAuth({
@@ -14,7 +14,12 @@ export const auth = betterAuth({
       role: {
         type: "string",
         input: false,
-        defaultValue: "user",
+        defaultValue: "MEMBER",
+      },
+      isActive: {
+        type: "boolean",
+        input: false,
+        defaultValue: true,
       },
       canCreateGroups: {
         type: "boolean",

@@ -1,10 +1,8 @@
-// src/widgets/sidebar/ui/ChatList.tsx
-"use client";
-
 import { cn } from "@/shared/lib/utils";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 import { useActiveTicketId, useSetActiveTicketId, useSetActiveTicketTitle } from "@/store/useChatStore";
-import type { Chat } from "../api/useGetChats";
+import type { Chat } from "../../../api/useGetChats";
+
 
 interface ChatListProps {
   chats: Chat[];
@@ -12,7 +10,7 @@ interface ChatListProps {
   currentUserId: string;
 }
 
-export default function ChatList({ chats, isSupport, currentUserId }: ChatListProps) {
+export const SidebarChatList = ({ chats, isSupport, currentUserId }: ChatListProps) => {
   const setActiveTicketId = useSetActiveTicketId();
   const setActiveTicketTitle = useSetActiveTicketTitle();
   const activeTicketId = useActiveTicketId();

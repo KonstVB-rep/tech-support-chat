@@ -25,6 +25,10 @@ const AccountUser = () => {
         </DropdownMenuLabel>
 
         <DropdownMenuItem>
+          <Link href="/account">Аккаунт</Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem>
           <Link href="/account/settings">Настройки</Link>
         </DropdownMenuItem>
         <DropdownMenuItem>

@@ -1,35 +1,16 @@
 
+import { ButtonEnable2FA } from "@/features/auth-2fa";
 import { Button } from "@/shared/ui/button";
-import {
-    Card,
-    CardAction,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import AvatarUser from "./AvatarUser";
-import { ButtonEnable2FA } from "@/features/auth-2fa";
+import CardForm from "./CardForm";
 
 const AvatarChangeForm = () => {
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader className="border-b-blue-200 border-b">
-        <CardTitle>Аватар</CardTitle>
-        <CardDescription>
-          Кликните на аватар чтобы загрузить свою фотографию
-        </CardDescription>
-        <CardAction>
-          <Button className="rounded-full" size="icon">
-            <AvatarUser />
-          </Button>
-        </CardAction>
-      </CardHeader>
-      <CardContent>
-        <form>
+
+<CardForm  cardTitle="Аватар" cardDescription="Кликните на аватар чтобы загрузить свою фотографию" footerChildren={<ButtonEnable2FA />} cardAction={<Button className="rounded-full" size="icon"><AvatarUser /></Button>}>
+  <form>
           <div className="flex flex-col gap-6">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
@@ -42,14 +23,7 @@ const AvatarChangeForm = () => {
             </div>
           </div>
         </form>
-      </CardContent>
-      <CardFooter className="flex justify-end gap-2">
-        <ButtonEnable2FA />
-        <Button className="w-fit" type="submit">
-          Сохранить
-        </Button>
-      </CardFooter>
-    </Card>
+</CardForm>
   );
 };
 

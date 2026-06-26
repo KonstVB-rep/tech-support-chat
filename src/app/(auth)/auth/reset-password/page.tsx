@@ -1,6 +1,10 @@
 "use client"
 
 
+import { resetPasswordConfirmAction } from "@/app/actions/auth"
+import ButtonSubmitForm from "@/shared/ui/custom/ButtonSubmitForm"
+import { Field, FieldError } from "@/shared/ui/field"
+import { Input } from "@/shared/ui/input"
 import { zodResolver } from "@hookform/resolvers/zod"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -11,10 +15,6 @@ import {
     type SchemaPropsResetPasswordConfirm,
     validationSchemaResetPasswordConfirm,
 } from "../model/schema"
-import { resetPasswordConfirmAction } from "@/app/actions/auth"
-import ButtonSubmitForm from "@/shared/ui/ButtonSubmitForm"
-import { Field, FieldError } from "@/shared/ui/field"
-import { Input } from "@/shared/ui/input"
 
 
 const initialState = {

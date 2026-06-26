@@ -142,7 +142,7 @@ const MessageInput = () => {
     uploadMutation.isPending || sendMessageMutation.isPending || isCompressing;
 
   return (
-    <div className="border-t border-border bg-background p-3 md:p-4 relative">
+    <div className="w-full border-t border-border bg-background p-3 md:p-4 relative">
       {/* Меню прикрепления */}
       <AttachMenu
         isOpen={showAttachMenu}

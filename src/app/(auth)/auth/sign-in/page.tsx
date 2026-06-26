@@ -1,16 +1,16 @@
 "use client"
 
 
+import { authClient } from "@/app/lib/auth-client"
+import ButtonSubmitForm from "@/shared/ui/custom/ButtonSubmitForm"
+import { Field, FieldError } from "@/shared/ui/field"
+import { Input } from "@/shared/ui/input"
 import { zodResolver } from "@hookform/resolvers/zod"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { type SchemaPropsSignIn, validationSchemaSignIn } from "../model/schema"
-import { authClient } from "@/app/lib/auth-client"
-import ButtonSubmitForm from "@/shared/ui/ButtonSubmitForm"
-import { Field, FieldError } from "@/shared/ui/field"
-import { Input } from "@/shared/ui/input"
 
 
 const initialState = {
@@ -42,7 +42,7 @@ export default function SignInPage() {
           if (context.data.twoFactorRedirect) {
             router.replace("/auth/two-factor")
           } else {
-            router.replace("/")
+            router.replace("/chats")
             toast.success("Вы успешно вошли!")
           }
         },
@@ -53,16 +53,8 @@ export default function SignInPage() {
     )
   }
 
-  // const onSubmit = (formData: FormData) => {
-  //   const res = formAction(formData);
-  //   console.log(res)
-  // };
-
-  // const errorMessage = state?.error;
-  // console.log(errorMessage)
-
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+    <div className="flex flex-col items-center justify-center min-h-screen gap-4 w-full">
       <h1 className="text-2xl font-bold">Войти</h1>
       <form className="flex flex-col gap-3 w-64  p-4" onSubmit={form.handleSubmit(onSubmit)}>
         {/* <form action={onSubmit} className="flex flex-col gap-3 w-64  p-4"> */}
@@ -108,10 +100,10 @@ export default function SignInPage() {
           <Link className="text-center block" href="/auth/forgot-password">
             Забыли пароль?
           </Link>
-          <span className="text-center block">Нет аккаунта?</span>
+          {/* <span className="text-center block">Нет аккаунта?</span>
           <Link className="text-center block" href="/auth/sign-up">
             Зарегистрироваться
-          </Link>
+          </Link> */}
         </div>
         {/* {errorMessage && <p className="text-red-500">{errorMessage}</p>} */}
       </form>
