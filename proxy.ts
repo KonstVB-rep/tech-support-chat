@@ -17,6 +17,8 @@ export async function proxy(request: NextRequest) {
 
   const session = await getServerSession();
 
+  console.log(session, "session");
+
   if (!session?.user) {
     const signInUrl = new URL("/auth/sign-in", request.url);
     signInUrl.searchParams.set("redirect", pathname);
@@ -55,7 +57,10 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/dashboard",
+    "/organization/:path*",
+    "/account/:path*",
+    "/admin/:path*",
+    "/chats/:path*",
     // Skip Next.js internals and all static files, unless found in search params
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     // Always run for API routes

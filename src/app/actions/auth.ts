@@ -15,7 +15,7 @@ import {
 } from "../(auth)/auth/model/schema";
 import { auth } from "../lib/auth";
 
-export type ActionState =
+type ActionState =
   | {
       success: true;
       error?: never;

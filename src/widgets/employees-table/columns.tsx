@@ -1,25 +1,18 @@
 "use client";  
 
-import { Button } from "@/shared/ui/button"
+import { EmployeeWithProfile } from "@/entities/employee";
+
+import {  DeleteEmployeeDialog, UpdateEmployeeDialog } from "@/features/manage-employee";
+import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { DataTableColumnHeader } from "@/shared/ui/data-table-column-header";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu"
-import { OrgRole } from "@prisma/client"
-import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu";
 
-export type Employee = {
-    id: string
-    name: string
-    email: string
-    phone: string
-    position: string
-    role: OrgRole
-    createdAt: string
-    updatedAt: string
-}
+import { ColumnDef } from "@tanstack/react-table";
+import { MoreHorizontal } from "lucide-react";
 
-export const columns: ColumnDef<Employee, unknown>[] = [
+export const columns: ColumnDef<EmployeeWithProfile, unknown>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -45,76 +38,82 @@ export const columns: ColumnDef<Employee, unknown>[] = [
   {
     id: "name",
     header: ({ column }) => (
-      <DataTableColumnHeader className="justify-center" column={column} title="name" />
+      <DataTableColumnHeader className="justify-center" column={column} title="Имя" />
     ),
     cell: ({ row }) => {
       const value = row.getValue("name") as string;
-      return <div className="text-right font-medium">{value}</div>
+      return <div className="text-center font-medium">{value}</div>
     },
-    accessorFn: (row: Employee) => row.name,
+    accessorFn: (row: EmployeeWithProfile) => row.profile.name,
   },
   {
     id: "email",
     header: ({ column }) => (
-      <DataTableColumnHeader className="justify-center" column={column} title="email" />
+      <DataTableColumnHeader className="justify-center" column={column} title="Email" />
     ),
     cell: ({ row }) => {
       const value = row.getValue("email") as string;
-      return <div className="text-right font-medium">{value}</div>
+      return <div className="text-center font-medium">{value}</div>
     },
-    accessorFn: (row: Employee) => row.email,
+    accessorFn: (row: EmployeeWithProfile) => row.profile.email,
   },
   {
     id: "phone",
-    header: () => <div className="text-center uppercase text-sm">Phone</div>,
+    header: () => <div className="text-center uppercase text-sm">Телефон</div>,
+
     cell: ({ row }) => {
       const value = row.getValue("phone") as string;
-      return <div className="text-right font-medium">{value}</div>
+      return (
+        <div className={cn("text-center font-medium")}>
+          {value ?? "—"}
+        </div>
+      );
     },
-    accessorFn: (row: Employee) => row.phone,
+    accessorFn: (row: EmployeeWithProfile) => row.profile.phone,
+    minSize: 130,
   },
   {
     id: "position",
     header: ({ column }) => (
-      <DataTableColumnHeader className="justify-center" column={column} title="position" />
+      <DataTableColumnHeader className="justify-center" column={column} title="Должность" />
     ),
     cell: ({ row }) => {
       const value = row.getValue("position") as string;
-      return <div className="text-right font-medium">{value}</div>
+      return <div className="text-center font-medium">{value}</div>
     },
-    accessorFn: (row: Employee) => row.position,
+    accessorFn: (row: EmployeeWithProfile) => row.position,
   },
-  {
-    id: "role",
-    header: () => <div className="text-center uppercase text-sm">Role</div>,
-    cell: ({ row }) => {
-      const value = row.getValue("role") as OrgRole;
-      return <div className="text-right font-medium">{value}</div>
-    },
-    accessorFn: (row: Employee) => row.role,
-  },
+  // {
+  //   id: "role",
+  //   header: () => <div className="text-center uppercase text-sm">Роль</div>,
+  //   cell: ({ row }) => {
+  //     const value = row.getValue("role") as OrgRole;
+  //     return <div className="text-center font-medium">{value}</div>
+  //   },
+  //   accessorFn: (row: EmployeeWithProfile) => row.role,
+  // },
   {
     id: "actions",
+    maxSize: 80,
     cell: ({ row }) => {
-      const payment = row.original
+      const data = row.original;
  
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
+              <span className="sr-only">Открыть меню действий</span>
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
-            >
-              Удалить
-            </DropdownMenuItem>
+            <DropdownMenuLabel className="sr-only">Действия</DropdownMenuLabel>
+            <DeleteEmployeeDialog ids={data.id} employeeName={data.profile.name} organizationId={data.organizationId} />
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Посмотреть/Редкатировать</DropdownMenuItem>
+            <UpdateEmployeeDialog employee={data}/>
+            {/* <DropdownMenuItem> */}
+              {/* <Link href={`/organization/${organization.id}/EmployeeWithProfiles/${EmployeeWithProfile.id}`}>Посмотреть/Редактировать</Link> */}
+            {/* </DropdownMenuItem> */}
           </DropdownMenuContent>
         </DropdownMenu>
       )

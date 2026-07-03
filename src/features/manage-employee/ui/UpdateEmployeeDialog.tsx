@@ -1,0 +1,39 @@
+"use client";
+
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/shared/ui/dialog";
+import { Button } from "@/shared/ui/button";
+import { Pencil } from "lucide-react";
+import { UpdateEmployeeForm } from "./UpdateEmployeeForm";
+import { EmployeeWithProfile } from "@/entities/employee";
+
+interface UpdateEmployeeDialogProps {
+  employee: EmployeeWithProfile
+}
+
+export const UpdateEmployeeDialog = ({ employee }: UpdateEmployeeDialogProps) => {
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm" className="whitespace-break-spaces">
+          <Pencil className="w-4 h-4" />Редактировать
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Редактировать сотрудника</DialogTitle>
+        </DialogHeader>
+        <UpdateEmployeeForm
+          employee={employee}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+};

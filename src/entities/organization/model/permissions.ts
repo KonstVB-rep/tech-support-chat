@@ -1,70 +1,100 @@
-import { Role } from "@prisma/client";
+// src/shared/lib/permissions.ts
+
 import {
   hasPermission as check,
   hasAnyPermission as checkAny,
   hasAllPermissions as checkAll,
 } from "@/shared/lib/permissions";
 
-// Все действия над организациями
-export type OrganizationPermission =
-  | "organization.view" // Видеть организации
-  | "organization.create" // Создать организацию
-  | "organization.update" // Обновить организацию
-  | "organization.delete" // Удалить организацию
-  | "organizations.view" // Видеть список организаций
+// Все возможные действия в системе
+export type ChatPermission =
+  // Тикеты
+  | "ticket.create" // Создать тикет
+  | "ticket.view.all" // Видеть все тикеты (не только свои)
+  | "ticket.delete" // Удалить тикет
+  | "ticket.assign" // Назначить исполнителя
+  | "ticket.close" // Закрыть тикет
 
-  // Участники организации
-  | "organization.member.view" // Видеть участников
-  | "organization.member.add" // Добавить участника
-  | "organization.member.remove" // Удалить участника
-  | "organization.member.update"; // Изменить роль участника
+  // Сообщения
+  | "message.send" // Отправить сообщение
+  | "message.delete.own" // Удалить своё сообщение
+  | "message.delete.any" // Удалить любое сообщение
 
-// Роли системы
+  // Пользователи
+  | "user.manage.roles" // Менять роли пользователей
+  | "user.view.all" // Видеть всех пользователей
 
-// Маппинг: роль → permissions
-export const ROLE_PERMISSIONS_ORG: Record<Role, OrganizationPermission[]> = {
-  ADMIN: [
-    "organization.view",
-    "organizations.view",
-    "organization.create",
-    "organization.update",
-    "organization.delete",
-    "organization.member.view",
-    "organization.member.add",
-    "organization.member.remove",
-    "organization.member.update",
+  // Статистика
+  | "stats.view"; // Видеть статистику
+
+// 🚀 БЕСТ-ПРАКТИКС ТИПИЗАЦИЯ: Наш новый объединенный тип ролей для логики доступов
+export type AppChatRole = "admin" | "SUPPORT" | "RESPONSIBLE" | "MEMBER";
+
+// ✅ Маппинг: теперь ключами являются наши чистые строковые роли
+export const ROLE_PERMISSIONS_CHAT: Record<AppChatRole, ChatPermission[]> = {
+  // Обычный сотрудник клиента внутри компании
+  MEMBER: ["ticket.create", "message.send", "message.delete.own"],
+
+  // Инженер техподдержки портала
+  SUPPORT: [
+    "ticket.create",
+    "ticket.close",
+    "message.send",
+    "message.delete.own",
+    "message.delete.any",
   ],
 
-  SUPPORT: ["organization.view", "organization.member.view"],
-
+  // Ответственное лицо клиента (Директор/Управляющий)
   RESPONSIBLE: [
-    "organization.view", // свою организацию
-    "organization.member.view", // своих сотрудников
-    "organization.member.add", // добавлять сотрудников
-    "organization.member.remove", // удалять сотрудников
-    "organization.member.update", // менять роли сотрудников
+    "ticket.create",
+    "ticket.view.all",
+    "ticket.assign",
+    "ticket.close",
+    "message.send",
+    "message.delete.own",
+    "message.delete.any",
+    "user.view.all",
+    "stats.view",
   ],
 
-  MEMBER: [
-    "organization.view", // только свою организацию
+  // Глобальный суперадмин системы Better Auth
+  admin: [
+    "ticket.create",
+    "ticket.view.all",
+    "ticket.delete",
+    "ticket.assign",
+    "ticket.close",
+    "message.send",
+    "message.delete.own",
+    "message.delete.any",
+    "user.manage.roles",
+    "user.view.all",
+    "stats.view",
   ],
 };
 
-export const hasOrganizationPermission = (
-  role: Role,
-  permission: OrganizationPermission,
-) => check(role, permission, ROLE_PERMISSIONS_ORG);
+// ✅ Хелперы: теперь принимают наш чистый тип AppChatRole вместо Role из Prisma
+export const hasPermissionChat = (
+  role: AppChatRole,
+  permission: ChatPermission,
+): boolean => {
+  return check(role, permission, ROLE_PERMISSIONS_CHAT);
+};
 
-export const hasAnyOrganizationPermission = (
-  role: Role,
-  permissions: OrganizationPermission[],
-) => checkAny(role, permissions, ROLE_PERMISSIONS_ORG);
+export const hasAnyPermissionChat = (
+  role: AppChatRole,
+  permissions: ChatPermission[],
+): boolean => {
+  return checkAny(role, permissions, ROLE_PERMISSIONS_CHAT);
+};
 
-export const hasAllOrganizationPermissions = (
-  role: Role,
-  permissions: OrganizationPermission[],
-) => checkAll(role, permissions, ROLE_PERMISSIONS_ORG);
+export const hasAllPermissionChat = (
+  role: AppChatRole,
+  permissions: ChatPermission[],
+): boolean => {
+  return checkAll(role, permissions, ROLE_PERMISSIONS_CHAT);
+};
 
-export const getOrganizationPermissions = (role: Role) => {
-  return ROLE_PERMISSIONS_ORG[role] ?? [];
+export const getPermissions = (role: AppChatRole): ChatPermission[] => {
+  return ROLE_PERMISSIONS_CHAT[role] ?? [];
 };

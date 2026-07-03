@@ -1,5 +1,6 @@
 "use client"
 
+import { cn } from "@/shared/lib/utils";
 import { Calendar } from "@/shared/ui/calendar";
 import { CalendarIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -7,7 +8,6 @@ import { ru } from "react-day-picker/locale";
 import { FieldValues } from "react-hook-form";
 import { Button } from "../button";
 import { Popover, PopoverContent, PopoverTrigger } from "../popover";
-import { cn } from "@/shared/lib/utils";
 
 type CalendarComponentProps = {
      field: FieldValues;
@@ -15,7 +15,9 @@ type CalendarComponentProps = {
 
 export const CalendarComponent =({ field}: CalendarComponentProps) => {
   const rawValue = field.value as string | undefined;
+
   const selectedDate = rawValue ? new Date(rawValue) : undefined;
+
   const [timeZone, setTimeZone] = useState<string | undefined>(undefined)
  
   useEffect(() => {
@@ -23,6 +25,8 @@ export const CalendarComponent =({ field}: CalendarComponentProps) => {
   }, [])
 
   return (
+    <>
+     <input type="hidden" name={field.name} value={rawValue ?? ""} />
     <Popover>
       <PopoverTrigger asChild>
           <Button
@@ -46,7 +50,8 @@ export const CalendarComponent =({ field}: CalendarComponentProps) => {
             captionLayout="dropdown"
             locale={ru}
             onSelect={(date: Date | undefined) => {
-                    field.onChange(date || null);
+                     const stringDate = date?.toISOString().split("T")[0]; // Получаем "2026-07-25"
+                    field.onChange(stringDate)
                 }}
             selected={selectedDate}
             timeZone={timeZone}
@@ -54,5 +59,6 @@ export const CalendarComponent =({ field}: CalendarComponentProps) => {
             />
       </PopoverContent>
     </Popover>
+    </>
   )
 }

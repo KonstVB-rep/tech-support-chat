@@ -1,209 +1,96 @@
-"use client"
+// src/app/(pages)/account/Profile.tsx
+import { getProfile } from "@/entities/profile/api/getProfile"; // Твой серверный геттер
+import { getCurrentUser } from "@/shared/lib/server-current-user";
 
-import { useGetProfile } from "@/entities/profile/api/useGetProfile"
-import { useRequireAuth } from "@/shared/lib/useCurrentUser"
-import { Button } from "@/shared/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card"
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field"
-import { Input } from "@/shared/ui/input"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as React from "react"
-import { Controller, useForm } from "react-hook-form"
-import { toast } from "sonner"
-import * as z from "zod"
+import { ProtectByRole } from "@/shared/lib/ProtectByRole";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Badge } from "@/shared/ui/badge";
+import { OrgRole } from "@prisma/client";
+import { ORG_ROLE_LABELS } from "@/shared/constants";
 
+const Profile = async () => {
+  const user = await getCurrentUser();
+  if (!user) return null;
 
-const formSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Имя должно содержать не менее 2 сивмолов."),
-  position: z.string().min(1, "Должность должна содержать не менее 2 сивмолов.").optional(),
-  phone: z.string().optional(),
-  email: z.email("Некорректный email").or(z.literal("")).optional(),
-  password: z
-    .string()
-    .min(8, "Пароль должен содержать не менее 8 сивмолов.")
-})
+  const profile = await getProfile(user.id);
 
-const Profile = () => {
-
-  const { user, isLoading: isAuthLoading } = useRequireAuth();
-  
-  const { data: profile, isLoading: isProfileLoading } = useGetProfile(user?.id ?? "");
-
-  console.log(user,'user', profile, 'profile');
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name:"",
-      phone:"",
-      email:"",
-      position:"",
-      password:"",
-    },
-  })
-
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    toast("You submitted the following values:", {
-      description: (
-        <pre className="mt-2 w-[320px] overflow-x-auto rounded-md bg-code p-4 text-code-foreground">
-          <code>{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-      position: "bottom-right",
-      classNames: {
-        content: "flex flex-col gap-2",
-      },
-      style: {
-        "--border-radius": "calc(var(--radius)  + 4px)",
-      } as React.CSSProperties,
-    })
+  if (!profile) {
+    return <div className="text-yellow-500 font-medium p-4">Профиль не найден в базе данных</div>;
   }
 
-    if (isAuthLoading || isProfileLoading) {
-    return <div>Загрузка...</div>;
-  }
-  
+
+  const memberships = profile.organizationMembers || [];
+
   return (
     <Card className="w-full mx-auto sm:max-w-lg h-max bg-transparent border-none shadow-none ring-0">
       <CardHeader>
-        <CardTitle className="text-center uppercase">Профиль</CardTitle>
-        <CardDescription>
-        </CardDescription>
+        <CardTitle className="text-center uppercase font-bold tracking-wider">Профиль</CardTitle>
+        <CardDescription></CardDescription>
       </CardHeader>
-      <CardContent>
-        <form id="form-rhf-demo" onSubmit={form.handleSubmit(onSubmit)}>
-          <FieldGroup>
-            <Controller
-              name="name"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-rhf-demo-title">
-                    Имя
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    id="form-rhf-demo-title"
-                    aria-invalid={fieldState.invalid}
-                    placeholder=""
-                    autoComplete="off"
-                    className="w-full field-height"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-           <Controller
-              name="position"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-rhf-demo-title">
-                    Должность
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    id="form-rhf-demo-title"
-                    aria-invalid={fieldState.invalid}
-                    placeholder=""
-                    autoComplete="off"
-                    className="w-full field-height"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-              <Controller
-              name="phone"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-rhf-demo-title">
-                    Телефон
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    id="form-rhf-demo-title"
-                    aria-invalid={fieldState.invalid}
-                    placeholder=""
-                    type="phone"
-                    autoComplete="off"
-                    className="w-full field-height"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-               <Controller
-              name="email"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-rhf-demo-title">
-                    Электронная почта
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    id="form-rhf-demo-title"
-                    aria-invalid={fieldState.invalid}
-                    placeholder=""
-                    type="email"
-                    autoComplete="off"
-                    className="w-full field-height"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-            <Controller
-              name="password"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-rhf-demo-title">
-                    Пароль
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    id="form-rhf-demo-title"
-                    aria-invalid={fieldState.invalid}
-                    placeholder=""
-                    type="password"
-                    autoComplete="off"
-                    className="w-full field-height"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-          </FieldGroup>
-        </form>
-      </CardContent>
-      <CardFooter className="bg-transparent border-none">
-        <Field orientation="horizontal">
-          <Button type="button" variant="outline" onClick={() => form.reset()}>
-            Сбросить
-          </Button>
-          <Button type="submit" form="form-rhf-demo">
-            Сохранить
-          </Button>
-        </Field>
-      </CardFooter>
-    </Card>
-  )
-}
 
+      <CardContent>
+        <div className="space-y-5">
+          {/* Имя */}
+          <div className="space-y-1">
+            <div className="text-sm font-medium text-muted-foreground">Имя</div>
+            <div className="text-base font-medium text-foreground">{profile.name ?? "—"}</div>
+          </div>
+
+          {/* 🚀 НАШ МАССИВ ОРГАНИЗАЦИЙ И ДОЛЖНОСТЕЙ */}
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-muted-foreground">Организации и Должности</div>
+            {memberships.length === 0 ? (
+              <div className="text-base text-muted-foreground italic">Нет привязанных организаций</div>
+            ) : (
+              <div className="space-y-3 bg-muted/30 border border-border p-3 rounded-xl">
+                {memberships.map((member: any) => (
+                  <div key={member.id} className="flex items-start justify-between gap-4 border-b border-border/50 last:border-0 pb-2 last:pb-0">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-foreground">{member.organization?.name}</span>
+                      <span className="text-xs text-muted-foreground mt-0.5">
+                        Должность: <span className="text-foreground/80 font-medium">{member.position || "Не указана"}</span>
+                      </span>
+                    </div>
+                    <Badge variant="secondary" className="text-[10px] font-semibold px-2 py-0.5 uppercase tracking-wider">
+                      {member.role === "RESPONSIBLE" ? "Ответственный" : "Сотрудник"}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Телефон */}
+          <div className="space-y-1">
+            <div className="text-sm font-medium text-muted-foreground">Телефон</div>
+            <div className="text-base text-foreground">{profile.phone ?? "—"}</div>
+          </div>
+
+          {/* Email */}
+          <div className="space-y-1">
+            <div className="text-sm font-medium text-muted-foreground">Электронная почта</div>
+            <div className="text-base text-foreground">{profile.email ?? user?.email ?? "—"}</div>
+          </div>
+
+          {/* Пароль */}
+          <div className="space-y-1">
+            <div className="text-sm font-medium text-muted-foreground">Пароль</div>
+            <div className="text-base tracking-widest text-foreground/60">••••••••</div>
+          </div>
+
+          {/* Глобальная роль на портале */}
+          <ProtectByRole> 
+            <div className="space-y-1">
+              <div className="text-sm font-medium text-muted-foreground">Глобальная роль</div>
+              <div className="text-base text-foreground">
+                {user?.role ? ORG_ROLE_LABELS[user.role as OrgRole] : "—"}
+              </div>
+            </div>
+          </ProtectByRole>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
 export default Profile;

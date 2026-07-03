@@ -4,6 +4,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { prisma } from "@/prisma/prisma-client";
 import { sendEmail } from "./sendEmail";
+import { admin } from "better-auth/plugins";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -148,6 +149,7 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
+    disableSignUp: true,
     //requireEmailVerification: true, //запретить вход без подтверждения email
 
     sendResetPassword: async ({ user, url }) => {
@@ -203,6 +205,7 @@ export const auth = betterAuth({
   //   },
   // },
   plugins: [
+    admin(),
     nextCookies(),
     // twoFactor(),
     // haveIBeenPwned({

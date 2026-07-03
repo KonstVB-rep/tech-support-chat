@@ -7,7 +7,7 @@ export const SidebarSettingsList = () => {
         <p className="text-xs text-muted-foreground">Аккаунт</p>
       </Link>
 
-      <Link href="organizations" className="flex items-center justify-start flex-1 py-3 px-2">
+      <Link href="/admin/organizations" className="flex items-center justify-start flex-1 py-3 px-2">
         <p className="text-xs text-muted-foreground">Клиенты</p>
       </Link>
   

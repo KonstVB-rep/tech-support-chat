@@ -10,13 +10,6 @@ datasource db {
 // ENUMS
 // =========================================================================
 
-enum Role {
-  ADMIN       // Админ системы
-  SUPPORT     // Инженер поддержки
-  RESPONSIBLE // Ответственное лицо
-  MEMBER      // Сотрудник
-}
-
 enum OrgRole {
   RESPONSIBLE // Ответственное лицо (назначает ТОЛЬКО админ)
   MEMBER      // Сотрудник
@@ -39,18 +32,22 @@ enum ChatRole {
 // =========================================================================
 
 model User {
-  id               String    @id
+  id               String    @id @default(cuid())  // ✅
   name             String    @db.Text
   email            String    @unique
   emailVerified    Boolean   @default(false)
   image            String?   @db.Text
-  role             Role      @default(MEMBER)
+  role             String    @default("user")
   isActive         Boolean   @default(true)
   
   canCreateGroups  Boolean   @default(false)
   twoFactorEnabled Boolean   @default(false)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+
+  banned           Boolean   @default(false)
+  banReason        String?   @db.Text
+  banExpires       DateTime?
 
   accounts  Account[]
   sessions  Session[]
@@ -61,7 +58,7 @@ model User {
 }
 
 model Session {
-  id        String   @id
+  id        String   @id @default(cuid())  // ✅ ДОБАВЛЕНО
   expiresAt DateTime
   token     String   @unique
   createdAt DateTime @default(now())
@@ -76,7 +73,7 @@ model Session {
 }
 
 model Account {
-  id                    String    @id
+  id                    String    @id @default(cuid())  // ✅ ДОБАВЛЕНО
   accountId             String    @db.Text
   providerId            String    @db.Text
   userId                String
@@ -96,7 +93,7 @@ model Account {
 }
 
 model Verification {
-  id         String   @id
+  id         String   @id @default(cuid())  // ✅ ДОБАВЛЕНО
   identifier String   @db.Text
   value      String   @db.Text
   expiresAt  DateTime
@@ -108,7 +105,7 @@ model Verification {
 }
 
 model TwoFactor {
-  id          String  @id @default(cuid())
+  id          String  @id @default(cuid())  // ✅
   secret      String  @db.Text
   backupCodes String  @db.Text
   userId      String  @unique
@@ -124,11 +121,12 @@ model TwoFactor {
 // =========================================================================
 
 model Profile {
-  id        String   @id @default(cuid())
+  id        String   @id @default(cuid())  // ✅
   userId    String   @unique
   name      String
   imageUrl  String?  @db.Text
-  email     String   @db.Text
+  email     String   @unique
+  phone     String?  @db.Text 
   username  String?  @unique
   lastSeen  DateTime @default(now())
   createdAt DateTime @default(now())
@@ -136,13 +134,26 @@ model Profile {
 
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  // ✅ Связи с другими сущностями (все обратные)
   createdChats       Chat[]             @relation("ChatCreator")
   memberships        ChatMember[]
   messages           Message[]
-  organizationMember OrganizationMember?
+  organizationMembers OrganizationMember[] 
+  supportEngineer     SupportEngineer? 
 
   @@map("profile")
+}
+
+//  SUPPORT ENGINEER — УДОСТОВЕРЕНИЕ ИНЖЕНЕРА ПОДДЕРЖКИ
+
+model SupportEngineer {
+  id        String   @id @default(cuid())
+  profileId String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("support_engineer")
 }
 
 // =========================================================================
@@ -150,18 +161,18 @@ model Profile {
 // =========================================================================
 
 model Organization {
-  id           String   @id @default(uuid())
-  name         String   @db.Text
-  inn          String   @unique
+  id              String   @id @default(cuid())  // ✅ ИЗМЕНЕНО с uuid() на cuid()
+  name            String   @db.Text
+  inn             String   @unique
   contractNumber  String   @unique
-  contractStart DateTime   
-  contractEnd  DateTime
-  supportHours String
-  description  String?  @db.Text
-  legalAddress    String   @db.Text   // Юридический адрес
-  actualAddress   String?  @db.Text   // Фактический адрес (если отличается)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  contractStart   DateTime   
+  contractEnd     DateTime
+  supportHours    String
+  description     String?  @db.Text
+  legalAddress    String   @db.Text
+  actualAddress   String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
   
   members OrganizationMember[]
   chats   Chat[]  
@@ -175,19 +186,18 @@ model Organization {
 // =========================================================================
 
 model OrganizationMember {
-  id             String   @id @default(cuid())
+  id             String   @id @default(cuid())  
   organizationId String
-  profileId      String   @unique  // Один Profile = один OrganizationMember
+  profileId      String   // 🎯 ИСПРАВЛЕНО: Убрали @unique! Теперь один профиль может быть в разных компаниях.
   role           OrgRole  @default(MEMBER)
   position       String?  @db.Text
-  phone          String?  @db.Text
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   
-  // ✅ Связи
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  profile      Profile      @relation(fields: [profileId], references: [id], onDelete: Restrict)
+  profile      Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade) // 🎯 Ставим Cascade!
 
+  @@unique([organizationId, profileId]) // 🚀 ГАРАНТИЯ: Защита от дублирования человека в одной фирме
   @@index([organizationId])
   @@index([organizationId, role])
   @@map("organization_member")
@@ -198,21 +208,15 @@ model OrganizationMember {
 // =========================================================================
 
 model Chat {
-  id             String   @id @default(uuid())
+  id             String   @id @default(cuid())  // ✅ ИЗМЕНЕНО с uuid() на cuid()
   title          String?
   imageUrl       String?  @db.Text
   type           ChatType @default(GROUP)
-  
-  // ✅ Кто создал
   creatorId      String
-  
-  // ✅ Кому принадлежит (может быть null для личных чатов)
   organizationId String?
-  
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  // ✅ Связи
   creator      Profile       @relation("ChatCreator", fields: [creatorId], references: [id], onDelete: Restrict)
   organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   members      ChatMember[]
@@ -228,7 +232,7 @@ model Chat {
 // =========================================================================
 
 model ChatMember {
-  id        String   @id @default(cuid())
+  id        String   @id @default(cuid())  // ✅
   chatId    String
   profileId String
   role      ChatRole @default(MEMBER)
@@ -248,7 +252,7 @@ model ChatMember {
 // =========================================================================
 
 model Message {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid()) 
   text      String   @db.Text
   chatId    String
   profileId String

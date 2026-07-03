@@ -1,12 +1,14 @@
+// src/entities/organization/api/getOrganizations.ts
 "use server";
 
 import { prisma } from "@/prisma/prisma-client";
-import { getSession } from "@/shared/lib/server-current-user";
-import { Role } from "@prisma/client";
 import { cacheTag } from "next/cache";
-import { hasOrganizationPermission } from "../model/permissions";
+import { redirect } from "next/navigation";
+import type { OrganizationWithCounts } from "../model/types";
+import { getSession } from "@/shared/lib/server-current-user";
+import { USER_ROLE } from "@/shared/constants";
 
-export const fetchOrganizations = async () => {
+const fetchOrganizations = async (): Promise<OrganizationWithCounts[]> => {
   "use cache";
   cacheTag("organizations");
 
@@ -23,14 +25,15 @@ export const fetchOrganizations = async () => {
   });
 };
 
-export const getOrganizations = async () => {
+export const getOrganizations = async (): Promise<OrganizationWithCounts[]> => {
   const session = await getSession();
-  if (!session?.user) throw new Error("Unauthorized");
 
-  if (
-    !hasOrganizationPermission(session.user.role as Role, "organizations.view")
-  ) {
-    throw new Error("Forbidden");
+  if (!session?.user) {
+    redirect("/auth/sign-in?error=unauthorized");
+  }
+
+  if (session.user.role !== USER_ROLE.ADMIN) {
+    redirect("/?error=forbidden");
   }
 
   return fetchOrganizations();

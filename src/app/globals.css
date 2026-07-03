@@ -134,6 +134,9 @@
   height: 48px;
 }
 
+body{
+  overflow: hidden;
+}
 
 /* body{
   background: url('../../public/1.jpg') center center /contain repeat;

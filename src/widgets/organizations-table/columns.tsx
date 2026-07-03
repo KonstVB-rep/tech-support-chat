@@ -1,12 +1,12 @@
 
 "use client";  
 
-import { DeleteOrganizationButton } from "@/features/delete-organization/ui/DeleteOrganizationButton";
+import { OrganizationWithCounts } from "@/entities/organization";
+import { DeleteOrganizationDialog } from "@/features/manage-organization";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { DataTableColumnHeader } from "@/shared/ui/data-table-column-header";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu";
-import { Organization } from "@prisma/client";
 
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
@@ -28,7 +28,7 @@ const endOfDay = (date: Date): Date => {
 
 
 
-export const columns: ColumnDef<Organization, unknown>[] = [
+export const columns: ColumnDef<OrganizationWithCounts>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -58,9 +58,9 @@ export const columns: ColumnDef<Organization, unknown>[] = [
     ),
     cell: ({ row }) => {
       const value = row.getValue("name") as string;
-      return <div className="text-right font-medium">{value}</div>
+      return <div>{value}</div>
     },
-    accessorFn: (row: Organization) => row.name,
+    accessorFn: (row: OrganizationWithCounts) => row.name,
   },
   {
     id: "inn",
@@ -69,21 +69,31 @@ export const columns: ColumnDef<Organization, unknown>[] = [
     ),
     cell: ({ row }) => {
       const value = row.getValue("inn") as string;
-      return <div className="text-right font-medium">{value}</div>
+      return <div>{value}</div>
     },
-    accessorFn: (row: Organization) => row.inn,
+    accessorFn: (row: OrganizationWithCounts) => row.inn,
   },
   {
     id: "description",
     header: () => <div className="text-center uppercase text-sm">Описание</div>,
     cell: ({ row }) => {
       const value = row.getValue("description") as string;
-      return <div className="text-right font-medium">{value}</div>
+      return <div>{value}</div>
     },
-    accessorFn: (row: Organization) => row.description,
+    accessorFn: (row: OrganizationWithCounts) => row.description,
+  },
+    {
+    id: "contractNumber",
+    header: () => <div className="text-center uppercase text-sm">Номер договора</div>,
+    cell: ({ row }) => {
+      const value = row.getValue("contractNumber") as string;
+      return <div>{value}</div>
+    },
+    accessorFn: (row: OrganizationWithCounts) => row.contractNumber,
   },
   {
     id: "contractStart",
+    maxSize: 200,
     header: ({ column }) => (
       <DataTableColumnHeader className="justify-center" column={column} title="Начало договора" />
     ),
@@ -96,12 +106,12 @@ export const columns: ColumnDef<Organization, unknown>[] = [
       if (typeof value === "string") {
         const date = new Date(value);
         if (!Number.isNaN(date.getTime())) {
-          return date.toLocaleDateString("ru-RU");
+          return <div>{date.toLocaleDateString("ru-RU")}</div>;
         }
-        return "-";
+        return <div>-</div>;
       }
 
-      return "-";
+      return <div>-</div>;
     },
      filterFn: (row, columnId, filterValue) => {
       const date = row.getValue(columnId) as Date;
@@ -129,10 +139,11 @@ export const columns: ColumnDef<Organization, unknown>[] = [
 
       return true;
     },
-    accessorFn: (row: Organization) => row.contractStart,
+    accessorFn: (row: OrganizationWithCounts) => row.contractStart,
   },
   {
     id: "contractEnd",
+    maxSize: 200,
     header: ({ column }) => (
       <DataTableColumnHeader className="justify-center" column={column} title="Окончание договора" />
     ),
@@ -142,15 +153,15 @@ export const columns: ColumnDef<Organization, unknown>[] = [
         return value.toLocaleDateString("ru-RU");
       }
 
-      if (typeof value === "string") {
+    if (typeof value === "string") {
         const date = new Date(value);
         if (!Number.isNaN(date.getTime())) {
-          return date.toLocaleDateString("ru-RU");
+          return <div>{date.toLocaleDateString("ru-RU")}</div>;
         }
-        return "-";
+        return <div>-</div>;
       }
 
-      return "-";
+      return <div>-</div>;
     },
      filterFn: (row, columnId, filterValue) => {
       const date = row.getValue(columnId) as Date;
@@ -178,10 +189,12 @@ export const columns: ColumnDef<Organization, unknown>[] = [
 
       return true;
     },
-    accessorFn: (row: Organization) => row.contractEnd,
+    accessorFn: (row: OrganizationWithCounts) => row.contractEnd,
   },
   {
     id: "actions",
+
+    maxSize: 80,
 
     cell: ({ row }) => {
       const organization = row.original
@@ -197,14 +210,15 @@ export const columns: ColumnDef<Organization, unknown>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel></DropdownMenuLabel>
             <DropdownMenuItem asChild>
-              <DeleteOrganizationButton
+              <DeleteOrganizationDialog
                 ids={organization.id}
                 organizationName={organization.name}
+                className="w-full"
               />
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-                 <Link href={`/organizations/${organization.id}`}>Посмотреть/Редактировать</Link>
+                 <Link href={`/organization/${organization.id}`}>Посмотреть/Редактировать</Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

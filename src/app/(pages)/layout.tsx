@@ -1,4 +1,4 @@
-import { MessagesSquare } from 'lucide-react'
+import { CircleUser, MessagesSquare, Settings, Users } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 
@@ -12,6 +12,24 @@ const PageLayout = ({children}: {children: React.ReactNode}) => {
               className="flex flex-col gap-1 items-center justify-center h-auto p-2 hover:bg-muted/50 rounded-xl">
                 <MessagesSquare className="size-5"/>
                 <span className="text-xs">Чаты</span>
+            </Link>
+             <Link
+              href="/account"
+              className="flex flex-col gap-1 items-center justify-center h-auto p-2 hover:bg-muted/50 rounded-xl">
+                <CircleUser className="size-5"/>
+                <span className="text-xs">Аккаунт</span>
+            </Link>
+            <Link
+              href="/account/settings"
+              className="flex flex-col gap-1 items-center justify-center h-auto p-2 hover:bg-muted/50 rounded-xl">
+                <Settings className="size-5"/>
+                <span className="text-xs">Настройки</span>
+            </Link>
+               <Link
+              href="/admin/organizations"
+              className="flex flex-col gap-1 items-center justify-center h-auto p-2 hover:bg-muted/50 rounded-xl">
+                <Users className="size-5"/>
+                <span className="text-xs">Клиенты</span>
             </Link>
         </div>
       </div>

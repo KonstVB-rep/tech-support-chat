@@ -1,19 +1,19 @@
+// src/entities/organization/api/getOrganization.ts
 "use server";
+
 import { prisma } from "@/prisma/prisma-client";
-import { getSession } from "@/shared/lib/server-current-user";
 
-import { notFound } from "next/navigation";
-import { hasOrganizationPermission } from "../model/permissions";
-import { Role } from "@prisma/client";
 import { cacheTag } from "next/cache";
+import { redirect, notFound } from "next/navigation";
+import type { SingleOrganizationWithCounts } from "../model/types";
+import { getSession } from "@/shared/lib/server-current-user";
+import { USER_ROLE } from "@/shared/constants";
 
-// ✅ Кэшированная функция принимает session как аргумент
-export const fetchOrganization = async (id: string) => {
+const fetchOrganization = async (
+  id: string,
+): Promise<SingleOrganizationWithCounts | null> => {
   "use cache";
-  cacheTag(`organization-${id}`); // ← тег для одной организации
-  cacheTag("organizations"); // ← общий тег для списка
-
-  if (!id) return null;
+  cacheTag(`organization-${id}`);
 
   return prisma.organization.findUnique({
     where: { id },
@@ -28,16 +28,21 @@ export const fetchOrganization = async (id: string) => {
   });
 };
 
-export const getOrganization = async (id: string) => {
-  if (!id) return null;
+export const getOrganization = async (
+  id: string,
+): Promise<SingleOrganizationWithCounts> => {
+  if (!id) {
+    redirect("/admin/organizations?error=missing_id");
+  }
 
   const session = await getSession();
-  if (!session?.user) throw new Error("Unauthorized");
 
-  if (
-    !hasOrganizationPermission(session.user.role as Role, "organization.view")
-  ) {
-    throw new Error("Forbidden");
+  if (!session?.user) {
+    redirect("/auth/sign-in?error=unauthorized");
+  }
+
+  if (session.user.role !== USER_ROLE.ADMIN) {
+    redirect("/?error=forbidden");
   }
 
   const organization = await fetchOrganization(id);
