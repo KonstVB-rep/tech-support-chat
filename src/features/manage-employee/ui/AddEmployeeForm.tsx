@@ -29,6 +29,7 @@ export const AddEmployeeForm = ({
         name: "",
         email: "",
         phone: "",
+        password: "",
         position: "",
         role: "MEMBER",
       },

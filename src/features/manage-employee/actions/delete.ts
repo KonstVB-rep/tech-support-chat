@@ -3,7 +3,7 @@
 
 import { updateTag } from "next/cache";
 import { prisma } from "@/prisma/prisma-client";
-import { hasEmployeeManagePermission } from "../lib/checkPermission";
+import { EMPLOYEE_MANAGE_ACTIONS, hasEmployeeManagePermission } from "../lib/checkPermission";
 
 import { DeleteActionState, UserRoleTypes } from "@/shared/lib/types";
 import { getSession } from "@/shared/lib/server-current-user";
@@ -35,17 +35,20 @@ export const deleteEmployeeAction = async (
         user: { id: session.user.id, role: session.user.role as UserRoleTypes },
         organizationId,
         targetEmployeeId: validIds[0],
-        isDeleteAction: true,
+        actionType: EMPLOYEE_MANAGE_ACTIONS.DELETE,
       });
       if (!check.allowed)
         return { success: false, deletedCount: 0, error: check.error };
     } else {
       for (const targetId of validIds) {
         const check = await hasEmployeeManagePermission({
-          user: { id: session.user.id, role: session.user.role as UserRoleTypes },
+          user: {
+            id: session.user.id,
+            role: session.user.role as UserRoleTypes,
+          },
           organizationId,
           targetEmployeeId: targetId,
-          isDeleteAction: true,
+          actionType: EMPLOYEE_MANAGE_ACTIONS.DELETE,
         });
         if (!check.allowed)
           return { success: false, deletedCount: 0, error: check.error };
@@ -79,7 +82,7 @@ export const deleteEmployeeAction = async (
     // Генерируем уникальный временной маркер увольнения (Unix timestamp)
     const timestamp = Math.floor(Date.now() / 1000);
 
-    // 3. 🚀 АТОМАРНАЯ ТРАНЗАКЦИЯ ОБЕЗЛИЧИВАНИЯ:
+    // 3. АТОМАРНАЯ ТРАНЗАКЦИЯ ОБЕЗЛИЧИВАНИЯ:
     // Мы пакуем все апдейты в единый безопасный пакет транзакции Prisma
     const updateOperations = membersData
       .map((member) => {
@@ -90,12 +93,11 @@ export const deleteEmployeeAction = async (
         const newFakeEmail = `${profile.email}${suffix}`;
 
         return [
-          // Изменяем системного User в Better Auth: гасим флаг, сбрасываем уникальный email
           prisma.user.update({
             where: { id: profile.userId },
             data: {
               isActive: false,
-              email: newFakeEmail, // 🎯 Почта свободна для новых людей!
+              email: newFakeEmail,
             },
           }),
           // Изменяем Profile мессенджера: сбрасываем уникальный email и телефон, НО ИМЯ ОСТАВЛЯЕМ ДЛЯ ЧАТОВ!

@@ -69,56 +69,9 @@ export const auth = betterAuth({
       },
     },
   },
-  // socialProviders: {
-  //   // Настройка Yandex
-  //   yandex: {
-  //     enabled: true,
-  //     clientId: process.env.YANDEX_CLIENT_ID!,
-  //     clientSecret: process.env.YANDEX_CLIENT_SECRET!,
-  //     redirectURI: process.env.BETTER_AUTH_URL + "/api/auth/callback/yandex",
-  //   },
-  //   // Настройка VK (через расширенный конфиг, так как VK специфичен)
-  //   vk: {
-  //     enabled: true,
-  //     clientId: process.env.VK_CLIENT_ID!,
-  //     clientSecret: process.env.VK_CLIENT_SECRET!,
-  //     authorizationUrl: "https://oauth.vk.com/authorize?v=5.131",
-  //     tokenUrl: "https://oauth.vk.com/access_token",
-  //     userProfileUrl: "https://api.vk.com/method/users.get?v=5.131&fields=photo_200,email",
-  //     // Обработка данных профиля VK
-  //     mapProfile(profile: any) {
-  //       const user = profile.response[0];
-  //       return {
-  //         id: user.id.toString(),
-  //         name: `${user.first_name} ${user.last_name}`,
-  //         email: user.email, // Email придет только если разрешен в приложении
-  //         image: user.photo_200,
-  //       };
-  //     },
-  //   },
-  // },
+
   name: "Proffecto Portal",
   emailVerification: {
-    //autoSignInAfterVerification: true
-    // onExistingUserSignUp: async ({ user }, request) => {
-    //   void sendEmail({
-    //     to: user.email,
-    //     subject: "Sign-up attempt with your email",
-    //     text: "Someone tried to create an account using your email address. If this was you, try signing in instead. If not, you can safely ignore this email.",
-    //   });
-    // },
-    //    sendVerificationEmail: async ({ user, url }) => {
-    //   void sendEmail({
-    //     to: user.email,
-    //     subject: "Verify your email address",
-    //     text: `Click the link to verify your email: ${url}`,
-    //   });
-    // },
-    //Функция afterEmailVerificationзапускается автоматически при подтверждении адреса электронной почты пользователя, получая userобъект и requestподробную информацию, что позволяет выполнять действия для конкретного пользователя.
-    // async afterEmailVerification(user, request) {
-    //       // Your custom logic here, e.g., grant access to premium features
-    //       console.log(`${user.email} has been successfully verified!`);
-    //   }
     sendOnSignIn: true,
     autoSignInAfterVerification: true,
     async sendVerificationEmail({ user, url }) {
@@ -208,10 +161,6 @@ export const auth = betterAuth({
     admin(),
     nextCookies(),
     // twoFactor(),
-    // haveIBeenPwned({
-    //   customPasswordCompromisedMessage:
-    //     "Введенный вами пароль был скомпрометирован. Пожалуйста, выберите другой пароль.",
-    // }),
   ],
 });
 

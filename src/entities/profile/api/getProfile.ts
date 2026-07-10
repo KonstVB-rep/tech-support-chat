@@ -29,7 +29,18 @@ export const getProfile = async (id: string) => {
       return null;
     }
 
-    console.log("getProfile: profile найден", profile.id);
+    const targetOrgId = "a07b9356-714d-11f1-8ff3-ac1f6bbb108e";
+
+    const currentMembership = profile.organizationMembers.find(
+      (member) => member.organizationId === targetOrgId,
+    );
+
+    // Получаем роль ("RESPONSIBLE" или "MEMBER")
+    const orgRole = currentMembership ? currentMembership.role : null;
+    const position = currentMembership
+      ? currentMembership.position
+      : "Не указана";
+
     return profile;
   } catch (error) {
     console.error("Failed to fetch profile:", error);

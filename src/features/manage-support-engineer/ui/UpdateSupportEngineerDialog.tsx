@@ -15,8 +15,8 @@ export const UpdateSupportEngineerDialog = ({
   return (
     <Dialog open={open} onOpenChange={open => setOpen(open)}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" title="Редактировать инженера">
-          <Pencil className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+        <Button variant="ghost" title="Редактировать инженера">
+          <Pencil className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" /> Редактировать
         </Button>
       </DialogTrigger>
 
@@ -24,11 +24,10 @@ export const UpdateSupportEngineerDialog = ({
         <DialogHeader>
           <DialogTitle>Редактировать инженера</DialogTitle>
           <DialogDescription>
-            Измените данные инженера {engineer.name}
+            Измените данные инженера {engineer.profile?.name}
           </DialogDescription>
         </DialogHeader>
 
-        {/* 🎯 Передаем onSuccess, чтобы модалка сама схлопывалась при успешном сохранении */}
         <UpdateSupportEngineerForm
           engineer={engineer}
           onSuccess={() => setOpen(false)} 

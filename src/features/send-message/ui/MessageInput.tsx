@@ -1,13 +1,11 @@
 // src/features/send-message/ui/MessageInput.tsx
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useActiveTicketId } from "@/store/useChatStore";
 import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
-import { getSocket } from "@/shared/lib/socket";
-
 import { Paperclip, X, Send, Plus } from "lucide-react";
 import AttachMenu from "./AttachMenu";
 import { compressImage } from "@/shared/lib/image-compressor";
@@ -29,56 +27,41 @@ interface Message {
   };
 }
 
-const MessageInput = () => {
+export const MessageInput = () => {
   const [text, setText] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
+  
   const activeTicketId = useActiveTicketId();
   const queryClient = useQueryClient();
-
   const uploadMutation = useUploadFile();
 
+  // Мутация отправки текстового сообщения
   const sendMessageMutation = useMutation({
-    mutationFn: async (text: string) => {
+    mutationFn: async (messageText: string) => {
       if (!activeTicketId) throw new Error("Нет активного чата");
 
       const res = await fetch(`/api/chats/${activeTicketId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text: messageText }),
       });
 
-      if (!res.ok) throw new Error("Ошибка отправки");
+      if (!res.ok) throw new Error("Ошибка сервера при отправке");
       return res.json();
     },
-    onSuccess: (data) => {
-      const message = data.message;
-
-      queryClient.setQueryData<Message[]>(
-        ["messages", activeTicketId],
-        (old) => {
-          if (!old) return [message];
-          if (old.some((m) => m.id === message.id)) return old;
-          return [...old, message];
-        }
-      );
-
-      const socket = getSocket();
-      if (socket?.connected) {
-        socket.emit("message:new", message);
-      }
-
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chats"] });
+      
       setText("");
     },
   });
 
-  // 🆕 Обработка выбора файла с сжатием
   const handleFileSelect = async (file: File) => {
     setSelectedFile(file);
 
-    // Сжимаем картинки
     if (file.type.startsWith("image/")) {
       setIsCompressing(true);
       try {
@@ -90,7 +73,6 @@ const MessageInput = () => {
         reader.readAsDataURL(compressed);
       } catch (err) {
         console.error("Ошибка сжатия:", err);
-        // Если не удалось сжать - используем оригинал
         const reader = new FileReader();
         reader.onload = (e) => setPreview(e.target?.result as string);
         reader.readAsDataURL(file);
@@ -98,7 +80,6 @@ const MessageInput = () => {
         setIsCompressing(false);
       }
     } else if (file.type.startsWith("video/")) {
-      // Для видео просто превью
       const url = URL.createObjectURL(file);
       setPreview(url);
     } else {
@@ -125,9 +106,15 @@ const MessageInput = () => {
           text: text.trim() || undefined,
         },
         {
-          onSuccess: () => {
+
+         onSuccess: () => {
             setText("");
             removeFile();
+            queryClient.invalidateQueries({ queryKey: ["chats"] });
+
+            if (activeTicketId) {
+              queryClient.invalidateQueries({ queryKey: ["messages", activeTicketId] });
+            }
           },
         }
       );
@@ -143,14 +130,14 @@ const MessageInput = () => {
 
   return (
     <div className="w-full border-t border-border bg-background p-3 md:p-4 relative">
-      {/* Меню прикрепления */}
+      {/* Меню прикрепления документов */}
       <AttachMenu
         isOpen={showAttachMenu}
         onClose={() => setShowAttachMenu(false)}
         onFileSelect={handleFileSelect}
       />
 
-      {/* Превью файла */}
+      {/* Отрендеренное превью прикрепленного файла */}
       {selectedFile && (
         <div className="mb-3 relative inline-block">
           {preview && selectedFile.type.startsWith("image/") ? (
@@ -179,32 +166,31 @@ const MessageInput = () => {
           <button
             type="button"
             onClick={removeFile}
-            className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center hover:bg-destructive/90 shadow-md"
+            className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center hover:bg-destructive/90 shadow-md transition-transform active:scale-95"
           >
             <X className="w-3 h-3" />
           </button>
 
           {isCompressing && (
             <div className="absolute inset-0 bg-background/70 rounded-lg flex items-center justify-center">
-              <div className="text-xs flex items-center gap-2">
+              <div className="text-xs flex items-center gap-2 font-medium">
                 <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                Сжатие...
+                Сжатие медиа...
               </div>
             </div>
           )}
         </div>
       )}
 
-      {/* Поле ввода */}
-      <div className="flex gap-2 items-center">
-        {/* Кнопка прикрепления */}
+      {/* Форма отправки и поле ввода */}
+      <form onSubmit={handleSubmit} className="flex gap-2 items-center">
         <Button
           type="button"
           variant="ghost"
           size="icon"
           onClick={() => setShowAttachMenu(!showAttachMenu)}
           disabled={isPending}
-          className="flex-shrink-0"
+          className="flex-shrink-0 rounded-xl"
         >
           {showAttachMenu ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
         </Button>
@@ -213,9 +199,10 @@ const MessageInput = () => {
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Сообщение..."
+          placeholder="Напишите сообщение..."
           disabled={isPending}
-          className="flex-1"
+          className="flex-1 rounded-xl h-10 border-muted-foreground/20 focus-visible:ring-primary"
+          autoComplete="off"
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
@@ -227,17 +214,16 @@ const MessageInput = () => {
         <Button
           type="submit"
           size="icon"
-          onClick={handleSubmit}
           disabled={isPending || (!text.trim() && !selectedFile)}
-          className="flex-shrink-0"
+          className="flex-shrink-0 rounded-xl size-10 bg-blue-600 hover:bg-blue-700 text-white shadow-none border-0"
         >
           {isPending ? (
             <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
           ) : (
-            <Send className="w-5 h-5" />
+            <Send className="w-4 h-4" />
           )}
         </Button>
-      </div>
+      </form>
     </div>
   );
 };

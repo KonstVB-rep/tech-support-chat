@@ -1,32 +1,39 @@
+// src/features/manage-employee/lib/checkPermission.ts
 import { prisma } from "@/prisma/prisma-client";
 import { USER_ROLE } from "@/shared/constants";
 import { OrgRole } from "@prisma/client";
 
+export type EmployeeActionType = "CREATE" | "UPDATE" | "DELETE";
+
+export const EMPLOYEE_MANAGE_ACTIONS = {
+  CREATE: "CREATE",
+  UPDATE: "UPDATE",
+  DELETE: "DELETE",
+} as const;
+
 interface CheckPermissionParams {
-  user: { id: string; role: string }; // Текущий залогиненный юзер
+  user: { id: string; role: string };
   organizationId: string;
-  targetEmployeeId?: string; // ID сотрудника, которого хотят изменить/удалить (опционально)
-  isDeleteAction?: boolean; // Флаг, что происходит именно удаление/деактивация
+  targetEmployeeId?: string;
+  actionType: EmployeeActionType;
 }
 
 export const hasEmployeeManagePermission = async ({
   user,
   organizationId,
   targetEmployeeId,
-  isDeleteAction = false,
+  actionType,
 }: CheckPermissionParams): Promise<{
   allowed: boolean;
   error: string | null;
 }> => {
-  // 1. Глобальный админ портала имеет абсолютные права
   if (user.role === USER_ROLE.ADMIN) return { allowed: true, error: null };
 
-  // 2. Ищем профиль текущего пользователя, чтобы понять его роль в этой компании
+  // Ищем профиль текущего менеджера, проверяем, что он вообще работает в этой компании
   const currentMember = await prisma.organizationMember.findFirst({
     where: {
       organizationId,
       profile: { userId: user.id },
-      isActive: true,
     },
   });
 
@@ -37,53 +44,79 @@ export const hasEmployeeManagePermission = async ({
     };
   }
 
-  // 3. СЦЕНАРИЙ: Пользователь редактирует САМ СЕБЯ (свой профиль)
-  if (targetEmployeeId && currentMember.id === targetEmployeeId) {
-    // Изменить свои данные (имя, телефон) можно всегда
-    if (!isDeleteAction) return { allowed: true, error: null };
+  // 3. Жесткий барьер: Если юзер не имеет статус RESPONSIBLE — ему закрыты вообще любые админ-действия
+  if (currentMember.role !== OrgRole.RESPONSIBLE) {
+    return {
+      allowed: false,
+      error:
+        "Недостаточно прав. Управлять командой может только ответственный сотрудник (RESPONSIBLE).",
+    };
+  }
 
-    // Но если RESPONSIBLE пытается УДАЛИТЬ/ДЕАКТИВИРОВАТЬ сам себя:
-    if (currentMember.role === OrgRole.RESPONSIBLE) {
-      const otherResponsiblesCount = await prisma.organizationMember.count({
-        where: {
-          organizationId,
-          role: OrgRole.RESPONSIBLE,
-          isActive: true,
-          id: { not: currentMember.id }, // Ищем всех, кроме него самого
-        },
-      });
+  // =========================================================================
+  // 🚀 РАЗДЕЛЕНИЕ БИЗНЕС-ЛОГИКИ ПО ТИПАМ ДЕЙСТВИЙ
+  // =========================================================================
 
-      // Жесткий блок, если он последний управляющий
-      if (otherResponsiblesCount === 0) {
-        return {
-          allowed: false,
-          error:
-            "Нельзя удалить единственного ответственного сотрудника. Назначьте другого ответственного перед уходом.",
-        };
-      }
+  // 🟢 СЦЕНАРИЙ А: Добавление нового человека в компанию (CREATE)
+  if (actionType === EMPLOYEE_MANAGE_ACTIONS.CREATE) {
+    return { allowed: true, error: null };
+  }
+
+  // 🔴 СЦЕНАРИЙ Б: Полное удаление/деактивация из компании (DELETE)
+  if (actionType === EMPLOYEE_MANAGE_ACTIONS.DELETE) {
+    if (!targetEmployeeId) {
+      return {
+        allowed: false,
+        error: "Не указан идентификатор сотрудника для удаления",
+      };
     }
 
-    // Обычный MEMBER себя удалить тоже не может, только попросить RESPONSIBLE
-    if (currentMember.role === OrgRole.MEMBER && isDeleteAction) {
+    // ❌ ПРАВИЛО 1: Защита от самоудаления. Никто (ни MEMBER, ни RESPONSIBLE) не может удалить сам себя!
+    if (currentMember.id === targetEmployeeId) {
       return {
         allowed: false,
         error:
-          "Вы не можете самостоятельно покинуть организацию. Обратитесь к администратору.",
+          "Вы не можете самостоятельно удалить свой профиль или покинуть организацию. Обратитесь к суперадминистратору системы.",
+      };
+    }
+
+    // 🎯 Ищем целевую карточку того, кого этот RESPONSIBLE пытается удалить прямо сейчас
+    const targetMember = await prisma.organizationMember.findUnique({
+      where: { id: targetEmployeeId },
+    });
+
+    if (!targetMember) {
+      return {
+        allowed: false,
+        error: "Удаляемый сотрудник не найден в базе данных",
+      };
+    }
+
+    // ❌ ПРАВИЛО 2: RESPONSIBLE может удалять только рядовых рабочих (MEMBER).
+    // Если он пытается удалить другого RESPONSIBLE — выкатываем жесткий блок!
+    if (targetMember.role === OrgRole.RESPONSIBLE) {
+      return {
+        allowed: false,
+        error:
+          "Запрещено. Менеджер не может удалить другого ответственного сотрудника (RESPONSIBLE). Это действие доступно только суперадминистратору.",
       };
     }
 
     return { allowed: true, error: null };
   }
 
-  // 4. СЦЕНАРИЙ: Управление чужими аккаунтами
-  // Только активный RESPONSIBLE может добавлять/удалять/менять чужие профили в компании
-  if (currentMember.role !== OrgRole.RESPONSIBLE) {
-    return {
-      allowed: false,
-      error:
-        "Недостаточно прав. Изменять команду может только ответственный сотрудник (RESPONSIBLE).",
-    };
+  // 🔵 СЦЕНАРИЙ В: Редактирование карточки (UPDATE)
+  if (actionType === EMPLOYEE_MANAGE_ACTIONS.UPDATE) {
+    if (!targetEmployeeId) {
+      return {
+        allowed: false,
+        error: "Не указан идентификатор сотрудника для обновления",
+      };
+    }
+
+    // Ограничение полей (что менять можно только должность) у нас запечатано на уровне Zod .pick() в самом экшене!
+    return { allowed: true, error: null };
   }
 
-  return { allowed: true, error: null };
+  return { allowed: false, error: "Неизвестный тип операции" };
 };

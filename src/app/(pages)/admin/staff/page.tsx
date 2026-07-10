@@ -8,14 +8,15 @@ const SupportEngineersPage =  async () => {
   const engineers = await getSupportEngineers();
 
   return (
-    <div className="container py-6 space-y-4 w-full h-full select-none">
-      <div className="flex justify-between items-center">
-        <WrapperHeaderScreen>Инженеры техподдержки</WrapperHeaderScreen>
+    <div className="py-6 space-y-4 w-full h-full">
+      <WrapperHeaderScreen><h2 className="text-center font-semibold uppercase w-full">Инженеры техподдержки</h2></WrapperHeaderScreen>
+      <div className="grid gap-2 p-2">
         
         <AddSupportEngineerDialog />
+        <SupportEngineersTable data={engineers} />
       </div>
 
-      <SupportEngineersTable data={engineers} />
+
     </div>
   );
 }

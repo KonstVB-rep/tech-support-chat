@@ -5,6 +5,7 @@ import { getSession } from "@/shared/lib/server-current-user";
 import { cacheTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { USER_ROLE } from "@/shared/constants";
+import { SupportEngineerWithProfile } from "../model";
 
 const fetchSupportEngineersList = async () => {
   "use cache";
@@ -14,7 +15,7 @@ const fetchSupportEngineersList = async () => {
     where: {
       profile: {
         user: {
-          isActive: true, 
+          isActive: true,
         },
       },
     },
@@ -39,7 +40,10 @@ const fetchSupportEngineersList = async () => {
   });
 };
 
-export const getSupportEngineers = async (): Promise<any[]> => { // Поменяй any[] на свой обновленный тип
+export const getSupportEngineers = async (): Promise<
+  SupportEngineerWithProfile[]
+> => {
+  // Поменяй any[] на свой обновленный тип
   const session = await getSession();
   if (!session?.user) {
     redirect("/auth/sign-in?error=unauthorized");

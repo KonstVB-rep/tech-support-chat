@@ -18,9 +18,8 @@ export const formSchemaOrganization = z
       .string()
       .min(3, "Номер договора должен содержать не менее 3 символов."),
 
-    supportHours: z.enum(["8", "12", "24"], {
-      message: "Выберите часы поддержки",
-    }),
+    timeSupportFrom: z.string().min(1, "Укажите время начала"),
+    timeSupportTo: z.string().min(1, "Укажите время окончания"),
 
     contractStart: z.string().min(1, "Укажите дату начала"),
 

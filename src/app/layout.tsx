@@ -3,7 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-import { MainHeader } from "@/widgets/main-header";
+// import { MainHeader } from "@/widgets/main-header";
 import RootProvider from "./providers/root-provider";
 
 export const viewport: Viewport = {
@@ -50,8 +50,8 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <RootProvider>
-           <MainHeader />
-           <div className="flex w-full bg-background">
+           {/* <MainHeader /> */}
+           <div className="flex w-full">
             {children}
             </div>
             <PwaInstallBanner />

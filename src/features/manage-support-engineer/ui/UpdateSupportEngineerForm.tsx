@@ -1,6 +1,6 @@
 // src/features/manage-support-engineer/ui/UpdateSupportEngineerForm.tsx
 "use client";
-import { useActionState, useEffect } from "react";
+import { startTransition, useActionState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -31,8 +31,8 @@ export const UpdateSupportEngineerForm = ({
   const form = useForm<UpdateSupportEngineerFormValues>({
     resolver: zodResolver(updateSupportEngineerSchema), 
     defaultValues: {
-      email: engineer.email,
-      name: engineer.name,
+      email: engineer.profile?.email ?? "",
+      name: engineer.profile?.name ?? "",
       password: "",
       phone: engineer.profile?.phone ?? "",
     },
@@ -50,8 +50,8 @@ export const UpdateSupportEngineerForm = ({
 
   useEffect(() => {
     form.reset({
-      email: engineer.email,
-      name: engineer.name,
+       email: engineer.profile?.email ?? "",
+      name: engineer.profile?.name ?? "",
       password: "",
       phone: engineer.profile?.phone ?? "",
     });
@@ -61,8 +61,10 @@ export const UpdateSupportEngineerForm = ({
     const isValid = await form.trigger();
     if (!isValid) return;
 
-    formData.append("id", engineer.id); // 🎯 ЖЕСТКО СВЯЗЫВАЕМ С ID ДЛЯ BETTER AUTH
-    formAction(formData);
+    formData.append("id", engineer.id); 
+     startTransition(() => {
+      formAction(formData);
+    });
   };
 
   return (

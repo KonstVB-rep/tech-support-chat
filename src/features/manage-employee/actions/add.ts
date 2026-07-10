@@ -2,12 +2,12 @@
 "use server";
 import { prisma } from "@/prisma/prisma-client";
 import { auth } from "@/app/lib/auth";
-import { headers } from "next/headers";
 import { updateTag } from "next/cache";
 import { getSession } from "@/shared/lib/server-current-user";
-import { hasEmployeeManagePermission } from "../lib/checkPermission";
-import { generateRandomString } from "better-auth/crypto";
-
+import {
+  EMPLOYEE_MANAGE_ACTIONS,
+  hasEmployeeManagePermission,
+} from "../lib/checkPermission";
 import { employeeFormSchema } from "@/entities/employee";
 import { ActionState, UserRoleTypes } from "@/shared/lib/types";
 
@@ -34,6 +34,7 @@ export const addEmployeeAction = async (
     const check = await hasEmployeeManagePermission({
       user: { id: session.user.id, role: session.user.role as UserRoleTypes },
       organizationId,
+      actionType: EMPLOYEE_MANAGE_ACTIONS.CREATE,
     });
 
     if (!check.allowed) {
@@ -51,7 +52,7 @@ export const addEmployeeAction = async (
       };
     }
 
-    const { email, name, phone, position, role } = validated.data;
+    const { email, name, phone, position, password, role } = validated.data;
 
     const organization = await prisma.organization.findUnique({
       where: { id: organizationId },
@@ -66,16 +67,14 @@ export const addEmployeeAction = async (
     }
 
     // 🔍 ШАГ 1: Жесткая проверка уникальности по всей базе User и Profile
-    // Ищем любые совпадения, даже заблокированные, чтобы исключить коллизии доменов
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
 
-    const existingProfile = await prisma.profile.findFirst({
+    const existingProfile = await prisma.profile.findUnique({
       where: { email },
     });
 
-    // 🚨 ОТМЕНА ВСЕХ ВОССТАНОВЛЕНИЙ: Если почта хоть где-то светится — выдаем жесткий запрет!
     if (existingUser || existingProfile) {
       return {
         success: false,
@@ -84,13 +83,13 @@ export const addEmployeeAction = async (
       };
     }
 
-    //ШАГ 2:Создаем аккаунт в Better Auth
+    // ШАГ 2: Создаем аккаунт в Better Auth
     const newUser = await auth.api.createUser({
       body: {
         email,
         name,
         role: "user",
-        password: generateRandomString(32),
+        password,
       },
     });
 
@@ -102,11 +101,12 @@ export const addEmployeeAction = async (
       };
     }
 
-    const createdProfile = await prisma.profile.create({
+    // 🚀 ИСПРАВЛЕНО БЕЗ КРАШЕЙ MYSQL (Ошибка P2002 уничтожена):
+    // Поскольку Better Auth сам создал Profile, мы обновляем (update) его по userId,
+    // дописывая переданный телефон, и забираем чистый готовый объект!
+    const createdProfile = await prisma.profile.update({
+      where: { userId: newUser.user.id },
       data: {
-        userId: newUser.user.id,
-        name,
-        email,
         phone: phone || null,
       },
     });

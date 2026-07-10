@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { FieldGroup } from '@/shared/ui/field';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus } from 'lucide-react';
-import { useActionState, useEffect, useState } from 'react';
+import { startTransition, useActionState, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { addOrganizationAction } from '../actions/add';
@@ -17,10 +17,11 @@ import { OrganizationForm } from './OrganizationForm';
 const defValues ={
           name: "",
           legalAddress: "",
-          actualAddress:  "",
+          actualAddress: "",
           inn: "",
-          contractNumber: "",
-          supportHours: "8" as const,
+          contractNumber:"",
+          timeSupportFrom: "", 
+          timeSupportTo: "",
           contractStart: "",
           contractEnd: "",
         }
@@ -48,7 +49,9 @@ export const AddOrganizationDialog = () => {
         const isValid = await form.trigger();
         if (!isValid) return;
     
-        formAction(formData);
+        startTransition(() => {
+          formAction(formData);
+        })
       };
     
 

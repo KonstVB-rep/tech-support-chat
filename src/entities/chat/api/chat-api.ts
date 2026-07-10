@@ -25,13 +25,26 @@ export interface Message {
   profile: {
     id: string;
     name: string;
+    userId: string;
     imageUrl: string;
     user?: { role: string };
   };
 }
 
+export interface MessagesResponse {
+  messages: Message[];
+  chat: {
+    id: string;
+    title: string | null;
+    organizationId: string | null;
+    organization: {
+      name: string;
+    } | null;
+  } | null;
+}
+
 // API функции
-const fetchSession = async (): Promise<User> => {
+export const fetchSession = async (): Promise<User> => {
   const res = await fetch("/api/auth/get-session");
   if (!res.ok) throw new Error("Не авторизован");
   const data = await res.json();
@@ -39,28 +52,34 @@ const fetchSession = async (): Promise<User> => {
   return data.user;
 };
 
-const fetchActiveChat = async (): Promise<string | null> => {
+export const fetchActiveChat = async (): Promise<string | null> => {
   const res = await fetch("/api/chats/active");
   if (!res.ok) throw new Error("Ошибка получения чата");
   const data = await res.json();
   return data.chatId;
 };
 
-const fetchChatInfo = async (chatId: string): Promise<ChatInfo> => {
+export const fetchChatInfo = async (chatId: string): Promise<ChatInfo> => {
   const res = await fetch(`/api/chats/${chatId}/info`);
   if (!res.ok) throw new Error("Чат не найден");
   const data = await res.json();
   return data.chat;
 };
 
-const fetchMessages = async (chatId: string): Promise<Message[]> => {
+export const fetchMessages = async (
+  chatId: string,
+): Promise<MessagesResponse> => {
   const res = await fetch(`/api/chats/${chatId}/messages`);
+
   if (!res.ok) throw new Error("Ошибка загрузки сообщений");
-  const data = await res.json();
-  return data.messages;
+
+  return await res.json();
 };
 
-const sendMessage = async (chatId: string, text: string): Promise<Message> => {
+export const sendMessage = async (
+  chatId: string,
+  text: string,
+): Promise<Message> => {
   const res = await fetch(`/api/chats/${chatId}/messages`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -113,15 +132,56 @@ export function useSendMessage() {
   return useMutation({
     mutationFn: ({ chatId, text }: { chatId: string; text: string }) =>
       sendMessage(chatId, text),
-    onSuccess: (newMessage) => {
-      queryClient.setQueryData<Message[]>(
-        ["messages", newMessage.chatId],
-        (old) => {
-          if (!old) return [newMessage];
-          if (old.some((m) => m.id === newMessage.id)) return old;
-          return [...old, newMessage];
-        },
+
+    // ✅ ИСПРАВЛЕНИЕ #2 и #3: Оптимистичное обновление + правильная инвалидация
+    onMutate: async ({ chatId, text }) => {
+      await queryClient.cancelQueries({ queryKey: ["messages", chatId] });
+
+      const previousData = queryClient.getQueryData<MessagesResponse>([
+        "messages",
+        chatId,
+      ]);
+
+      const optimisticMessage: Message = {
+        id: `temp-${Date.now()}`,
+        text,
+        chatId,
+        profileId: "me",
+        createdAt: new Date().toISOString(),
+        profile: { id: "me", name: "Вы", imageUrl: "", userId: "" },
+      };
+
+      queryClient.setQueryData<MessagesResponse>(
+        ["messages", chatId],
+        (old) => ({
+          messages: [...(old?.messages || []), optimisticMessage],
+          chat: old?.chat || null,
+        }),
       );
+
+      return { previousData };
+    },
+
+    onError: (err, variables, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(
+          ["messages", variables.chatId],
+          context.previousData,
+        );
+      }
+    },
+
+    onSuccess: (serverMessage, variables) => {
+      queryClient.setQueryData<MessagesResponse>(
+        ["messages", variables.chatId],
+        (old) => ({
+          messages: (old?.messages || []).map((m) =>
+            m.id.startsWith("temp-") ? serverMessage : m,
+          ),
+          chat: old?.chat || null,
+        }),
+      );
+      queryClient.invalidateQueries({ queryKey: ["chats"] });
     },
   });
 }

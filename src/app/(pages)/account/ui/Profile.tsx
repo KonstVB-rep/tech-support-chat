@@ -5,8 +5,7 @@ import { getCurrentUser } from "@/shared/lib/server-current-user";
 import { ProtectByRole } from "@/shared/lib/ProtectByRole";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
-import { OrgRole } from "@prisma/client";
-import { ORG_ROLE_LABELS } from "@/shared/constants";
+import { AvatarUser } from "@/entities/user";
 
 const Profile = async () => {
   const user = await getCurrentUser();
@@ -14,29 +13,28 @@ const Profile = async () => {
 
   const profile = await getProfile(user.id);
 
+
   if (!profile) {
     return <div className="text-yellow-500 font-medium p-4">Профиль не найден в базе данных</div>;
   }
 
-
   const memberships = profile.organizationMembers || [];
 
   return (
-    <Card className="w-full mx-auto sm:max-w-lg h-max bg-transparent border-none shadow-none ring-0">
+    <Card className="w-full mx-auto sm:max-w-lg h-max bg-transparent border-none shadow-none ring-1">
       <CardHeader>
-        <CardTitle className="text-center uppercase font-bold tracking-wider">Профиль</CardTitle>
+        <CardTitle className="flex items-center justify-start gap-2 text-center uppercase font-bold tracking-wider"><AvatarUser/>Профиль</CardTitle>
         <CardDescription></CardDescription>
       </CardHeader>
 
       <CardContent>
         <div className="space-y-5">
-          {/* Имя */}
+
           <div className="space-y-1">
             <div className="text-sm font-medium text-muted-foreground">Имя</div>
             <div className="text-base font-medium text-foreground">{profile.name ?? "—"}</div>
           </div>
 
-          {/* 🚀 НАШ МАССИВ ОРГАНИЗАЦИЙ И ДОЛЖНОСТЕЙ */}
           <div className="space-y-2">
             <div className="text-sm font-medium text-muted-foreground">Организации и Должности</div>
             {memberships.length === 0 ? (
@@ -72,18 +70,12 @@ const Profile = async () => {
             <div className="text-base text-foreground">{profile.email ?? user?.email ?? "—"}</div>
           </div>
 
-          {/* Пароль */}
-          <div className="space-y-1">
-            <div className="text-sm font-medium text-muted-foreground">Пароль</div>
-            <div className="text-base tracking-widest text-foreground/60">••••••••</div>
-          </div>
-
           {/* Глобальная роль на портале */}
           <ProtectByRole> 
             <div className="space-y-1">
               <div className="text-sm font-medium text-muted-foreground">Глобальная роль</div>
               <div className="text-base text-foreground">
-                {user?.role ? ORG_ROLE_LABELS[user.role as OrgRole] : "—"}
+                 {user.role === "admin" ? "Администратор системы" : user.role}
               </div>
             </div>
           </ProtectByRole>

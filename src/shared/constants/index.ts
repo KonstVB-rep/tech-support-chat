@@ -14,9 +14,9 @@ export const USER_ROLE: Record<UserRoleKey, UserRoleValue> = {
   USER: "user",
 } as const;
 
+
 // ✅ Роли в чате (ChatMember)
 export const CHAT_ROLE_LABELS: Record<ChatRole, string> = {
-  [ChatRole.OWNER]: "Владелец",
   [ChatRole.ADMIN]: "Администратор",
   [ChatRole.MEMBER]: "Участник",
 };

@@ -1,5 +1,5 @@
-import { getServerSession } from "@/app/lib/get-session";
-// import { headers } from "next/headers";
+// Твой файл прокси-слоя
+import { auth } from "@/app/lib/auth"; // 🚀 Импортируем НАПРЯМУЮ объект auth из Better Auth
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function proxy(request: NextRequest) {
@@ -7,7 +7,6 @@ export async function proxy(request: NextRequest) {
 
   const publicRoutes = [
     "/auth/sign-in",
-    "/auth/sign-up",
     "/auth/forgot-password",
     "/auth/reset-password",
   ];
@@ -15,44 +14,39 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const session = await getServerSession();
+  // 🎯 ИСПРАВЛЕНО: Достаем сессию напрямую из request.headers входящего запроса!
+  // Это нативное API Better Auth для прокси, оно никогда не упадёт в краш и работает со скоростью света!
+  const session = await auth.api.getSession({
+    headers: request.headers,
+  });
 
-  console.log(session, "session");
+  console.log("🔍 Настоящая сессия в прокси:", session);
 
   if (!session?.user) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+    }
+
+    // Если это переход по ссылке в браузере — жестко выкидываем на авторизацию
     const signInUrl = new URL("/auth/sign-in", request.url);
     signInUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(signInUrl);
   }
 
+  // Если учетка забанена софт-блоком увольнения
   if (session.user.isActive === false) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json(
+        { error: "Аккаунт деактивирован" },
+        { status: 403 },
+      );
+    }
     const signOutUrl = new URL("/auth/sign-in", request.url);
     signOutUrl.searchParams.set("error", "account_disabled");
     return NextResponse.redirect(signOutUrl);
   }
 
-  // ✅ Защита по ролям - админские роуты
-  // if (pathname.startsWith("/admin") && session.user.role !== "ADMIN") {
-  //   return NextResponse.redirect(new URL("/dashboard", request.url));
-  // }
-
-  // // ✅ Защита по ролям - инженеры поддержки
-  // if (
-  //   pathname.startsWith("/support") &&
-  //   session.user.role !== "SUPPORT" &&
-  //   session.user.role !== "ADMIN"
-  // ) {
-  //   return NextResponse.redirect(new URL("/dashboard", request.url));
-  // }
-
   return NextResponse.next();
-  // THIS IS NOT SECURE!
-  // This is the recommended approach to optimistically redirect users
-  // We recommend handling auth checks in each page/route
-  // if (!session) {
-  //   return NextResponse.redirect(new URL("/[auth]/sign-in", request.url))
-  // }
-  // return NextResponse.next()
 }
 
 export const config = {
@@ -61,9 +55,7 @@ export const config = {
     "/account/:path*",
     "/admin/:path*",
     "/chats/:path*",
-    // Skip Next.js internals and all static files, unless found in search params
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
     "/(api|trpc)(.*)",
   ],
 };

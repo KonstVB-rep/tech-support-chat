@@ -29,7 +29,8 @@ export const addOrganizationAction = async (
     const actualAddress = formData.get("actualAddress") as string;
     const inn = formData.get("inn") as string;
     const contractNumber = formData.get("contractNumber") as string;
-    const supportHours = formData.get("supportHours") as string;
+    const timeSupportFrom = formData.get("timeSupportFrom") as string;
+    const timeSupportTo = formData.get("timeSupportTo") as string;
     const contractStartRaw = formData.get("contractStart") as string;
     const contractEndRaw = formData.get("contractEnd") as string;
 
@@ -59,7 +60,8 @@ export const addOrganizationAction = async (
         actualAddress: actualAddress || null,
         inn,
         contractNumber,
-        supportHours: supportHours || "8",
+        timeSupportFrom,
+        timeSupportTo,
         contractStart: contractStartRaw
           ? new Date(contractStartRaw)
           : new Date(),

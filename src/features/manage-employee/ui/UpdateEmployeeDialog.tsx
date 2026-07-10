@@ -1,17 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/shared/ui/dialog";
-import { Button } from "@/shared/ui/button";
-import { Pencil } from "lucide-react";
-import { UpdateEmployeeForm } from "./UpdateEmployeeForm";
 import { EmployeeWithProfile } from "@/entities/employee";
+import { Button } from "@/shared/ui/button";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/shared/ui/dialog";
+import { Pencil } from "lucide-react";
+import { UpdateEmployee } from "./UpdateEmployee";
 
 interface UpdateEmployeeDialogProps {
   employee: EmployeeWithProfile
@@ -30,7 +29,7 @@ export const UpdateEmployeeDialog = ({ employee }: UpdateEmployeeDialogProps) =>
         <DialogHeader>
           <DialogTitle>Редактировать сотрудника</DialogTitle>
         </DialogHeader>
-        <UpdateEmployeeForm
+        <UpdateEmployee
           employee={employee}
         />
       </DialogContent>

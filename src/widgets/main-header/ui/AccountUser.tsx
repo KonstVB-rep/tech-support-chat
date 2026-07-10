@@ -1,8 +1,10 @@
+'use client';
 import { authClient } from "@/app/lib/auth-client";
 import { AvatarUser } from "@/entities/user";
 import ButtonSignOut from "@/features/auth-signout/ui/ButtonSignOut";
 import { Button } from "@/shared/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu";
+import { ModeToggle } from "@/shared/ui/mode-toggle";
 import Link from "next/link";
 
 
@@ -27,6 +29,8 @@ const AccountUser = () => {
         <DropdownMenuItem>
           <Link href="/account">Аккаунт</Link>
         </DropdownMenuItem>
+
+        <ModeToggle />
 
         <DropdownMenuItem>
           <Link href="/account/settings">Настройки</Link>

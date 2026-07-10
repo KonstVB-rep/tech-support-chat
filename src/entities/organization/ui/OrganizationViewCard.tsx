@@ -4,14 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/sha
 import { cn } from "@/shared/lib/utils";
 import { Field, FieldGroup, FieldLabel } from "@/shared/ui/field";
 
-// Описываем строгий интерфейс принимаемых данных организации для отображения
 interface OrganizationData {
   name: string;
   legalAddress: string;
   actualAddress: string | null;
   inn: string | null;
   contractNumber: string;
-  supportHours: string;
+  timeSupportFrom: string;
+  timeSupportTo: string;
   contractStart: Date; 
   contractEnd: Date;
 }
@@ -76,7 +76,7 @@ export const OrganizationViewCard = ({
               <Field>
                 <FieldLabel>Время поддержки</FieldLabel>
                 <div className={cn("field-height flex items-center text-sm font-medium text-foreground px-2 bg-muted rounded-md")}>
-                  {data.supportHours || "—"}
+                  {data.timeSupportFrom} — { data.timeSupportTo }
                 </div>
               </Field>
 

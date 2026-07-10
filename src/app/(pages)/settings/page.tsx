@@ -1,8 +1,5 @@
 "use client";
-import { AccountDelForm, AvatarChangeForm, NameChangeForm, PasswordChangeForm, SessionManagment } from "@/entities/user";
-import ChangeEmailForm from "@/entities/user/ui/ChangeEmailForm";
-import { Sidebar } from "@/widgets/sidebar";
-import ScreenByType from "../../ui/ScreenByType";
+import ScreenByType from "../ui/ScreenByType";
 // import {
 //   AccountsCard,
 //   AccountSettingsCards,

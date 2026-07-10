@@ -9,30 +9,50 @@ import { DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMe
 import { organization } from "better-auth/plugins";
 import { MoreHorizontal, Link } from "lucide-react";
 import { Button } from "@/shared/ui/button";
+import { Checkbox } from "@/shared/ui/checkbox";
 
 
 
 export const columns: ColumnDef<SupportEngineerWithProfile>[] = [
   {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => {
+      return (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      )
+    },
+    enableSorting: false,
+    enableHiding: false,
+    maxSize: 80
+  },
+  {
     accessorKey: "name",
     header: "Имя",
+    cell: ({ row }) => row.original.profile?.name ?? "—",
   },
   {
     accessorKey: "email",
     header: "Email",
+    cell: ({ row }) => row.original.profile?.email ?? "—",
   },
   {
     id: "phone",
     header: "Телефон",
     cell: ({ row }) => row.original.profile?.phone ?? "—",
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Создан",
-    cell: ({ row }) => {
-      const date = new Date(row.getValue("createdAt"));
-      return new Intl.DateTimeFormat("ru-RU").format(date);
-    },
   },
   {
     id: "actions",
@@ -52,9 +72,8 @@ export const columns: ColumnDef<SupportEngineerWithProfile>[] = [
             <DropdownMenuLabel></DropdownMenuLabel>
             <DropdownMenuItem asChild>
                       <DeleteSupportEngineerDialog
-                        engineerId={engineer.id}
-                        engineerName={engineer.name}
-                        engineerEmail={engineer.email}
+                        engineerIds={engineer.id}
+                        engineerName={engineer.profile?.name}
                       />
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -63,15 +82,8 @@ export const columns: ColumnDef<SupportEngineerWithProfile>[] = [
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        // <div className="flex justify-end gap-2">
-        //   <UpdateSupportEngineerDialog engineer={engineer} />
-          // <DeleteSupportEngineerDialog
-          //   engineerId={engineer.id}
-          //   engineerName={engineer.name}
-          //   engineerEmail={engineer.email}
-          // />
-        // </div>
       );
     },
+    maxSize: 80
   },
 ];

@@ -6,6 +6,7 @@ import {
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
+  Row,
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
@@ -20,22 +21,25 @@ import {
   TableRow,
 } from "@/shared/ui/table";
 import { useState } from "react";
+import { cn } from "@/shared/lib/utils";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   getRowClassName?: (row: TData) => string;
+  actionsButtonsFixed?: (dataIds: string[],resetSelection: () => void) => React.ReactNode
+  className?: string
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends { id: string; }, TValue>({
   columns,
   data,
   getRowClassName,
+  actionsButtonsFixed,
+  className
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
 
-  // const [columnVisibility, setColumnVisibility] =
-  //   useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({});
   const [globalFilter, setGlobalFilter] = useState<string>("");
 
@@ -44,10 +48,8 @@ export function DataTable<TData, TValue>({
     columns,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
-    // getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    // onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onGlobalFilterChange: setGlobalFilter,
     state: {
@@ -63,30 +65,43 @@ export function DataTable<TData, TValue>({
     },
   });
 
+  const selectedRows = table.getFilteredSelectedRowModel().rows;
+    
+  const selectedIds = selectedRows
+    .map((row: Row<TData>) => row.original?.id as string)
+    .filter(Boolean);
+  
+    const hasSelection = selectedIds.length > 0;
+    const resetSelection = () => {
+      table.resetRowSelection();
+    };
+
   return (
-    <div className="space-y-2 w-full p-[2vh]">
-      <div className="flex-1 text-sm text-muted-foreground">
-        Выбрано {table.getFilteredSelectedRowModel().rows.length} из
-        {table.getFilteredRowModel().rows.length} строк
+    <>
+    <div className="space-y-2 w-full p-2">
+      <div className="flex items-center justify-between gap-2 flex-wrap w-full px-2">
+        <div className="flex items-center py-2">
+          <Input
+            placeholder="Поиск..."
+            value={globalFilter as string}
+            onChange={(event) => setGlobalFilter(event.target.value)}
+            className="max-w-sm"
+          />
+        </div>
+        <div className="text-sm text-muted-foreground">
+          Выбрано {table.getFilteredSelectedRowModel().rows.length} из {table.getFilteredRowModel().rows.length} строк
+        </div>
       </div>
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter emails..."
-          value={globalFilter as string}
-          onChange={(event) => setGlobalFilter(event.target.value)}
-          className="max-w-sm"
-        />
-      </div>
-      <div className="overflow-hidden rounded-md border">
+      <div className={cn("overflow-y-auto rounded-md border w-full h-full relative", className)}>
         <Table>
-          <TableHeader>
+          <TableHeader className="sticky top-0 z-10 bg-zinc-300 dark:bg-zinc-800 border-b border-border/60 shadow-xl">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead
                       key={header.id}
-                      className="whitespace-break-spaces text-center"
+                      className="whitespace-break-spaces text-center p-2"
                       style={{
                         width: header.getSize(),
                         minWidth: header.column.columnDef.minSize,
@@ -145,5 +160,7 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
     </div>
+    {hasSelection && actionsButtonsFixed?.(selectedIds,resetSelection)}
+    </>
   );
 }

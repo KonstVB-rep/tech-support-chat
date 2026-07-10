@@ -6,21 +6,25 @@ import { getSession } from "@/shared/lib/server-current-user";
 import { updateTag } from "next/cache";
 
 import { ActionState, UserRoleTypes } from "@/shared/lib/types";
-import { hasEmployeeManagePermission } from "../lib/checkPermission";
-import { employeeFormSchema } from "@/entities/employee";
+import {
+  EMPLOYEE_MANAGE_ACTIONS,
+  hasEmployeeManagePermission,
+} from "../lib/checkPermission";
+import {
+  employeeFormSchema,
+  updateEmployeeFormSchema,
+} from "@/entities/employee";
 
 export const updateEmployeeAction = async (
   _prevState: ActionState,
   formData: FormData,
 ): Promise<ActionState> => {
   try {
-    // 1. Проверяем сессию и права администратора
     const session = await getSession();
     if (!session?.user) {
       return { success: false, message: null, error: "Не авторизован" };
     }
 
-    // Достаем технические идентификаторы из FormData
     const employeeId = formData.get("employeeId") as string;
     const organizationId = formData.get("organizationId") as string;
 
@@ -28,7 +32,7 @@ export const updateEmployeeAction = async (
       user: { id: session.user.id, role: session.user.role as UserRoleTypes },
       organizationId,
       targetEmployeeId: employeeId,
-      isDeleteAction: false,
+      actionType: EMPLOYEE_MANAGE_ACTIONS.UPDATE,
     });
 
     if (!check.allowed) {
@@ -45,9 +49,7 @@ export const updateEmployeeAction = async (
 
     const rawData = Object.fromEntries(formData.entries());
 
-    const validated = employeeFormSchema.safeParse(rawData);
-
-    console.log(validated.error, "validated");
+    const validated = updateEmployeeFormSchema.safeParse(rawData);
 
     if (!validated.success) {
       return {
@@ -57,9 +59,8 @@ export const updateEmployeeAction = async (
       };
     }
 
-    const { name, phone, position, role } = validated.data;
+    const { position, name, role } = validated.data;
 
-    // 3. Проверяем существование связи сотрудника с организацией в MySQL Beget
     const employee = await prisma.organizationMember.findUnique({
       where: { id: employeeId, organizationId },
     });
@@ -72,28 +73,35 @@ export const updateEmployeeAction = async (
       };
     }
 
-    // 4. ТРАНЗАКЦИЯ: Синхронно и атомарно обновляем таблицы-мосты и глобальный профиль
-    await prisma.$transaction([
-      // Обновляем локальные данные членства в компании (роль и должность)
-      prisma.organizationMember.update({
-        where: { id: employeeId },
-        data: {
-          position: position || null,
-          role: role,
-        },
-      }),
-      // Обновляем общие персональные данные (имя и телефон)
-      prisma.profile.update({
-        where: { id: employee.profileId },
-        data: {
-          name,
-          phone: phone || null,
-        },
-      }),
-    ]);
+    (await prisma.organizationMember.update({
+      where: { id: employeeId },
+      data: {
+        position: position || null,
+        role: role as "RESPONSIBLE" | "MEMBER", // Пишем только OrgRole enum
+      },
+    }),
+      // await prisma.$transaction([
+      //   prisma.organizationMember.update({
+      //     where: { id: employeeId },
+      //     data: {
+      //       position: position || null,
+      //       role: role as "RESPONSIBLE" | "MEMBER", // Пишем только OrgRole enum
+      //     },
+      //   }),
 
-    // 5. РЕВАЛИДАЦИЯ: Моментально сбрасываем серверный кэш таблицы сотрудников этой компании
-    updateTag(`employees-${organizationId}`);
+      //   prisma.profile.update({
+      //     where: { id: employee.profileId },
+      //     data: {
+      //       name,
+      //       phone: phone || null,
+      //       email,
+      //     },
+      //   }),
+      // ]);
+
+      // 5. РЕВАЛИДАЦИЯ: Моментально сбрасываем серверный кэш таблицы сотрудников этой компании
+      updateTag(`employees-${organizationId}`));
+    // updateTag(`employees-${organizationId}-${employeeId}`));
 
     return {
       success: true,

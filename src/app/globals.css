@@ -138,14 +138,62 @@ body{
   overflow: hidden;
 }
 
-/* body{
-  background: url('../../public/1.jpg') center center /contain repeat;
-} */
+body{
+  background: url('../../public/bg.webp') center center /contain repeat;
+}
 
 
+.loader {
+  --color-1: #fff;
+  --color-2: #00A7FF;
+  --size: 1px;
+
+  width: calc(48 * var(--size));
+  height: calc(48 * var(--size));
+  border: calc(3 * var(--size)) dotted var(--color-1);
+  border-style: solid solid dotted dotted;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  box-sizing: border-box;
+  animation: rotation 2s linear infinite;
+}
+.loader::after {
+  content: '';
+  box-sizing: border-box;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  border: calc(3 * var(--size)) dotted var(--color-2);
+  border-style: solid solid dotted;
+  width: calc(24 * var(--size));
+  height: calc(24 * var(--size));
+  border-radius: 50%;
+  animation: rotationBack 1s linear infinite;
+  transform-origin: center center;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@keyframes rotationBack {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-360deg);
+  }
+}
 
 
-
-
-
-
+button{
+  cursor: pointer;
+}

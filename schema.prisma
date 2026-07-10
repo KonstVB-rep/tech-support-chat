@@ -18,11 +18,9 @@ enum OrgRole {
 enum ChatType {
   PRIVATE
   GROUP
-  CHANNEL
 }
 
 enum ChatRole {
-  OWNER
   ADMIN
   MEMBER
 }
@@ -167,7 +165,8 @@ model Organization {
   contractNumber  String   @unique
   contractStart   DateTime   
   contractEnd     DateTime
-  supportHours    String
+  timeSupportFrom String   @default("09:00:00")
+  timeSupportTo   String   @default("18:00:00")
   description     String?  @db.Text
   legalAddress    String   @db.Text
   actualAddress   String?  @db.Text
@@ -195,7 +194,7 @@ model OrganizationMember {
   updatedAt      DateTime @updatedAt
   
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  profile      Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade) // 🎯 Ставим Cascade!
+  profile      Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   @@unique([organizationId, profileId]) // 🚀 ГАРАНТИЯ: Защита от дублирования человека в одной фирме
   @@index([organizationId])

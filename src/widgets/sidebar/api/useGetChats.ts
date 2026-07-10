@@ -16,6 +16,10 @@ export interface Chat {
     name: string;
     imageUrl: string | null;
   };
+  organization?: {
+    id: string;
+    name: string;
+  };
   _count: {
     messages: number;
   };
@@ -42,10 +46,20 @@ export const useGetChats = () => {
   useEffect(() => {
     if (!session?.user?.id) return;
 
+    // Подключаемся к серверу 4000
     const socket = connectSocket(session.user.id);
 
-    // Новый чат создан
+    // 1. Обработчик: Новый чат создан для RESPONSIBLE или MEMBER
     const handleNewChat = (chat: Chat) => {
+      queryClient.setQueryData<Chat[]>(["chats"], (old) => {
+        if (!old) return [chat];
+        if (old.some((c) => c.id === chat.id)) return old; // Защита от дубликатов
+        return [chat, ...old]; // Кидаем чат на первое место в сайдбаре
+      });
+    };
+
+    // 2. Обработчик: Новый чат создан тобой (Админом)
+    const handleAdminNewChat = (chat: Chat) => {
       queryClient.setQueryData<Chat[]>(["chats"], (old) => {
         if (!old) return [chat];
         if (old.some((c) => c.id === chat.id)) return old;
@@ -53,7 +67,7 @@ export const useGetChats = () => {
       });
     };
 
-    // ✅ Чат обновился (новое сообщение)
+    // 3. Обработчик: Чат обновился (прилетело новое сообщение)
     const handleChatUpdated = (data: { chatId: string }) => {
       queryClient.setQueryData<Chat[]>(["chats"], (old) => {
         if (!old) return old;
@@ -79,12 +93,27 @@ export const useGetChats = () => {
       });
     };
 
-    socket.on("chat:new", handleNewChat);
-    socket.on("chat:updated", handleChatUpdated);
+    // 4. 🚀 НОВЫЙ ОБРАБОТЧИК: Сотрудника удалили из участников чата в реальном времени!
+    const handleChatRemoved = (data: { chatId: string }) => {
+      queryClient.setQueryData<Chat[]>(["chats"], (old) => {
+        if (!old) return [];
+        // Мгновенно стираем плашку чата с экрана без перезагрузки
+        return old.filter((chat) => chat.id !== data.chatId);
+      });
+    };
 
+    // 🔥 ИДЕАЛЬНАЯ РЕГИСТРАЦИЯ СЛУШАТЕЛЕЙ (Без дублей)
+    socket.on("chat:new", handleNewChat);
+    socket.on("chat:admin:new", handleAdminNewChat);
+    socket.on("chat:updated", handleChatUpdated);
+    socket.on("chat:removed", handleChatRemoved); // Слушаем команду удаления
+
+    // 🎯 КРИТИЧЕСКАЯ ОЧИСТКА ПАМЯТИ: Снимаем абсолютно ВСЕ сокет-провода при размонтировании сайдбара
     return () => {
       socket.off("chat:new", handleNewChat);
+      socket.off("chat:admin:new", handleAdminNewChat);
       socket.off("chat:updated", handleChatUpdated);
+      socket.off("chat:removed", handleChatRemoved);
     };
   }, [queryClient, session?.user?.id]);
 

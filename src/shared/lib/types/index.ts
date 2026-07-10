@@ -1,13 +1,4 @@
-// export const Role = {
-//   ADMIN: "ADMIN",
-//   SUPPORT: "SUPPORT",
-//   RESPONSIBLE: "RESPONSIBLE",
-//   MEMBER: "MEMBER",
-// } as const;
-
 import { USER_ROLE } from "@/shared/constants";
-
-// export type SystemRole = (typeof Role)[keyof typeof Role];
 
 export type ActionState = {
   success: boolean;

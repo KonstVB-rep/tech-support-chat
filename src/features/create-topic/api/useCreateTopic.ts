@@ -1,25 +1,39 @@
-import { apiConfig } from "@/app/api/api.config";
-import { useSetActiveTicketId } from "@/store/useChatStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiConfig } from "@/shared/api/config";
+import { useSetActiveTicketId } from "@/store/useChatStore";
+
+interface CreateTopicPayload {
+  title: string;
+  organizationId: string;
+}
 
 export const useCreateTopic = () => {
   const queryClient = useQueryClient();
-
   const setActiveTopicId = useSetActiveTicketId();
 
   return useMutation({
-    mutationFn: async (title: string) => {
-      const res = await fetch("api/chats", apiConfig.post({ title }));
+    mutationFn: async (data: CreateTopicPayload) => {
+      const { title, organizationId } = data;
+      const res = await fetch(
+        "/api/chats/create",
+        apiConfig.post({ title, organizationId }),
+      );
 
-      if (!res.ok) throw new Error("Не удалось создать тему");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(
+          errorData.error || "Не удалось создать тему обращением",
+        );
+      }
+
       return res.json();
     },
     onSuccess: (newChat) => {
-      // Инвалидируем кэш списка тем для нашего нового роута
-      queryClient.invalidateQueries({ queryKey: ["support-chats"] });
+      queryClient.invalidateQueries({ queryKey: ["chats"] });
 
-      // Активируем новый чат на экране справа
-      setActiveTopicId(newChat.id);
+      if (newChat?.id) {
+        setActiveTopicId(newChat.id);
+      }
     },
   });
 };

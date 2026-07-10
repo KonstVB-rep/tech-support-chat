@@ -5,7 +5,7 @@ import type * as React from "react";
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
-    <div className="relative w-full overflow-x-auto" data-slot="table-container">
+    <div className="relative w-full" data-slot="table-container">
       <table
         className={cn("w-full caption-bottom text-sm", className)}
         data-slot="table"

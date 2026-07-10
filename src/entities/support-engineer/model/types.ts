@@ -1,11 +1,19 @@
 import { Prisma } from "@prisma/client";
 
-// 🎯 Генерируем точный тип инженера, включая связи, которые мы запрашиваем в Prisma
-export type SupportEngineerWithProfile = Prisma.UserGetPayload<{
+export type SupportEngineerWithProfile = Prisma.SupportEngineerGetPayload<{
   include: {
     profile: {
-      select: {
-        phone: true;
+      include: {
+        user: {
+          select: {
+            id: true;
+            name: true;
+            email: true;
+            role: true;
+            isActive: true;
+            createdAt: true;
+          };
+        };
       };
     };
   };

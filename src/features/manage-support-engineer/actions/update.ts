@@ -7,6 +7,7 @@ import { updateTag } from "next/cache";
 import { getSession } from "@/shared/lib/server-current-user";
 import { updateSupportEngineerSchema } from "@/entities/support-engineer";
 import { ActionState } from "@/shared/lib/types";
+import { USER_ROLE } from "@/shared/constants";
 
 export const updateSupportEngineerAction = async (
   _prevState: ActionState,
@@ -14,7 +15,9 @@ export const updateSupportEngineerAction = async (
 ): Promise<ActionState> => {
   try {
     const session = await getSession();
-    if (!session?.user || session.user.role !== "ADMIN") {
+
+    console.log(session, "session");
+    if (!session?.user || session.user.role !== USER_ROLE.ADMIN) {
       return {
         success: false,
         message: null,

@@ -12,6 +12,8 @@ type SubmitButtonProps = { text?: string } & React.ComponentProps<"button">;
 
 const ButtonSubmitForm = ({ title, text,className = 'w-fit justify-center', ...props }: SubmitButtonProps) => {
   const { pending } = useFormStatus();
+
+  console.log(pending, "pending");
   return (
     <Button
       aria-label="Отправить форму"

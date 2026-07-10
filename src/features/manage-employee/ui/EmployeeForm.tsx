@@ -3,6 +3,7 @@
 import { EmployeeFormValues } from "@/entities/employee";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardFooter } from "@/shared/ui/card";
+import InputPassword from "@/shared/ui/custom/InputPassword";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import {
@@ -20,6 +21,7 @@ interface EmployeeFormProps {
   formAction: (formData: FormData) => void;
   isPending?: boolean;
   submitText?: string;
+
 }
 
 export const EmployeeForm = ({
@@ -35,7 +37,7 @@ export const EmployeeForm = ({
         <form id="employee-form" action={formAction}>
         <CardContent>
             <FieldGroup>
-              <Controller
+           <Controller
                 name="email"
                 control={form.control}
                 render={({ field, fieldState }) => (
@@ -122,6 +124,28 @@ export const EmployeeForm = ({
                   </Field>
                 )}
               />
+
+              <Controller
+                name="password"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="password">Пароль</FieldLabel>
+                    <InputPassword
+                      {...field}
+                      value={field.value ?? ""}
+                      id="password"
+                      type="password"
+                      aria-invalid={fieldState.invalid}
+                      autoComplete="off"
+                      className="field-height"
+                      />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+                />
 
               <Controller
                 name="role"

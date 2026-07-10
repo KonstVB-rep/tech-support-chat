@@ -13,13 +13,15 @@ export const OrganizationDetails = ({data}: {data: SingleOrganizationWithCounts}
   const [edit, setEdit] = useState(false);
   return (
     <div>
-        <ProtectByRole><Button variant="outline" size="icon" title="Редактировать" onClick={() => setEdit((prev) => !prev)}><Pencil /></Button></ProtectByRole>
-        {edit ? 
-        <ProtectByRole>
-            <UpdateOrganizationForm organization={data} />
-        </ProtectByRole> :
-        <OrganizationViewCard data={data} />    
-        }
+      <ProtectByRole>
+        <Button variant="outline" size="icon" title="Редактировать" onClick={() => setEdit((prev) => !prev)}><Pencil /></Button>
+      </ProtectByRole>
+      {edit ? 
+      <ProtectByRole>
+          <UpdateOrganizationForm organization={data} />
+      </ProtectByRole> :
+      <OrganizationViewCard data={data} />    
+      }
     </div>
   )
 }

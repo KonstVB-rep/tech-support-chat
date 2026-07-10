@@ -2,6 +2,7 @@ import { getEmployeesByOrgId } from "@/entities/employee/api";
 import { getOrganization } from "@/entities/organization/api/getOrganization";
 import { AddEmployeeDialog } from "@/features/manage-employee";
 import { OrganizationDetails } from "@/features/manage-organization";
+import Loader from "@/shared/ui/custom/Loader";
 import WrapperHeaderScreen from "@/shared/ui/custom/WrapperHeaderScreen";
 import EmployessTable from "@/widgets/employees-table/EmployeesTable";
 import { notFound } from "next/navigation";
@@ -24,7 +25,7 @@ const OrganizationContent = async ({
 
   return (
   <div className="flex flex-col items-center w-full h-screen overflow-hidden">
-  <WrapperHeaderScreen>Компания</WrapperHeaderScreen>
+  <WrapperHeaderScreen><h2 className="text-center font-semibold uppercase w-full">Компания</h2></WrapperHeaderScreen>
   
   <div className="p-4 flex items-start justify-between w-full">
     <AddEmployeeDialog organizationId={id} />
@@ -55,7 +56,7 @@ const OrganizationPage = async ({
 
   return (
     <div className="flex flex-col items-center w-full h-full">
-      <Suspense fallback={<OrganizationSkeleton />}>
+      <Suspense fallback={<Loader />}>
         <OrganizationContent params={params}/>
       </Suspense>
     </div>
@@ -63,14 +64,3 @@ const OrganizationPage = async ({
 }
 
 export default OrganizationPage;
-
-const OrganizationSkeleton = () => {
-  return (
-    <div className="animate-pulse space-y-4 w-full max-w-lg">
-      <div className="h-10 bg-gray-200 rounded"></div>
-      <div className="h-10 bg-gray-200 rounded"></div>
-      <div className="h-10 bg-gray-200 rounded"></div>
-      <div className="h-32 bg-gray-200 rounded"></div>
-    </div>
-  );
-};

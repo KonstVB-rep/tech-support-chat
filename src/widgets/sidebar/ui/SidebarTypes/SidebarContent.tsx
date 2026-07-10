@@ -17,8 +17,6 @@ const SidebarContent: SidebarContentComponent = () => null;
 
 interface ChatListProps {
   chats: Chat[];
-  isSupport: boolean;
-  currentUserId: string;
 }
 
 

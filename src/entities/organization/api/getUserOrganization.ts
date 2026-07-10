@@ -8,25 +8,24 @@ export const getUserOrganization = async (): Promise<Organization | null> => {
   const session = await getSession();
   if (!session?.user) throw new Error("Unauthorized");
 
-  console.log(session.user.email, "session.user.email");
-
-  const profile = await prisma.profile.findFirst({
-    where: {
-      email: session.user.email,
+  const profileWithOrg = await prisma.profile.findUnique({
+    where: { userId: session.user.id },
+    select: {
+      organizationMembers: {
+        take: 1,
+        select: {
+          organization: true,
+        },
+      },
     },
   });
 
-  if (!profile) {
-    throw new Error("Профиль не найден");
-  }
-
-  const member = await prisma.organizationMember.findFirst({
-    where: { profileId: profile.id },
-    include: { organization: true },
-  });
-  if (!member) {
+  if (
+    !profileWithOrg?.organizationMembers ||
+    profileWithOrg.organizationMembers.length === 0
+  ) {
     return null;
   }
 
-  return member.organization;
+  return profileWithOrg.organizationMembers[0].organization;
 };

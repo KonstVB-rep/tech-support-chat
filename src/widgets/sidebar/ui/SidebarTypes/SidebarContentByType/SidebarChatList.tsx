@@ -1,18 +1,17 @@
 import { cn } from "@/shared/lib/utils";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
-import { useActiveTicketId, useSetActiveTicketId, useSetActiveTicketTitle } from "@/store/useChatStore";
+import { useActiveTicketId, useSetActiveTicketId } from "@/store/useChatStore";
 import type { Chat } from "../../../api/useGetChats";
+import { Button } from "@/shared/ui/button";
+import { Fragment } from "react/jsx-runtime";
 
 
 interface ChatListProps {
   chats: Chat[];
-  isSupport: boolean;
-  currentUserId: string;
 }
 
-export const SidebarChatList = ({ chats, isSupport, currentUserId }: ChatListProps) => {
+export const SidebarChatList = ({ chats }: ChatListProps) => {
   const setActiveTicketId = useSetActiveTicketId();
-  const setActiveTicketTitle = useSetActiveTicketTitle();
   const activeTicketId = useActiveTicketId();
 
   const formatTime = (dateStr: string) => {
@@ -47,10 +46,9 @@ export const SidebarChatList = ({ chats, isSupport, currentUserId }: ChatListPro
     );
   }
 
-  const selectChat = (chatId: string, chatTitle: string | null) => {
+  const selectChat = (chatId: string) => {
     if (chatId !== activeTicketId) {
       setActiveTicketId(chatId);
-      setActiveTicketTitle(chatTitle);
       }
     }
 
@@ -59,30 +57,32 @@ export const SidebarChatList = ({ chats, isSupport, currentUserId }: ChatListPro
     <div className="flex-1 overflow-y-auto">
       {chats.map((chat) => {
         const isActive = chat.id === activeTicketId;
-        const avatarName = isSupport
-          ? chat.creator?.name || chat.title || "?"
-          : chat.title || "?";
+        const displayTitle = chat.title || chat.organization?.name || "Обращение в поддержку";
 
         return (
-          <button
-            key={chat.id}
-            onClick={() => selectChat(chat.id, chat.title)}
+        //  <Fragment key={chat.id}>
+        //  <Button></Button>
+         
+          <Button
+          key={chat.id}
+            onClick={() => {
+              selectChat(chat.id)
+            }}
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2.5 hover:bg-muted/50 transition-colors text-left",
+              "w-full flex items-center gap-3 px-3 py-2.5 hover:bg-muted/50 transition-colors text-left h-auto rounded-md",
               isActive && "bg-primary/10 hover:bg-primary/15"
             )}
           >
-            {/* Аватар */}
+
             <Avatar className="w-11 h-11 border border-border/50 flex-shrink-0">
               <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-semibold">
-                {avatarName.charAt(0).toUpperCase()}
+                {displayTitle.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
 
-            {/* Информация */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-0.5">
-                <h3 className="font-semibold text-sm truncate">
+                <h3 className="font-semibold text-sm truncate text-primary">
                   {chat.title}
                 </h3>
                 <span className="text-[10px] text-muted-foreground flex-shrink-0 ml-2">
@@ -90,18 +90,18 @@ export const SidebarChatList = ({ chats, isSupport, currentUserId }: ChatListPro
                 </span>
               </div>
 
-              <div className="flex items-center justify-between">
-                {isSupport && chat.creator && (
-                  <p className="text-xs text-muted-foreground truncate">
-                    👤 {chat.creator.name}
-                  </p>
-                )}
-                <p className="text-xs text-muted-foreground ml-auto">
+              <div className="flex items-center justify-between gap-2 mt-1">
+                <p className="text-xs text-muted-foreground truncate max-w-[130px]">
+                  {chat.organization?.name || "Платформа"}
+                </p>
+                
+                <p className="text-xs text-muted-foreground shrink-0 ml-auto font-medium">
                   {chat._count.messages} сообщ.
                 </p>
               </div>
             </div>
-          </button>
+          </Button>
+        //  </Fragment>
         );
       })}
     </div>

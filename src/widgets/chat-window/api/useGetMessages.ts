@@ -2,76 +2,92 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { getSocket } from "@/shared/lib/socket";
 import { authClient } from "@/app/lib/auth-client";
-
-interface Message {
-  id: string;
-  text: string;
-  chatId: string;
-  profileId: string;
-  createdAt: string;
-  profile?: {
-    id: string;
-    name: string;
-    userId: string;
-    imageUrl?: string;
-  };
-}
-
-const fetchMessages = async (ticketId: string | null): Promise<Message[]> => {
-  if (!ticketId) return [];
-
-  const res = await fetch(`/api/chats/${ticketId}/messages`);
-  if (!res.ok) throw new Error("Ошибка загрузки сообщений");
-  const data = await res.json();
-  return data.messages;
-};
+import type { Message, MessagesResponse } from "@/entities/chat/api/chat-api";
+import { fetchMessages } from "@/entities/chat/api/chat-api";
 
 export function useGetMessages(ticketId: string | null) {
   const queryClient = useQueryClient();
   const { data: session } = authClient.useSession();
+  const isMountedRef = useRef(true);
 
-  const query = useQuery({
+  const query = useQuery<MessagesResponse>({
     queryKey: ["messages", ticketId],
-    queryFn: () => fetchMessages(ticketId),
+    queryFn: () => fetchMessages(ticketId!),
     enabled: !!ticketId,
     staleTime: 0,
   });
 
-  // ✅ Socket.IO подписка
   useEffect(() => {
+    isMountedRef.current = true;
+
     if (!ticketId || !session?.user?.id) return;
 
     const socket = getSocket();
-    if (!socket) return;
+    let hasJoined = false;
 
-    // Подключаемся если нужно
+    const joinChat = () => {
+      if (!isMountedRef.current || hasJoined) return;
+      hasJoined = true;
+      socket.emit("chat:join", ticketId);
+      console.log(`📌 [CLIENT] Присоединился к chat:${ticketId}`);
+    };
+
+    // Подключаемся с ожиданием
     if (!socket.connected) {
       socket.auth = { userId: session.user.id };
       socket.connect();
+      socket.once("connect", joinChat);
+    } else {
+      // Небольшая задержка чтобы убедиться что сокет реально ready
+      setTimeout(joinChat, 50);
     }
 
-    // Присоединяемся к комнате чата
-    socket.emit("chat:join", ticketId);
-
-    // ✅ Слушаем новые сообщения
     const handleNewMessage = (msg: Message) => {
+      console.log(`💬 [CLIENT] Получил message:new для chat:${msg.chatId}`);
+
       if (msg.chatId === ticketId) {
-        queryClient.setQueryData<Message[]>(["messages", ticketId], (old) => {
-          if (!old) return [msg];
-          if (old.some((m) => m.id === msg.id)) return old; // Защита от дублей
-          return [...old, msg];
-        });
+        queryClient.setQueryData<MessagesResponse>(
+          ["messages", ticketId],
+          (old) => {
+            if (!old) return { messages: [msg], chat: null };
+            if (old.messages.some((m) => m.id === msg.id)) return old;
+            return {
+              ...old,
+              messages: [...old.messages, msg],
+            };
+          },
+        );
+      }
+    };
+
+    const handleChatRenamed = (data: { chatId: string; newTitle: string }) => {
+      if (data.chatId === ticketId) {
+        queryClient.setQueryData<MessagesResponse>(
+          ["messages", ticketId],
+          (old) => {
+            if (!old || !old.chat) return old;
+            return { ...old, chat: { ...old.chat, title: data.newTitle } };
+          },
+        );
       }
     };
 
     socket.on("message:new", handleNewMessage);
+    socket.on("chat:renamed", handleChatRenamed);
 
     return () => {
+      isMountedRef.current = false;
       socket.off("message:new", handleNewMessage);
-      socket.emit("chat:leave", ticketId);
+      socket.off("chat:renamed", handleChatRenamed);
+      socket.off("connect", joinChat);
+
+      if (socket.connected && hasJoined) {
+        socket.emit("chat:leave", ticketId);
+        console.log(`📤 [CLIENT] Покинул chat:${ticketId}`);
+      }
     };
   }, [ticketId, queryClient, session?.user?.id]);
 

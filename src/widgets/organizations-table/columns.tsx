@@ -26,8 +26,6 @@ const endOfDay = (date: Date): Date => {
   return result;
 };
 
-
-
 export const columns: ColumnDef<OrganizationWithCounts>[] = [
   {
     id: "select",
@@ -41,15 +39,18 @@ export const columns: ColumnDef<OrganizationWithCounts>[] = [
         aria-label="Select all"
       />
     ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
+    cell: ({ row }) => {
+      return (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      )
+    },
     enableSorting: false,
     enableHiding: false,
+    maxSize: 60
   },
   {
     id: "name",
@@ -82,7 +83,7 @@ export const columns: ColumnDef<OrganizationWithCounts>[] = [
     },
     accessorFn: (row: OrganizationWithCounts) => row.description,
   },
-    {
+  {
     id: "contractNumber",
     header: () => <div className="text-center uppercase text-sm">Номер договора</div>,
     cell: ({ row }) => {
@@ -90,6 +91,22 @@ export const columns: ColumnDef<OrganizationWithCounts>[] = [
       return <div>{value}</div>
     },
     accessorFn: (row: OrganizationWithCounts) => row.contractNumber,
+  },
+  {
+    id: "supportTime",
+    header: () => <div className="text-center uppercase text-sm">Время поддержки</div>,
+    cell: ({ row }) => {
+      const from = row.original.timeSupportFrom; 
+      const to = row.original.timeSupportTo;    
+      
+      const formatTime = (timeStr: string) => timeStr.split(":").slice(0, 2).join(":");
+
+      return (
+        <div className="text-center font-medium bg-muted/40 px-2 py-1 rounded-md inline-block mx-auto text-xs">
+          {formatTime(from)} — {formatTime(to)}
+        </div>
+      );
+    },
   },
   {
     id: "contractStart",
@@ -218,7 +235,7 @@ export const columns: ColumnDef<OrganizationWithCounts>[] = [
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-                 <Link href={`/organization/${organization.id}`}>Посмотреть/Редактировать</Link>
+                 <Link href={`/organization/${organization.id}`}>Посмотреть / Редактировать</Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

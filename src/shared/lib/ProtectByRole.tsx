@@ -1,8 +1,8 @@
 "use client";
 
-import { useCurrentUser } from "./useCurrentUser";
-import { USER_ROLE } from "../constants";
 import { OrgRole } from "@prisma/client"; // Наш чистый enum из Призмы
+import { USER_ROLE } from "../constants";
+import { useCurrentUser } from "./hooks/useCurrentUser";
 
 interface ProtectProps {
   // Роль Better Auth: "admin" или "user". По умолчанию ADMIN

@@ -1,6 +1,6 @@
 // src/features/manage-organization/ui/DeleteOrganizationDialog.tsx
 "use client";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,19 +21,21 @@ interface DeleteOrgDialogProps {
   ids: string[] | string;
   organizationName?: string; 
   className?: string;
+  onAfterDelete?: () => void
 }
 
 export const DeleteOrganizationDialog = ({
   ids,
   organizationName,
-  className
+  className,
+  onAfterDelete
 }: DeleteOrgDialogProps) => {
   const [isPending, startDeleteTransition] = useTransition();
+  const [open, setOpen] = useState(false);
 
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const isMultiple = idsArray.length > 1;
 
-  // 🎯 РЕАКТИВНЫЙ ЗАГОЛОВОК: Подстраивается под одиночное или массовое удаление
   const title = isMultiple
     ? `Удалить ${idsArray.length} организаций?`
     : organizationName 
@@ -56,6 +58,8 @@ export const DeleteOrganizationDialog = ({
             ? `Успешно удалено организаций: ${res.deletedCount}` 
             : "Организация успешно удалена из системы"
         );
+        onAfterDelete && onAfterDelete();
+        setOpen(false);
       } else {
         toast.error(res.error || "Ошибка при удалении");
       }
@@ -63,15 +67,15 @@ export const DeleteOrganizationDialog = ({
   };
 
   return (
-    <AlertDialog>
+    <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
          <Button
-        variant="destructive"
-        size="sm"
-        className={cn("text-primary", className)}
-      >
-        Удалить
-      </Button>
+            variant="destructive"
+            size="sm"
+            className={cn("text-white", className)}
+          >
+            Удалить
+          </Button>
       </AlertDialogTrigger>
       <AlertDialogContent onClick={(e) => e.stopPropagation()}>
         <AlertDialogHeader>

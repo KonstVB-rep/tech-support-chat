@@ -31,24 +31,41 @@ const fetchOrganization = async (
 export const getOrganization = async (
   id: string,
 ): Promise<SingleOrganizationWithCounts> => {
-  if (!id) {
-    redirect("/admin/organizations?error=missing_id");
-  }
-
   const session = await getSession();
-
   if (!session?.user) {
     redirect("/auth/sign-in?error=unauthorized");
   }
 
-  if (session.user.role !== USER_ROLE.ADMIN) {
-    redirect("/?error=forbidden");
+  const isGlobalAdmin = session.user.role.toLowerCase() === "admin";
+
+  if (!isGlobalAdmin) {
+    const userProfile = await prisma.profile.findUnique({
+      where: { userId: session.user.id },
+    });
+
+    if (!userProfile) {
+      redirect("/chats?error=profile_not_found");
+    }
+
+    const membership = await prisma.organizationMember.findUnique({
+      where: {
+        organizationId_profileId: {
+          organizationId: id,
+          profileId: userProfile.id,
+        },
+      },
+      select: { role: true },
+    });
+
+    if (!membership || membership.role !== "RESPONSIBLE") {
+      redirect("/chats?error=forbidden");
+    }
   }
 
   const organization = await fetchOrganization(id);
 
   if (!organization) {
-    notFound();
+    redirect("/chats?error=not_found");
   }
 
   return organization;

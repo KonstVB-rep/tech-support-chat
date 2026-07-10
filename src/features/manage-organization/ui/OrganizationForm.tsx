@@ -7,11 +7,13 @@ import ButtonSubmitForm from "@/shared/ui/custom/ButtonSubmitForm";
 import { CalendarComponent } from "@/shared/ui/custom/CalendarComponent";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/shared/ui/input-group";
 import { Label } from "@/shared/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
+import { Clock2Icon } from "lucide-react";
 import { Controller, UseFormReturn } from "react-hook-form";
 
-interface OrganizationFormProps {
+type OrganizationFormProps = {
   form: UseFormReturn<FormSchemaOrganizationType>;
   formAction: (formData: FormData) => void;
   isPending: boolean;
@@ -64,7 +66,7 @@ export const OrganizationForm = ({
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="legalAddress">
-                      Адрес
+                      Юридический адрес
                     </FieldLabel>
                     <Input
                       {...field}
@@ -86,7 +88,7 @@ export const OrganizationForm = ({
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="actualAddress">
-                      Адрес
+                      Фактический адрес
                     </FieldLabel>
                     <Input
                       {...field}
@@ -147,45 +149,52 @@ export const OrganizationForm = ({
                 )}
               />
 
+              <div className="flex gap-2">
               <Controller
-                name="supportHours"
+                name="timeSupportFrom"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel>Время поддержки</FieldLabel>
-                    <RadioGroup
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      name={field.name}
-                      className="grid grid-cols-3 gap-2 mt-2"
-                    >
-                      {[
-                        { value: "8", label: "8 часов", desc: "Базовый" },
-                        { value: "12", label: "12 часов", desc: "Стандарт" },
-                        { value: "24", label: "24 часа", desc: "Премиум" },
-                      ].map((option) => (
-                        <div key={option.value}>
-                          <RadioGroupItem
-                            value={option.value}
-                            id={`supportHours-${option.value}`}
-                            className="peer sr-only"
-                          />
-                          <Label
-                            htmlFor={`supportHours-${option.value}`}
-                            className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground cursor-pointer peer-data-[state=checked]:border-primary"
-                          >
-                            <span className="text-lg font-bold">{option.label}</span>
-                            <span className="text-sm text-muted-foreground">{option.desc}</span>
-                          </Label>
-                        </div>
-                      ))}
-                    </RadioGroup>
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
+                    <FieldLabel htmlFor="time-from"></FieldLabel>
+                    <InputGroup>
+                      <InputGroupInput
+                        {...field}
+                        id="time-from"
+                        type="time"
+                        step="1"
+                        className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                      />
+                      <InputGroupAddon>
+                        <Clock2Icon className="text-muted-foreground" />
+                      </InputGroupAddon>
+                    </InputGroup>
                   </Field>
                 )}
-              />
+                />
+
+                <Controller
+                name="timeSupportTo"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="time-to"></FieldLabel>
+                    <InputGroup>
+                      <InputGroupInput
+                        {...field}
+                        id="time-to"
+                        type="time"
+                        step="1"
+                        className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                      />
+                      <InputGroupAddon>
+                        <Clock2Icon className="text-muted-foreground" />
+                      </InputGroupAddon>
+                    </InputGroup>
+                  </Field>
+                )}
+                />
+              </div>
+
               
               <div className="flex gap-2">
                     <Controller
@@ -230,7 +239,7 @@ export const OrganizationForm = ({
         </CardContent>
         <CardFooter className="border-none bg-transparent p-2">
           <Field orientation="horizontal">
-            <Button type="button" variant="outline" onClick={() => form.reset()}>
+            <Button type="button" variant="outline" onClick={() => form.reset()} disabled={isPending}>
               Сбросить
             </Button>
             <ButtonSubmitForm  title="Сохранить"  text="Сохранение..." disabled={isPending} form="organization-form"/>

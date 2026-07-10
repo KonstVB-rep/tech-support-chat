@@ -8,14 +8,16 @@ import { Button } from "./button";
 
 
 export function ModeToggle() {
-  const { setTheme } = useTheme();
+  const { setTheme, theme } = useTheme();
+
+  const isDarkTheme = theme === "dark";
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button className="cursor-pointer" size="icon" variant="outline">
-          <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
+          {isDarkTheme ? <Moon className="h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0 border-none bg-transparent" />
+           : <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90 border-none bg-transparent" />}
           <span className="sr-only">Выбор темы</span>
         </Button>
       </DropdownMenuTrigger>

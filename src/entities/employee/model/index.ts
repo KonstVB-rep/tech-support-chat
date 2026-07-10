@@ -1,4 +1,9 @@
-export { employeeFormSchema, type EmployeeFormValues } from "./schema";
+export {
+  employeeFormSchema,
+  updateEmployeeFormSchema,
+  type EmployeeFormValues,
+  type UpdateEmployeeFormValues,
+} from "./schema";
 
 export { ROLE_PERMISSIONS } from "./permissions";
 

@@ -39,7 +39,8 @@ export const updateOrganizationAction = async (
     const actualAddress = formData.get("actualAddress") as string;
     const inn = formData.get("inn") as string;
     const contractNumber = formData.get("contractNumber") as string;
-    const supportHours = formData.get("supportHours") as string;
+    const timeSupportFrom = formData.get("timeSupportFrom") as string;
+    const timeSupportTo = formData.get("timeSupportTo") as string;
 
     // Безопасно парсим даты контракта
     const contractStartRaw = formData.get("contractStart") as string;
@@ -83,7 +84,8 @@ export const updateOrganizationAction = async (
         actualAddress: actualAddress || null,
         inn,
         contractNumber,
-        supportHours,
+        timeSupportFrom,
+        timeSupportTo,
         contractStart: contractStartRaw
           ? new Date(contractStartRaw)
           : new Date(),

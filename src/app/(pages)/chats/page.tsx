@@ -1,11 +1,27 @@
+// src/app/(pages)/chats/page.tsx
 import { Sidebar } from '@/widgets/sidebar'
-import React from 'react'
 import ScreenByType from '../ui/ScreenByType'
+import { Suspense } from 'react' // 🚀 Импортируем нативный React Suspense
+import { getSession } from '@/shared/lib/server-current-user'
+import { redirect } from 'next/navigation'
 
+async function AuthGuard() {
+  const session = await getSession();
+
+  if (!session?.user) {
+    redirect("/auth/sign-in?redirect=/chats");
+  }
+  
+  return null
+}
 const Chats = () => {
   return (
     <>
-     <aside className="w-full md:w-80 h-full shrink-0 hidden md:block">
+      <Suspense fallback={null}>
+        <AuthGuard />
+      </Suspense>
+
+      <aside className="w-full md:w-80 h-full shrink-0 hidden md:block">
         <Sidebar sidebarType={"chats"} />
       </aside>
 
@@ -13,7 +29,7 @@ const Chats = () => {
         <ScreenByType screenType={"chats"}/>
       </main>
     </>
-  )
-}
+  );
+};
 
-export default Chats
+export default Chats;
