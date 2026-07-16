@@ -28,8 +28,9 @@ export const SidebarNav = ({ isAdmin }: SidebarNavProps) => {
   if(!isDekstop) return null;
 
   return (
-    <div className="flex bg-background flex-col gap-2 h-full justify-start py-4 px-1 border-none">
-      {/* 1. Чаты */}
+    <div className="flex bg-background flex-col gap-2 h-full justify-between py-4 px-1 border-none">
+   <div className='grid gap-2'>
+       {/* 1. Чаты */}
       <Link href="/chats" className={linkClass("/chats")}>
         <MessagesSquare className="size-5" />
         <span className="text-xs">Чаты</span>
@@ -56,8 +57,9 @@ export const SidebarNav = ({ isAdmin }: SidebarNavProps) => {
           <span className="text-xs">Инженеры</span>
         </Link>
       )}
+   </div>
 
-      <ButtonSignOut className="flex flex-col gap-1 items-center justify-center h-auto p-2 rounded-xl select-none transition-colors mx-auto text-muted-foreground hover:bg-muted/50 hover:text-foreground" withIcon={true} withText={true}/>
+      <ButtonSignOut variant="ghost" className="flex flex-col gap-1 items-center justify-center h-auto p-2 rounded-xl select-none transition-colors mx-auto text-muted-foreground hover:bg-muted/50 hover:text-foreground" withIcon={true} withText={true}/>
     </div>
   );
 };

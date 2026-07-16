@@ -1,15 +1,26 @@
-"use client";  
+"use client";
 
 import { EmployeeWithProfile } from "@/entities/employee";
 
-import {  DeleteEmployeeDialog, UpdateEmployee, UpdateEmployeeDialog } from "@/features/manage-employee";
+import {
+  DeleteEmployeeDialog,
+  UpdateEmployee,
+  UpdateEmployeeDialog,
+} from "@/features/manage-employee";
 import { PushSettingsToggle } from "@/features/pwa-push/ui/PushSettingsToggle";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { DrawerComponent } from "@/shared/ui/custom/DrawerComponent";
 import { DataTableColumnHeader } from "@/shared/ui/data-table-column-header";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Eye, MoreHorizontal } from "lucide-react";
@@ -41,22 +52,30 @@ export const columns: ColumnDef<EmployeeWithProfile, unknown>[] = [
   {
     id: "name",
     header: ({ column }) => (
-      <DataTableColumnHeader className="justify-center" column={column} title="Имя" />
+      <DataTableColumnHeader
+        className="justify-center"
+        column={column}
+        title="Имя"
+      />
     ),
     cell: ({ row }) => {
       const value = row.getValue("name") as string;
-      return <div className="text-center font-medium">{value}</div>
+      return <div className="text-center font-medium">{value}</div>;
     },
     accessorFn: (row: EmployeeWithProfile) => row.profile.name,
   },
   {
     id: "email",
     header: ({ column }) => (
-      <DataTableColumnHeader className="justify-center" column={column} title="Email" />
+      <DataTableColumnHeader
+        className="justify-center"
+        column={column}
+        title="Email"
+      />
     ),
     cell: ({ row }) => {
       const value = row.getValue("email") as string;
-      return <div className="text-center font-medium">{value}</div>
+      return <div className="text-center font-medium">{value}</div>;
     },
     accessorFn: (row: EmployeeWithProfile) => row.profile.email,
   },
@@ -67,9 +86,7 @@ export const columns: ColumnDef<EmployeeWithProfile, unknown>[] = [
     cell: ({ row }) => {
       const value = row.getValue("phone") as string;
       return (
-        <div className={cn("text-center font-medium")}>
-          {value ?? "—"}
-        </div>
+        <div className={cn("text-center font-medium")}>{value ?? "—"}</div>
       );
     },
     accessorFn: (row: EmployeeWithProfile) => row.profile.phone,
@@ -78,11 +95,15 @@ export const columns: ColumnDef<EmployeeWithProfile, unknown>[] = [
   {
     id: "position",
     header: ({ column }) => (
-      <DataTableColumnHeader className="justify-center" column={column} title="Должность" />
+      <DataTableColumnHeader
+        className="justify-center"
+        column={column}
+        title="Должность"
+      />
     ),
     cell: ({ row }) => {
       const value = row.getValue("position") as string;
-      return <div className="text-center font-medium">{value}</div>
+      return <div className="text-center font-medium">{value}</div>;
     },
     accessorFn: (row: EmployeeWithProfile) => row.position,
   },
@@ -100,19 +121,33 @@ export const columns: ColumnDef<EmployeeWithProfile, unknown>[] = [
     maxSize: 80,
     cell: ({ row }) => {
       const employee = row.original;
- 
+
       return (
-            <DrawerComponent buttonTriggerInnerContent={<>
+        <DrawerComponent
+          buttonTriggerInnerContent={
+            <>
               <span className="sr-only">Открыть меню</span>
               <Eye className="h-4 w-4" />
-              </>} side="right">
-                  <UpdateEmployee
-                          employee={employee}
-                        />
-                <PushSettingsToggle profileId={employee.profileId} isSupportEngineer={false} pushEnabled={employee.profile.pushEnabled} isViewedByAdmin={false} />
-                <DeleteEmployeeDialog ids={employee.id} employeeName={employee.profile.name} organizationId={employee.organizationId} />
-            </DrawerComponent>
-      )
+            </>
+          }
+          side="right"
+        >
+          <div className="no-scrollbar overflow-y-auto px-4 flex flex-col gap-3 h-full overflow-hidden">
+            <UpdateEmployee employee={employee} />
+            <PushSettingsToggle
+              profileId={employee.profileId}
+              isSupportEngineer={false}
+              pushEnabled={employee.profile.pushEnabled}
+              isViewedByAdmin={false}
+            />
+            <DeleteEmployeeDialog
+              ids={employee.id}
+              employeeName={employee.profile.name}
+              organizationId={employee.organizationId}
+            />
+          </div>
+        </DrawerComponent>
+      );
     },
   },
-]
+];

@@ -5,6 +5,7 @@ import { Suspense } from 'react' // 🚀 Импортируем нативный
 import { getSession } from '@/shared/lib/server-current-user'
 import { redirect } from 'next/navigation'
 
+
 async function AuthGuard() {
   const session = await getSession();
 
@@ -21,11 +22,11 @@ const Chats = () => {
         <AuthGuard />
       </Suspense>
 
-      <aside className="w-full md:w-80 h-full shrink-0 hidden md:block">
+      <aside className="w-full md:w-80 h-full shrink-0 ">
         <Sidebar sidebarType={"chats"} />
       </aside>
 
-      <main className="flex-1 h-full">
+      <main className="flex-1 h-full hidden md:block">
         <ScreenByType screenType={"chats"}/>
       </main>
     </>

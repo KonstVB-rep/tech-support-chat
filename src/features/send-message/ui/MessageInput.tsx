@@ -10,22 +10,8 @@ import { Paperclip, X, Send, Plus } from "lucide-react";
 import AttachMenu from "./AttachMenu";
 import { compressImage } from "@/shared/lib/image-compressor";
 import { useUploadFile } from "../api/useUploadFile";
+import Image from "next/image";
 
-interface Message {
-  id: string;
-  text: string;
-  chatId: string;
-  profileId: string;
-  createdAt: string;
-  fileUrl?: string | null;
-  fileType?: string | null;
-  fileName?: string | null;
-  profile?: {
-    id: string;
-    name: string;
-    userId: string;
-  };
-}
 
 export const MessageInput = () => {
   const [text, setText] = useState("");
@@ -129,7 +115,7 @@ export const MessageInput = () => {
     uploadMutation.isPending || sendMessageMutation.isPending || isCompressing;
 
   return (
-    <div className="w-full border-t border-border bg-background p-3 md:p-4 relative">
+    <div className="w-full max-w-2xl border-t border-border bg-background mx-auto p-3 md:p-4 relative bottom-1 rounded-2xl">
       {/* Меню прикрепления документов */}
       <AttachMenu
         isOpen={showAttachMenu}
@@ -140,18 +126,26 @@ export const MessageInput = () => {
       {/* Отрендеренное превью прикрепленного файла */}
       {selectedFile && (
         <div className="mb-3 relative inline-block">
-          {preview && selectedFile.type.startsWith("image/") ? (
-            <img
-              src={preview}
-              alt="preview"
-              className="max-h-32 md:max-h-48 rounded-lg border border-border"
-            />
+             {preview && selectedFile.type.startsWith("image/") ? (
+            <div className="relative h-32 w-48 md:h-48 md:w-72 border border-border rounded-lg overflow-hidden">
+              {/* ✅ Используем next/image вместо <img> */}
+              <Image
+                src={preview}
+                alt="Предпросмотр изображения для отправки"
+                fill
+                className="object-contain"
+                unoptimized
+              />
+            </div>
           ) : preview && selectedFile.type.startsWith("video/") ? (
             <video
               src={preview}
               controls
               className="max-h-32 md:max-h-48 rounded-lg border border-border"
-            />
+            >
+              {/* ✅ Добавлен трек для субтитров по умолчанию */}
+              <track kind="captions" srcLang="ru" label="Без субтитров" default />
+            </video>
           ) : (
             <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded-lg">
               <Paperclip className="w-4 h-4" />

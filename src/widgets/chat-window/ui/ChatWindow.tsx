@@ -77,7 +77,7 @@ export const ChatWindow = () => {
   useEffect(() => {
     setIsEditMode(false);
     setNewTitle("");
-  }, [activeTicketId]);
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -86,7 +86,7 @@ export const ChatWindow = () => {
         scrollContainer.scrollTo({ top: scrollContainer.scrollHeight, behavior: "smooth" });
       }
     }
-  }, [serverMessages]);
+  }, []);
 
   const handleRenameSubmit = () => {
     if (newTitle === chatDisplayTitle) return;
@@ -182,7 +182,7 @@ export const ChatWindow = () => {
       {/* Список сообщений из базы Beget */}
        <div 
           ref={scrollRef} 
-          className="w-full h-[calc(100dvh-128px)] md:h-[calc(100vh-140px)] bg-muted/5"
+          className="w-full h-[calc(100dvh-160px)] md:h-[calc(100vh-140px)] bg-muted/5"
         >
           <ScrollArea ref={scrollRef} className="px-4 w-full h-full">
             <div className="w-full max-w-2xl mx-auto px-3 backdrop-blur-[1px]"> 
