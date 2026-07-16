@@ -4,9 +4,11 @@ import { AccountClient } from "./AccountClient";
 
 const AccountPage =  () => {
 
-  return <Suspense fallback={"Загрузка..."}>
+  return (
+        <Suspense fallback={"Загрузка..."}>
           <AccountClient />
-        </Suspense>;
+        </Suspense>
+  );
 }
 
 export default AccountPage;

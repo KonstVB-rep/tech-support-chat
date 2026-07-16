@@ -125,7 +125,6 @@ export const addChatMemberAction = async ({
       }
     }
 
-    // Записываем сотрудника в таблицу участников чата
     await prisma.chatMember.upsert({
       where: {
         chatId_profileId: { chatId, profileId: targetProfileId },
@@ -151,7 +150,7 @@ export const addChatMemberAction = async ({
     // 🔥 РЕАЛЬНОЕ ВРЕМЯ: Стреляем в сокет-сервер на порту 4000.
     // Направляем чат строго в личную комнату user:id добавленного сотрудника
     if (fullChatData) {
-      triggerSocketEvent("srv:member:added", {
+      await triggerSocketEvent("srv:member:added", {
         chat: fullChatData,
         targetProfileId,
       });
@@ -204,7 +203,7 @@ export const removeChatMemberAction = async ({
 
     // 🔥 РЕАЛЬНОЕ ВРЕМЯ: Выбиваем чат с экрана уволенного сотрудника!
     // Отправляем команду srv:member:removed в его личную сокет-комнату user:id
-    triggerSocketEvent("srv:member:removed", {
+    await triggerSocketEvent("srv:member:removed", {
       chatId,
       targetProfileId,
     });
@@ -270,7 +269,7 @@ export const updateChatTitleAction = async ({
 
     // 3. 🔥 РЕАЛЬНОЕ ВРЕМЯ: Если чат привязан к компании, пинаем сокет-сервер 4000
     if (chat.organizationId) {
-      triggerSocketEvent("srv:chat:rename", {
+      await triggerSocketEvent("srv:chat:rename", {
         chatId,
         newTitle: trimmedTitle,
         organizationId: chat.organizationId,
@@ -304,8 +303,15 @@ export const getChatMembersAction = async ({
 }: GetMembersPayload): Promise<ActionResponse<EmployeeInChat[]>> => {
   try {
     const session = await getSession();
-    if (!session?.user)
+    if (!session?.user) {
       return { success: false, data: [], error: "Не авторизован" };
+    }
+
+    // 1. Быстро узнаем profileId текущего пользователя
+    const currentUserProfile = await prisma.profile.findUnique({
+      where: { userId: session.user.id },
+      select: { id: true },
+    });
 
     const chat = await prisma.chat.findUnique({
       where: { id: chatId },
@@ -319,9 +325,15 @@ export const getChatMembersAction = async ({
         error: "Чат или привязанная организация не найдены",
       };
     }
-
     const orgMembers = await prisma.organizationMember.findMany({
-      where: { organizationId: chat.organizationId },
+      where: {
+        organizationId: chat.organizationId,
+        ...(currentUserProfile?.id && {
+          profileId: {
+            not: currentUserProfile.id,
+          },
+        }),
+      },
       include: {
         profile: {
           select: { id: true, name: true },
@@ -329,6 +341,7 @@ export const getChatMembersAction = async ({
       },
     });
 
+    // 3. Качаем список тех, кто уже сидит в чате
     const activeChatMembers = await prisma.chatMember.findMany({
       where: { chatId },
       select: { profileId: true },
@@ -336,6 +349,7 @@ export const getChatMembersAction = async ({
 
     const activeProfileIds = new Set(activeChatMembers.map((m) => m.profileId));
 
+    // 4. Теперь метод .map() становится максимально простым, чистым и без лишних if-проверок!
     const employeesList: EmployeeInChat[] = orgMembers
       .map((member) => {
         if (!member.profile) return null;
@@ -358,16 +372,10 @@ export const getChatMembersAction = async ({
   }
 };
 
-// Допиши этот контракт параметров наверх или прямо перед функцией:
 interface DeleteChatPayload {
   chatId: string;
 }
 
-/**
- * 🚀 ФУНКЦИЯ №5: ПОЛУЧЕНИЕ ПРАВ И ПОЛНОЕ УНИЧТОЖЕНИЕ ТЕМЫ ОБРАЩЕНИЯ (SERVER ACTION)
- * 🔒 СТРОГИЙ РЕГЛАМЕНТ: Метод доступен ИСКЛЮЧИТЕЛЬНО главному администратору платформы (тебе).
- * Сносит чат, участников ChatMember и сообщения Message из MySQL одной каскадной транзакцией.
- */
 export const deleteChatAction = async ({
   chatId,
 }: DeleteChatPayload): Promise<ActionResponse> => {

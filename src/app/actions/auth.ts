@@ -5,7 +5,7 @@ import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type z from "zod";
-
+import { prisma } from "@/prisma/prisma-client";
 import {
   passwordSchema,
   validationSchemaResetPassword,
@@ -14,6 +14,9 @@ import {
   validationSchemaSignUp,
 } from "../(auth)/auth/model/schema";
 import { auth } from "../lib/auth";
+import { updateTag } from "next/cache";
+import { getSession } from "@/shared/lib/server-current-user";
+import { triggerSocketEvent } from "@/shared/lib/socket-trigger";
 
 type ActionState =
   | {
@@ -279,69 +282,90 @@ export const updateUserName = async (name: string) => {
   });
 };
 
-export const updateUserImg = async (imageUrl: string) => {
-  await auth.api.updateUser({
-    body: {
-      image: imageUrl,
-    },
-  });
-};
+export const changeEmail = async (
+  email: string,
+  profileId: string,
+): Promise<{ email: string }> => {
+  const requestHeaders = await headers();
 
-export const changeEmail = async (email: string) => {
   await auth.api.changeEmail({
-    body: {
-      newEmail: email,
-    },
+    body: { newEmail: email },
+    headers: requestHeaders,
   });
-};
 
+  updateTag(`profile-${profileId}`);
+
+  const [isEngineer, membership] = await Promise.all([
+    prisma.supportEngineer.findUnique({ where: { profileId } }),
+    prisma.organizationMember.findFirst({
+      where: { profileId },
+      select: { organizationId: true },
+    }),
+  ]);
+
+  if (isEngineer) updateTag("support-engineers");
+  if (membership) updateTag(`employees-${membership.organizationId}`);
+
+  const session = await getSession();
+  if (session?.user) {
+    await triggerSocketEvent("srv:user:updated", {
+      userId: session.user.id,
+      profileId,
+      organizationId: membership?.organizationId ?? null,
+      email,
+      isEngineer: !!isEngineer,
+    });
+  }
+  return { email };
+};
 export const changePassword = async (
   _prevState: unknown,
   formData: FormData,
 ) => {
-  const data = Object.fromEntries(formData);
+  const requestHeaders = await headers(); // ← Добавить
 
+  const data = Object.fromEntries(formData);
   const validated = passwordSchema.safeParse(data);
 
   if (!validated.success) {
     const errorMessage = validated.error.issues
       .map((issue: z.core.$ZodIssue) => issue.message)
       .join(", ");
-
-    return {
-      error: errorMessage || "Ошибка валидации данных",
-    };
+    return { error: errorMessage || "Ошибка валидации данных" };
   }
 
   const { newPassword, currentPassword } = validated.data;
 
   try {
+    // ✅ headers передаются ОТДЕЛЬНО от body
     await auth.api.changePassword({
       body: {
         newPassword,
         currentPassword,
         revokeOtherSessions: true,
       },
+      headers: requestHeaders, // ← Критично!
     });
 
     return { success: true, error: null };
   } catch (error) {
     if (error instanceof APIError) {
-      return {
-        success: false,
-        error: error.message,
-      };
+      return { success: false, error: error.message };
     }
-
     return { success: false, error: "Произошла системная ошибка" };
   }
 };
-export const deleteAccount = async (password: string) => {
+export const deleteAccount = async (
+  password: string,
+): Promise<{ success: true }> => {
+  const requestHeaders = await headers();
+
   await auth.api.deleteUser({
-    body: {
-      password,
-    },
+    body: { password },
+    headers: requestHeaders,
   });
+
+  return { success: true };
 };
 
 export const sendVerificationEmail = async (

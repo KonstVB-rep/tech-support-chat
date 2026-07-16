@@ -15,19 +15,23 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/shared/ui/button";
 import { deleteEmployeeAction } from "../actions/delete";
+import { Trash } from "lucide-react";
+import { cn } from "@/shared/lib/utils";
 
 interface DeleteOrgDialogProps {
   ids: string[] | string;
   organizationId: string; 
   employeeName?: string,
-  onAfterDelete?: () => void
+  onAfterDelete?: () => void,
+  justify?: "start" | "end" | "center" | "between" | "around" | "evenly"
 }
 
 export const DeleteEmployeeDialog = ({
   ids,
   organizationId,
   employeeName,
-  onAfterDelete
+  onAfterDelete,
+  justify = "center"
 }: DeleteOrgDialogProps) => {
   const [isPending, startDeleteTransition] = useTransition();
 
@@ -36,7 +40,6 @@ export const DeleteEmployeeDialog = ({
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const isMultiple = idsArray.length > 1;
 
-  // 🎯 РЕАКТИВНЫЙ ЗАГОЛОВОК: Подстраивается под одиночное или массовое удаление
   const title = isMultiple
     ? `Удалить ${idsArray.length} сотрудников?`
     : employeeName 
@@ -66,7 +69,7 @@ export const DeleteEmployeeDialog = ({
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" className="w-full text-white">Удалить</Button>
+        <Button variant="destructive" className={cn("w-full text-white py-3 flex items-center gap-2",justify)}><Trash className="w-4 h-4" />Удалить</Button>
       </AlertDialogTrigger>
       <AlertDialogContent onClick={(e) => e.stopPropagation()}>
         <AlertDialogHeader>

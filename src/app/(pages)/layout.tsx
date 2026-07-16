@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import { SidebarNavWrapper } from '@/widgets/sidebar/ui/SidebarNavWrapper';
 import Loader from '@/shared/ui/custom/Loader';
+import { MobileNavWrapper } from '@/widgets/mobile-nav/MobileNavWrapper';
 
 interface PageLayoutProps {
   children: React.ReactNode;
@@ -16,8 +17,11 @@ const PageLayout = async ({ children }: PageLayoutProps) => {
         </Suspense>
       </div>
       
-      <div className="flex w-full overflow-hidden">
+      <div className="flex flex-col md:flex-row w-full overflow-hidden">
         {children}
+        <Suspense>
+          <MobileNavWrapper />
+        </Suspense>
       </div>
     </div>
   );

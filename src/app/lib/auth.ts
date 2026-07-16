@@ -58,7 +58,7 @@ export const auth = betterAuth({
                 userId: user.id,
                 name: user.name || "Пользователь",
                 email: user.email,
-                imageUrl: user.image || "https://github.com",
+                imageUrl: user.image || "https://github.com/shadcn.png",
                 username: `user_${Math.random().toString(36).substring(2, 8)}`,
               },
             });

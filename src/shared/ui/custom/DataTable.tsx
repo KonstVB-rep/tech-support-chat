@@ -126,7 +126,7 @@ export function DataTable<TData extends { id: string; }, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className={getRowClassName?.(row.original)}
+                  className={cn("bg-card", getRowClassName?.(row.original))}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell

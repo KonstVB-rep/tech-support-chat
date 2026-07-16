@@ -21,7 +21,7 @@ const Sidebar = ({ sidebarType }: SidebarProps) => {
     <div className="flex h-full">
      <div className="flex flex-1 flex-col h-full bg-background border-l border-r border-border select-none">
          {sidebarType === SIDEBAR_TYPES.CHATS && <SideBarChats />}
-         {sidebarType === SIDEBAR_TYPES.SETTINGS && <SideBarSettings />}
+         {/* {sidebarType === SIDEBAR_TYPES.SETTINGS && <SideBarSettings />} */}
      </div>
     </div>
   );
@@ -74,13 +74,13 @@ const SideBarChats = () => {
   )
 }
 
-const SideBarSettings = () => {
-  return (
-      <div className="p-4 border-b border-border bg-muted/10">
-          <h2 className="font-bold text-lg tracking-tight flex gap-2 items-center justify-between"><span className="uppercase">настройки</span></h2>
+// const SideBarSettings = () => {
+//   return (
+//       <div className="p-4 border-b border-border bg-muted/10">
+//           <h2 className="font-bold text-lg tracking-tight flex gap-2 items-center justify-between"><span className="uppercase">настройки</span></h2>
               
-          <SidebarContent.Settings />
+//           <SidebarContent.Settings />
 
-      </div>
-  )
-}
+//       </div>
+//   )
+// }

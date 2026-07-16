@@ -54,6 +54,7 @@ export default function ResetPasswordPage() {
                   placeholder="example@email.ru"
                   required
                   type="email"
+                  className="bg-card"
                 />
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>

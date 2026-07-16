@@ -11,6 +11,7 @@ const ButtonSignOut = ({
   size,
   withIcon = false,
   withText = false,
+  variant = "default",
 }: {
   withIcon?: boolean;
   withText?: boolean;
@@ -26,11 +27,12 @@ const ButtonSignOut = ({
     | "icon-lg"
     | null
     | undefined;
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost";
 }) => {
   const { handleSignOut } = useSignOut();
   return (
     <form onSubmit={handleSignOut}>
-      <Button className={className} size={size} type="submit" variant="ghost">
+      <Button className={className} size={size} type="submit" variant={variant}>
        {withIcon && <LogOut />} {withText && "Выйти"}
       </Button>
     </form>

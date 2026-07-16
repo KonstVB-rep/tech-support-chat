@@ -6,13 +6,13 @@ import { OrgRole } from "@prisma/client";
 import { cacheTag } from "next/cache";
 import { EmployeeWithProfile } from "../model";
 
-export const fetchEmployeesByOrgId = async (id: string) => {
+export const fetchEmployeesByOrgId = async (orgId: string) => {
   "use cache";
-  cacheTag(`employees-${id}`);
-  if (!id) return null;
+  cacheTag(`employees-${orgId}`);
+  if (!orgId) return null;
   return await prisma.organizationMember.findMany({
     where: {
-      organizationId: id,
+      organizationId: orgId,
       profile: {
         user: {
           isActive: true,

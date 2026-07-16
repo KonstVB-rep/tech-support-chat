@@ -6,6 +6,10 @@ import { Toaster } from "sonner";
 import { BetterUiProviders } from "./betterui-provider";
 import QueryProvider from "./query-provider";
 import dynamic from "next/dynamic";
+import { SocketInitializer } from "./socket-Initializer";
+import { PushPermissionGate } from "@/widgets/push-permission/PushPermissionGate";
+import { Suspense } from "react";
+import { UserUpdatesListener } from "@/shared/lib/UserUpdatesListener";
 
 const ReactQueryDevtools = dynamic(
   () =>
@@ -18,6 +22,7 @@ const ReactQueryDevtools = dynamic(
 );
 
 const RootProvider = ({ children }: { children: React.ReactNode }) => {
+  
   return (
     <ThemeProvider
       attribute="class"
@@ -32,6 +37,11 @@ const RootProvider = ({ children }: { children: React.ReactNode }) => {
             <ReactQueryDevtools initialIsOpen={false} />
           )} */}
           <Toaster position="top-center" richColors closeButton />
+          <SocketInitializer />
+          <Suspense>
+            <PushPermissionGate />
+          </Suspense>
+          <UserUpdatesListener />
           {children}
         </QueryProvider>
       </BetterUiProviders>

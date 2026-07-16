@@ -2,16 +2,13 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 
-import { DeleteSupportEngineerDialog, UpdateSupportEngineerDialog } from "@/features/manage-support-engineer";
+import { DeleteSupportEngineerDialog } from "@/features/manage-support-engineer";
 import { SupportEngineerWithProfile } from "@/entities/support-engineer";
-import { DeleteOrganizationDialog } from "@/features/manage-organization";
-import { DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuItem, DropdownMenuSeparator, DropdownMenu } from "@/shared/ui/dropdown-menu";
-import { organization } from "better-auth/plugins";
-import { MoreHorizontal, Link } from "lucide-react";
-import { Button } from "@/shared/ui/button";
+import { Eye } from "lucide-react";
 import { Checkbox } from "@/shared/ui/checkbox";
-
-
+import { PushSettingsToggle } from "@/features/pwa-push/ui/PushSettingsToggle";
+import { UpdateSupportEngineerForm } from "@/features/manage-support-engineer/ui/UpdateSupportEngineerForm";
+import { DrawerComponent } from "@/shared/ui/custom/DrawerComponent";
 
 export const columns: ColumnDef<SupportEngineerWithProfile>[] = [
   {
@@ -60,30 +57,22 @@ export const columns: ColumnDef<SupportEngineerWithProfile>[] = [
       const engineer = row.original;
 
       return (
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Открыть</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel></DropdownMenuLabel>
-            <DropdownMenuItem asChild>
-                      <DeleteSupportEngineerDialog
-                        engineerIds={engineer.id}
-                        engineerName={engineer.profile?.name}
+          <DrawerComponent buttonTriggerInnerContent={<>
+            <span className="sr-only">Открыть меню</span>
+            <Eye className="h-4 w-4" />
+            </>} side="right">
+              <UpdateSupportEngineerForm
+                        engineer={engineer}
                       />
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-                <UpdateSupportEngineerDialog engineer={engineer} />
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <PushSettingsToggle profileId={engineer.profileId} isSupportEngineer={false} pushEnabled={engineer.profile.pushEnabled} isViewedByAdmin={true} />
+              <DeleteSupportEngineerDialog
+              engineerIds={engineer.id}
+              engineerName={engineer.profile?.name}
+            />
+          </DrawerComponent>
       );
     },
+    size: 80,
     maxSize: 80
   },
 ];

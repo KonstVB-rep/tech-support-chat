@@ -6,10 +6,6 @@ datasource db {
   provider = "mysql"
 }
 
-// =========================================================================
-// ENUMS
-// =========================================================================
-
 enum OrgRole {
   RESPONSIBLE // Ответственное лицо (назначает ТОЛЬКО админ)
   MEMBER      // Сотрудник
@@ -24,10 +20,6 @@ enum ChatRole {
   ADMIN
   MEMBER
 }
-
-// =========================================================================
-// 1. USER (Better Auth) — НЕЗАВИСИМАЯ
-// =========================================================================
 
 model User {
   id               String    @id @default(cuid())  // ✅
@@ -114,12 +106,8 @@ model TwoFactor {
   @@map("two_factor")
 }
 
-// =========================================================================
-// 2. PROFILE — НЕЗАВИСИМАЯ (связана только с User)
-// =========================================================================
-
 model Profile {
-  id        String   @id @default(cuid())  // ✅
+  id        String   @id @default(cuid()) 
   userId    String   @unique
   name      String
   imageUrl  String?  @db.Text
@@ -129,6 +117,10 @@ model Profile {
   lastSeen  DateTime @default(now())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  pushEnabled      Boolean            @default(true)
+  pushSubscription Json?              
+  deactivationLabel  String?  
+  deletedAt          DateTime?
 
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   
@@ -141,8 +133,6 @@ model Profile {
   @@map("profile")
 }
 
-//  SUPPORT ENGINEER — УДОСТОВЕРЕНИЕ ИНЖЕНЕРА ПОДДЕРЖКИ
-
 model SupportEngineer {
   id        String   @id @default(cuid())
   profileId String   @unique
@@ -153,10 +143,6 @@ model SupportEngineer {
 
   @@map("support_engineer")
 }
-
-// =========================================================================
-// 3. ORGANIZATION — НЕЗАВИСИМАЯ (создаётся первой)
-// =========================================================================
 
 model Organization {
   id              String   @id @default(cuid())  // ✅ ИЗМЕНЕНО с uuid() на cuid()
@@ -180,14 +166,11 @@ model Organization {
   @@map("organization")
 }
 
-// =========================================================================
-// 4. ORGANIZATION MEMBER — СВЯЗЫВАЕТ Profile и Organization
-// =========================================================================
 
 model OrganizationMember {
   id             String   @id @default(cuid())  
   organizationId String
-  profileId      String   // 🎯 ИСПРАВЛЕНО: Убрали @unique! Теперь один профиль может быть в разных компаниях.
+  profileId      String 
   role           OrgRole  @default(MEMBER)
   position       String?  @db.Text
   createdAt      DateTime @default(now())
@@ -201,10 +184,6 @@ model OrganizationMember {
   @@index([organizationId, role])
   @@map("organization_member")
 }
-
-// =========================================================================
-// 5. CHAT — ПРИНАДЛЕЖИТ Organization, создается Profile
-// =========================================================================
 
 model Chat {
   id             String   @id @default(cuid())  // ✅ ИЗМЕНЕНО с uuid() на cuid()
@@ -226,10 +205,6 @@ model Chat {
   @@map("chat")
 }
 
-// =========================================================================
-// 6. CHAT MEMBER — СВЯЗЫВАЕТ Profile и Chat
-// =========================================================================
-
 model ChatMember {
   id        String   @id @default(cuid())  // ✅
   chatId    String
@@ -245,10 +220,6 @@ model ChatMember {
   @@index([profileId])
   @@map("chat_member")
 }
-
-// =========================================================================
-// 7. MESSAGE — ПРИНАДЛЕЖИТ Chat, создается Profile
-// =========================================================================
 
 model Message {
   id        String   @id @default(cuid()) 

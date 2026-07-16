@@ -3,7 +3,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { connectSocket } from "@/shared/lib/socket";
+import { connectSocket, getSocket } from "@/shared/lib/socket";
 import { authClient } from "@/app/lib/auth-client";
 
 export interface Chat {
@@ -47,8 +47,7 @@ export const useGetChats = () => {
     if (!session?.user?.id) return;
 
     // Подключаемся к серверу 4000
-    const socket = connectSocket(session.user.id);
-
+    const socket = getSocket();
     // 1. Обработчик: Новый чат создан для RESPONSIBLE или MEMBER
     const handleNewChat = (chat: Chat) => {
       queryClient.setQueryData<Chat[]>(["chats"], (old) => {

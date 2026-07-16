@@ -35,14 +35,10 @@ export function useGetMessages(ticketId: string | null) {
       console.log(`📌 [CLIENT] Присоединился к chat:${ticketId}`);
     };
 
-    // Подключаемся с ожиданием
-    if (!socket.connected) {
-      socket.auth = { userId: session.user.id };
-      socket.connect();
-      socket.once("connect", joinChat);
+    if (socket.connected) {
+      joinChat();
     } else {
-      // Небольшая задержка чтобы убедиться что сокет реально ready
-      setTimeout(joinChat, 50);
+      socket.once("connect", joinChat);
     }
 
     const handleNewMessage = (msg: Message) => {

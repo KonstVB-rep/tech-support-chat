@@ -24,12 +24,23 @@ export const getSocket = (): Socket => {
   return socket;
 };
 
-export const connectSocket = (userId: string): Socket => {
+export const connectSocket = (userId: string, profileId?: string): Socket => {
   const s = getSocket();
 
   if (!s.connected) {
     s.auth = { userId };
     s.connect();
+
+    // ✅ Отправляем user:init сразу после подключения
+    if (profileId) {
+      s.once("connect", () => {
+        s.emit("user:init", { profileId });
+        console.log(`📤 [CLIENT] Отправил user:init для profile:${profileId}`);
+      });
+    }
+  } else if (profileId) {
+    // Уже подключён — отправляем сразу
+    s.emit("user:init", { profileId });
   }
 
   return s;

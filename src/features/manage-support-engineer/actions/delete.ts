@@ -5,6 +5,9 @@ import { prisma } from "@/prisma/prisma-client";
 import { auth } from "@/app/lib/auth";
 import { headers } from "next/headers";
 import { updateTag } from "next/cache";
+import { triggerSocketEvent } from "@/shared/lib/socket-trigger";
+import { unlink } from "fs/promises";
+import path from "path";
 import { getSession } from "@/shared/lib/server-current-user";
 import { USER_ROLE } from "@/shared/constants";
 import { DeleteActionState } from "@/shared/lib/types";
@@ -13,7 +16,6 @@ export const deleteSupportEngineerAction = async (
   ids: string | string[],
 ): Promise<DeleteActionState> => {
   try {
-    // 1. Проверяем сессию и права суперадмина портала Beget
     const session = await getSession();
     if (
       !session?.user ||
@@ -26,7 +28,6 @@ export const deleteSupportEngineerAction = async (
       };
     }
 
-    // Нормализуем входящие ID к массиву строк
     const idsArray = Array.isArray(ids) ? ids : [ids];
     const validIds = idsArray.filter((id) => id && id.trim() !== "");
 
@@ -38,18 +39,18 @@ export const deleteSupportEngineerAction = async (
       };
     }
 
-    // 2. ВЫТЯГИВАЕМ ТЕКУЩИЕ ДАННЫЕ ИНЖЕНЕРОВ И ИХ ПРОФИЛЕЙ
-    // Помним, что validIds — это идентификаторы из таблицы SupportEngineer!
     const engineersData = await prisma.supportEngineer.findMany({
       where: { id: { in: validIds } },
       select: {
-        id: true, // ID записи в таблице support_engineer
+        id: true,
         profile: {
           select: {
-            id: true, // ID профиля
-            email: true, // Текущий email профиля
-            userId: true, // ID юзера в Better Auth
-            username: true, // Имя юзера
+            id: true,
+            email: true,
+            userId: true,
+            username: true,
+            name: true,
+            imageUrl: true,
           },
         },
       },
@@ -63,46 +64,42 @@ export const deleteSupportEngineerAction = async (
       };
     }
 
-    // Генерируем уникальный временной маркер увольнения (Unix timestamp)
     const timestamp = Math.floor(Date.now() / 1000);
+    const suffix = `_deleted_${timestamp}`;
 
-    // 3. 🚀 АТОМАРНАЯ ТРАНЗАКЦИЯ ОБЕЗЛИЧИВАНИЯ И СОФТ-БЛОКА:
-    // Пакуем все операции в единый безопасный пакет транзакции Prisma
     const updateOperations = engineersData
       .map((engineer) => {
         const profile = engineer.profile;
         if (!profile) return [];
 
-        const suffix = `_banned_${timestamp}`;
         const newFakeEmail = `${profile.email}${suffix}`;
+        const originalName = profile.name || "Без имени";
 
         return [
-          // А) Изменяем системного User в Better Auth: гасим флаг активности,
-          // ставим нативный бан и сбрасываем уникальный email, чтобы освободить его!
           prisma.user.update({
             where: { id: profile.userId },
             data: {
               isActive: false,
-              banned: true, // Бест-практикс: Нативный бан для Better Auth
-              email: newFakeEmail, // Почта свободна для новых людей!
+              banned: true,
+              email: newFakeEmail,
+              name: originalName,
+              image: null,
             },
           }),
-
-          // Б) Изменяем Profile мессенджера: сбрасываем уникальный email и телефон,
-          // НО ФИО ОСТАВЛЯЕМ, ЧТОБЫ СТАРЫЕ ПЕРЕПИСКИ И ТИКЕТЫ НЕ СЛЕТЕЛИ В ЧАТАХ!
           prisma.profile.update({
             where: { id: profile.id },
             data: {
+              name: originalName,
+              deactivationLabel: "Уволен",
               email: newFakeEmail,
               phone: null,
               username: profile.username
                 ? `${profile.username}${suffix}`
-                : null, // Убираем уникальность юзернейма специалиста
+                : null,
+              imageUrl: null,
+              deletedAt: new Date(),
             },
           }),
-
-          // В) Полностью удаляем запись-удостоверение из таблицы-моста support_engineer,
-          // чтобы специалист мгновенно исчез из списков активного персонала техподдержки
           prisma.supportEngineer.delete({
             where: { id: engineer.id },
           }),
@@ -114,30 +111,54 @@ export const deleteSupportEngineerAction = async (
       await prisma.$transaction(updateOperations);
     }
 
-    // 4. 🔒 БЕЗОПАСНОСТЬ: Намертво сбрасываем активные сессии (разлогиниваем) уволенных людей
     const requestHeaders = await headers();
-    const userIdsToRevoke = engineersData
-      .map((eng) => eng.profile?.userId)
-      .filter((id): id is string => !!id);
+    for (const engineer of engineersData) {
+      const profile = engineer.profile;
+      if (!profile) continue;
 
-    await Promise.all(
-      userIdsToRevoke.map((userId) =>
-        auth.api
-          .revokeUserSessions({
-            body: { userId },
-            headers: requestHeaders,
-          })
-          .catch((err) =>
-            console.error(`Не удалось отозвать сессию для ${userId}:`, err),
-          ),
-      ),
-    );
+      if (
+        profile.imageUrl &&
+        typeof profile.imageUrl === "string" &&
+        profile.imageUrl.startsWith("/uploads/")
+      ) {
+        const filePath = path.join(process.cwd(), "public", profile.imageUrl);
+        try {
+          await unlink(filePath);
+        } catch {}
+      }
 
-    // 5. РЕВАЛИДАЦИЯ СЕРВЕРНОГО КЭША NEXT.JS 16.2
+      try {
+        await auth.api.banUser({
+          body: { userId: profile.userId },
+          headers: requestHeaders,
+        });
+      } catch (e) {
+        console.error(
+          `⚠️ Не удалось заблокировать аккаунт ${profile.userId}:`,
+          e,
+        );
+      }
+    }
+
     updateTag("support-engineers");
-    validIds.forEach((id) => {
+    for (const id of validIds) {
       updateTag(`support-engineer-${id}`);
-    });
+    }
+
+    for (const engineer of engineersData) {
+      const profile = engineer.profile;
+      if (!profile) continue;
+
+      await triggerSocketEvent("srv:user:updated", {
+        userId: profile.userId,
+        profileId: profile.id,
+        organizationId: null,
+        name: profile.name || "Без имени",
+        deactivationLabel: "Уволен",
+        image: null,
+        isEngineer: false,
+      });
+    }
 
     return {
       success: true,

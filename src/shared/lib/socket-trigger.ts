@@ -27,6 +27,5 @@ export async function triggerSocketEvent(
     console.log(`✅ [trigger] Доставлено: ${event}`);
   } catch (error) {
     console.error(`❌ [trigger] Ошибка доставки ${event}:`, error);
-    // Не бросаем ошибку, чтобы не ломать основной API-запрос пользователя
   }
 }

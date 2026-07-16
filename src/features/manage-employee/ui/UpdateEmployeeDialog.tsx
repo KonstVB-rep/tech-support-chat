@@ -21,7 +21,7 @@ export const UpdateEmployeeDialog = ({ employee }: UpdateEmployeeDialogProps) =>
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="whitespace-break-spaces">
+        <Button variant="ghost" size="sm" className="whitespace-break-spaces w-full flex items-center justify-start gap-2">
           <Pencil className="w-4 h-4" />Редактировать
         </Button>
       </DialogTrigger>

@@ -1,8 +1,12 @@
 "use server";
 
 import { prisma } from "@/prisma/prisma-client";
+import { cacheTag } from "next/cache";
 
 export const getProfile = async (id: string) => {
+  "use cache";
+  cacheTag(`profile-${id}`);
+
   if (!id) {
     return null;
   }
@@ -36,10 +40,10 @@ export const getProfile = async (id: string) => {
     );
 
     // Получаем роль ("RESPONSIBLE" или "MEMBER")
-    const orgRole = currentMembership ? currentMembership.role : null;
-    const position = currentMembership
-      ? currentMembership.position
-      : "Не указана";
+    // const orgRole = currentMembership ? currentMembership.role : null;
+    // const position = currentMembership
+    //   ? currentMembership.position
+    //   : "Не указана";
 
     return profile;
   } catch (error) {

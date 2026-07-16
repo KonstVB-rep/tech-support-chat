@@ -18,6 +18,7 @@ import { ProtectByRole } from "@/shared/lib/ProtectByRole";
 import { ChatMembersSheet, useDeleteChat, useUpdateChatTitle } from "@/features/manage-chat-members";
 import { OrgRole } from "@prisma/client";
 import { useGetCurrentMemberRole } from "@/entities/employee/api/useGetCurrentMemberRole";
+import { getSocket } from "@/shared/lib/socket";
 
 export const ChatWindow = () => {
 
@@ -34,15 +35,13 @@ export const ChatWindow = () => {
    const handleDeleteChat = () => {
     if (!activeTicketId) return;
     
-    // Выбрасываем нативное браузерное PWA диалоговое окно подтверждения
     const confirmDelete = window.confirm("Вы уверены, что хотите НАВСЕГДА удалить эту тему и всю историю переписки?");
     if (!confirmDelete) return;
 
     deleteChat(activeTicketId, {
       onSuccess: () => {
-        // Как только база стерла чат — сбрасываем окно чата в null (закрываем его)
         clearChat();
-      }
+      },
     });
   };
 
@@ -55,6 +54,25 @@ export const ChatWindow = () => {
   const chatDisplayTitle = chatInfo?.title || "Загрузка темы...";
 
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!activeTicketId) return;
+
+    const socket = getSocket();
+
+    const handleChatRemoved = (data: { chatId: string }) => {
+      if (data.chatId === activeTicketId) {
+        console.log(`🚫 [ChatWindow] Удалён из чата ${activeTicketId}, закрываю окно`);
+        clearChat();
+      }
+    };
+
+    socket.on("chat:removed", handleChatRemoved);
+
+    return () => {
+      socket.off("chat:removed", handleChatRemoved);
+    };
+  }, [activeTicketId, clearChat]);
 
   useEffect(() => {
     setIsEditMode(false);
@@ -84,7 +102,7 @@ export const ChatWindow = () => {
 
   if (!activeTicketId) {
     return (
-      <div className="flex items-center justify-center h-full bg-muted/10 text-muted-foreground text-sm select-none">
+      <div className="px-2 flex items-center justify-center h-full bg-muted/10 text-muted-foreground text-sm select-none">
         Выберите объект или проект в списке слева, чтобы начать работу
       </div>
     );

@@ -22,11 +22,15 @@ export interface Message {
   chatId: string;
   profileId: string;
   createdAt: string;
+  fileUrl?: string | null;
+  fileType?: string | null;
+  fileName?: string | null;
+  fileSize?: number | null;
   profile: {
     id: string;
     name: string;
     userId: string;
-    imageUrl: string;
+    imageUrl: string | null;
     user?: { role: string };
   };
 }

@@ -19,12 +19,12 @@ import {
   PopoverTrigger,
 } from "@/shared/ui/popover";
 
-import { Plus, Check, Building2, Loader } from "lucide-react"; 
-import { toast } from "sonner";
 import { cn } from "@/shared/lib/utils";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/shared/ui/command";
+import { Building2, Check, Loader, Plus } from "lucide-react";
+import { toast } from "sonner";
 import { useCreateTopic } from "../api/useCreateTopic";
 import { useGetOrganizationsList } from "../api/useGetOrganizationsList";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/shared/ui/command";
 
 const CreateTopicDialog = () => {
   const [title, setTitle] = useState("");
@@ -89,7 +89,7 @@ const CreateTopicDialog = () => {
           <DialogDescription>Укажите название темы/чата и выберите клиента.</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+        <form onSubmit={handleSubmit} className="space-y-3 pt-2">
           <div className="flex flex-col gap-3">
             
             {/* 🚀 2026 BEST PRACTICE: Заменяем Select на выпадающий список с поиском (Combobox) */}

@@ -10,6 +10,11 @@ const withPWA = withPWAInit({
 const nextConfig: NextConfig = {
   reactCompiler: true,
   cacheComponents: true,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "5mb",
+    },
+  },
   images: {
     remotePatterns: [
       {

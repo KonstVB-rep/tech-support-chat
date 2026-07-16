@@ -4,9 +4,8 @@ import { Server } from "socket.io";
 
 import dotenv from "dotenv";
 dotenv.config({ path: ".env.development" });
-// ============================================================
+
 // 1. HTTP Сервер + Обработка триггеров от Next.js
-// ============================================================
 const httpServer = createServer((req, res) => {
   // ✅ HTTP API для триггеров от Next.js
   if (req.method === "POST" && req.url === "/api/trigger") {
@@ -41,6 +40,37 @@ const httpServer = createServer((req, res) => {
                 chatId: payload.message.chatId,
               });
             }
+            const chatMembers = await prisma.chatMember.findMany({
+              where: {
+                chatId: payload.message.chatId,
+              },
+              select: {
+                profileId: true,
+              }
+            })  
+
+            for(const member of chatMembers){
+              const isSupport  = await prisma.supportEngineer.findUnique({
+                where: {
+                  profileId: member.profileId
+                }
+              })
+
+              if(isSupport){
+                  import("../../src/shared/lib/web-push/send-push.ts").then(
+                    ({ sendPushToProfile }) => {
+                      sendPushToProfile(member.profileId, {
+                        title: "Новое сообщение",
+                        body: payload.message.text?.substring(0, 100) || "📎 Медиа",
+                        url: `/chats/${payload.message.chatId}`,
+                        tag: `msg-${payload.message.chatId}`,
+                      });
+                    },
+                  );
+              }
+            }
+
+
             break;
 
           case "srv:chat:new":
@@ -86,6 +116,17 @@ const httpServer = createServer((req, res) => {
             });
             break;
 
+          case "srv:user:updated": 
+            if(payload.userId){
+              io.to(`user:${payload.userId}`).emit("user:updated", payload.user);
+            } 
+
+            if(payload.organizationId){
+              io.to(`org:${payload.organizationId}`).emit("user:updated", payload.user);
+            }
+            io.emit("user:updated", payload.user);
+            console.log(`👤 [USER UPDATED] profile:${payload.profileId}`);
+            break;
           default:
             console.warn(`⚠️ Неизвестное событие: ${event}`);
         }
@@ -112,9 +153,7 @@ const httpServer = createServer((req, res) => {
   res.end();
 });
 
-// ============================================================
 // 2. Socket.IO для клиентов (Браузер)
-// ============================================================
 const io = new Server(httpServer, {
   cors: {
     origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
@@ -126,12 +165,10 @@ io.on("connection", (socket) => {
   const userId = socket.handshake.auth.userId;
   console.log(`✅ Подключен сокет: ${userId || "anonymous"} (${socket.id})`);
 
-  // Дебаггер всех входящих событий от клиентов
   socket.onAny((eventName, ...args) => {
     console.log(`🔍 [CLIENT EVENT] "${eventName}" от юзера: ${userId}`);
   });
 
-  // --- Клиентские события ---
 
   socket.on("user:init", ({ profileId, managedOrgIds }) => {
     if (!profileId || userId === "SYSTEM_NEXTJS") return;
@@ -156,7 +193,6 @@ io.on("connection", (socket) => {
     console.log(`📤 ${userId} left chat:${chatId}`);
   });
 
-  // Локальный ретранслятор сообщений от клиентов (если они шлют напрямую)
   socket.on("message:new", (message) => {
     console.log(`💬 Клиентское сообщение в chat:${message.chatId}`);
     socket.to(`chat:${message.chatId}`).emit("message:new", message);
@@ -168,9 +204,7 @@ io.on("connection", (socket) => {
   });
 });
 
-// ============================================================
 // 3. Запуск
-// ============================================================
 const PORT = process.env.SOCKET_PORT || 4000;
 httpServer.listen(PORT, () => {
   console.log(`\n🚀 ========================================`);

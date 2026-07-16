@@ -4,11 +4,11 @@
 import { FC } from "react";
 import type { Chat } from "../../api/useGetChats";
 import { SidebarChatList } from "./SidebarContentByType/SidebarChatList";
-import { SidebarSettingsList } from "./SidebarContentByType/SidebarSettingsList";
+// import { SidebarSettingsList } from "./SidebarContentByType/SidebarSettingsList";
 
 
 interface SidebarContentComponent extends FC {
-  Settings: FC;
+  // Settings: FC;
   Chats: FC<ChatListProps>;
 }
 
@@ -20,7 +20,7 @@ interface ChatListProps {
 }
 
 
-SidebarContent.Settings = SidebarSettingsList;
+// SidebarContent.Settings = SidebarSettingsList;
 SidebarContent.Chats = SidebarChatList;
 
 export default SidebarContent

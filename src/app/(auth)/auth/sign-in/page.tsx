@@ -58,7 +58,6 @@ export default function SignInPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-4 w-full">
-      <h1 className="text-2xl font-bold">Войти</h1>
       <form className="flex flex-col gap-3 w-64 p-4" onSubmit={form.handleSubmit(onSubmit)}>
         
         {/* Email */}
@@ -66,8 +65,8 @@ export default function SignInPage() {
           control={form.control}
           name="email"
           render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="form-email">Электронная почта</FieldLabel>
+            <Field data-invalid={fieldState.invalid} className="bg-card">
+              <FieldLabel htmlFor="form-email"></FieldLabel>
               <Input
                 {...field}
                 aria-invalid={fieldState.invalid}
@@ -75,7 +74,7 @@ export default function SignInPage() {
                 id="form-email"
                 placeholder="example@email.ru"
                 required
-                className="field-height"
+                className="field-height bg-card"
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
@@ -87,8 +86,8 @@ export default function SignInPage() {
           name="password"
           control={form.control}
           render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="password">Пароль</FieldLabel>
+            <Field data-invalid={fieldState.invalid} className="bg-card">
+              <FieldLabel htmlFor="password"></FieldLabel>
               <InputPassword
                 {...field}
                 value={field.value ?? ""}
@@ -96,7 +95,7 @@ export default function SignInPage() {
                 aria-invalid={fieldState.invalid}
                 autoComplete="current-password"
                 placeholder="••••••••"
-                className="field-height"
+                className="field-height bg-card"
                 />
               {fieldState.invalid && (
                 <FieldError errors={[fieldState.error]} />

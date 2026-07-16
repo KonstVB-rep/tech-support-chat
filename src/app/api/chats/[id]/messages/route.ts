@@ -20,7 +20,6 @@ async function checkChatAccess(
   });
   if (isSupportEngineer) return { allowed: true };
 
-  // 2. Достаем сам чат, чтобы узнать, какой организации он принадлежит
   const chat = await prisma.chat.findUnique({
     where: { id: chatId },
     select: { organizationId: true },

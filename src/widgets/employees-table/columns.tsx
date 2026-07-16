@@ -2,15 +2,18 @@
 
 import { EmployeeWithProfile } from "@/entities/employee";
 
-import {  DeleteEmployeeDialog, UpdateEmployeeDialog } from "@/features/manage-employee";
+import {  DeleteEmployeeDialog, UpdateEmployee, UpdateEmployeeDialog } from "@/features/manage-employee";
+import { PushSettingsToggle } from "@/features/pwa-push/ui/PushSettingsToggle";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
+import { DrawerComponent } from "@/shared/ui/custom/DrawerComponent";
 import { DataTableColumnHeader } from "@/shared/ui/data-table-column-header";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
+import { Eye, MoreHorizontal } from "lucide-react";
+import Link from "next/link";
 
 export const columns: ColumnDef<EmployeeWithProfile, unknown>[] = [
   {
@@ -96,26 +99,19 @@ export const columns: ColumnDef<EmployeeWithProfile, unknown>[] = [
     id: "actions",
     maxSize: 80,
     cell: ({ row }) => {
-      const data = row.original;
+      const employee = row.original;
  
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Открыть меню действий</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel className="sr-only">Действия</DropdownMenuLabel>
-            <DeleteEmployeeDialog ids={data.id} employeeName={data.profile.name} organizationId={data.organizationId} />
-            <DropdownMenuSeparator />
-            <UpdateEmployeeDialog employee={data}/>
-            {/* <DropdownMenuItem> */}
-              {/* <Link href={`/organization/${organization.id}/EmployeeWithProfiles/${EmployeeWithProfile.id}`}>Посмотреть/Редактировать</Link> */}
-            {/* </DropdownMenuItem> */}
-          </DropdownMenuContent>
-        </DropdownMenu>
+            <DrawerComponent buttonTriggerInnerContent={<>
+              <span className="sr-only">Открыть меню</span>
+              <Eye className="h-4 w-4" />
+              </>} side="right">
+                  <UpdateEmployee
+                          employee={employee}
+                        />
+                <PushSettingsToggle profileId={employee.profileId} isSupportEngineer={false} pushEnabled={employee.profile.pushEnabled} isViewedByAdmin={false} />
+                <DeleteEmployeeDialog ids={employee.id} employeeName={employee.profile.name} organizationId={employee.organizationId} />
+            </DrawerComponent>
       )
     },
   },

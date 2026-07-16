@@ -1,9 +1,9 @@
 import { getSession } from "@/shared/lib/server-current-user";
 import { USER_ROLE } from "@/shared/constants";
-import { SidebarNav } from "./SidebarNav"; // Твой клиентский сайдбар
+import { SidebarNav } from "./SidebarNav";
 
-export async function SidebarNavWrapper() {
-  // 🎯 Динамический вызов кук теперь изолирован внутри этого компонента!
+export const SidebarNavWrapper = async () => {
+
   const session = await getSession();
   const isAdmin = session?.user?.role?.toLowerCase() === USER_ROLE.ADMIN.toLowerCase();
 

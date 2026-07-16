@@ -14,7 +14,7 @@ export async function GET() {
     const userProfile = await prisma.profile.findUnique({
       where: { userId: session.user.id },
       include: {
-        organizationMembers: true, // Подтягиваем все его компании и роли в них
+        organizationMembers: true,
       },
     });
 
@@ -22,7 +22,6 @@ export async function GET() {
       return NextResponse.json({ error: "Профиль не найден" }, { status: 404 });
     }
 
-    // 🚀 ШАГ 1: Проверяем, является ли пользователь глобальным админом или инженером поддержки
     const isSupportEngineer = await prisma.supportEngineer.findUnique({
       where: { profileId: userProfile.id },
     });

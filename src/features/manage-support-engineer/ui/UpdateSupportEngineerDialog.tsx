@@ -15,8 +15,8 @@ export const UpdateSupportEngineerDialog = ({
   return (
     <Dialog open={open} onOpenChange={open => setOpen(open)}>
       <DialogTrigger asChild>
-        <Button variant="ghost" title="Редактировать инженера">
-          <Pencil className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" /> Редактировать
+        <Button variant="ghost" title="Редактировать инженера" className="flex justify-start items-center gap-2">
+          <Pencil className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />Редактировать
         </Button>
       </DialogTrigger>
 
