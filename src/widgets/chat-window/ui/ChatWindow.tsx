@@ -1,7 +1,8 @@
 // src/widgets/chat-window/ui/ChatWindow.tsx
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { authClient } from "@/app/lib/auth-client";
 import { MessageItem } from "@/entities/message";
 import { MessageInput } from "@/features/send-message";
@@ -10,51 +11,102 @@ import { Input } from "@/shared/ui/input";
 import WrapperHeaderScreen from "@/shared/ui/custom/WrapperHeaderScreen";
 import WrapperScreen from "@/shared/ui/custom/WrapperScreen";
 import { ScrollArea } from "@/shared/ui/scroll-area";
-import { useActiveTicketId, useClearChat } from "@/store/useChatStore"; 
+import { useActiveTicketId, useClearChat } from "@/store/useChatStore";
 import { ChevronLeft, Trash2 } from "lucide-react";
 import { useGetMessages } from "../api/useGetMessages";
 import { USER_ROLE } from "@/shared/constants";
 import { ProtectByRole } from "@/shared/lib/ProtectByRole";
-import { ChatMembersSheet, useDeleteChat, useUpdateChatTitle } from "@/features/manage-chat-members";
+import {
+  ChatMembersSheet,
+  useDeleteChat,
+  useUpdateChatTitle,
+} from "@/features/manage-chat-members";
 import { OrgRole } from "@prisma/client";
 import { useGetCurrentMemberRole } from "@/entities/employee/api/useGetCurrentMemberRole";
 import { getSocket } from "@/shared/lib/socket";
+import type { MessagesResponse, Message } from "@/entities/chat/api/chat-api";
 
 export const ChatWindow = () => {
-
   const activeTicketId = useActiveTicketId();
-  const clearChat = useClearChat(); 
+  const clearChat = useClearChat();
+  const queryClient = useQueryClient();
 
   const { data: session } = authClient.useSession();
-  
-  const { data: messagesData, isLoading, error } = useGetMessages(activeTicketId);
-  
+  const { data: messagesData, isLoading, error } =
+    useGetMessages(activeTicketId);
+
   const { mutate: renameChat, isPending: isRenaming } = useUpdateChatTitle();
-   const { mutate: deleteChat, isPending: isDeleting } = useDeleteChat();
+  const { mutate: deleteChat, isPending: isDeleting } = useDeleteChat();
 
-   const handleDeleteChat = () => {
-    if (!activeTicketId) return;
-    
-    const confirmDelete = window.confirm("Вы уверены, что хотите НАВСЕГДА удалить эту тему и всю историю переписки?");
-    if (!confirmDelete) return;
-
-    deleteChat(activeTicketId, {
-      onSuccess: () => {
-        clearChat();
-      },
-    });
-  };
-
+  // ✅ Паттерн синхронизации стейта при рендере (вместо useEffect)
+  // Убирает лишний цикл обновления, Biome не ругается
+  const [prevId, setPrevId] = useState(activeTicketId);
   const [newTitle, setNewTitle] = useState("");
   const [isEditing, setIsEditMode] = useState(false);
 
+  if (activeTicketId !== prevId) {
+    setPrevId(activeTicketId);
+    setIsEditMode(false);
+    setNewTitle("");
+  }
+
   const serverMessages = messagesData?.messages || [];
   const chatInfo = messagesData?.chat || null;
-
   const chatDisplayTitle = chatInfo?.title || "Загрузка темы...";
 
-  const scrollRef = useRef<HTMLDivElement>(null);
+  // ✅ Автоскролл через callback ref (вместо useEffect с зависимостями)
+  // Вызывается после каждого обновления DOM, requestAnimationFrame ждёт layout
+  const setScrollContainerRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (!node) return;
 
+      const viewport = node.querySelector("[data-radix-scroll-area-viewport]");
+      if (viewport) {
+        requestAnimationFrame(() => {
+          viewport.scrollTo({
+            top: viewport.scrollHeight,
+            behavior: "smooth",
+          });
+        });
+      }
+    },
+    [],
+  );
+
+  // Подписка на входящие сообщения + вход в комнату
+  useEffect(() => {
+    if (!activeTicketId) return;
+
+    const socket = getSocket();
+    socket.emit("chat:join", activeTicketId);
+
+    const handleNewMessage = (message: Message) => {
+      if (message.chatId !== activeTicketId) return;
+
+      queryClient.setQueryData<MessagesResponse>(
+        ["messages", activeTicketId],
+        (old) => {
+          const messages = old?.messages || [];
+          if (messages.some((m) => m.id === message.id)) {
+            return old;
+          }
+          return {
+            messages: [...messages, message],
+            chat: old?.chat || null,
+          };
+        },
+      );
+    };
+
+    socket.on("message:new", handleNewMessage);
+
+    return () => {
+      socket.off("message:new", handleNewMessage);
+      socket.emit("chat:leave", activeTicketId);
+    };
+  }, [activeTicketId, queryClient]);
+
+  // Слушатель удаления из чата
   useEffect(() => {
     if (!activeTicketId) return;
 
@@ -62,7 +114,6 @@ export const ChatWindow = () => {
 
     const handleChatRemoved = (data: { chatId: string }) => {
       if (data.chatId === activeTicketId) {
-        console.log(`🚫 [ChatWindow] Удалён из чата ${activeTicketId}, закрываю окно`);
         clearChat();
       }
     };
@@ -74,31 +125,28 @@ export const ChatWindow = () => {
     };
   }, [activeTicketId, clearChat]);
 
-  useEffect(() => {
-    setIsEditMode(false);
-    setNewTitle("");
-  }, []);
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      const scrollContainer = scrollRef.current.querySelector("[data-radix-scroll-area-viewport]");
-      if (scrollContainer) {
-        scrollContainer.scrollTo({ top: scrollContainer.scrollHeight, behavior: "smooth" });
-      }
-    }
-  }, []);
-
   const handleRenameSubmit = () => {
     if (newTitle === chatDisplayTitle) return;
     if (!newTitle.trim() || !activeTicketId) return;
-    
-    renameChat({ chatId: activeTicketId, newTitle: newTitle.trim() }, {
-      onSuccess: () => setIsEditMode(false)
-    });
+
+    renameChat(
+      { chatId: activeTicketId, newTitle: newTitle.trim() },
+      { onSuccess: () => setIsEditMode(false) },
+    );
   };
 
+  const handleDeleteChat = () => {
+    if (!activeTicketId) return;
+    const confirmDelete = window.confirm(
+      "Вы уверены, что хотите НАВСЕГДА удалить эту тему и всю историю переписки?",
+    );
+    if (!confirmDelete) return;
+
+    deleteChat(activeTicketId, { onSuccess: () => clearChat() });
+  };
 
   const currentMemberRole = useGetCurrentMemberRole(chatInfo?.organizationId);
+  const currentUserId = session?.user?.id;
 
   if (!activeTicketId) {
     return (
@@ -108,46 +156,52 @@ export const ChatWindow = () => {
     );
   }
 
-  const currentUserId = session?.user?.id
-
   return (
     <WrapperScreen>
-       <WrapperHeaderScreen>
+      <WrapperHeaderScreen>
         <div className="ml-3 flex items-center justify-between gap-2 w-full">
           <div className="flex items-center gap-1">
-            <Button size="icon" onClick={() => clearChat()} variant="ghost"><ChevronLeft className="h-6 w-6"/></Button>
-          
+            <Button size="icon" onClick={() => clearChat()} variant="ghost">
+              <ChevronLeft className="h-6 w-6" />
+            </Button>
+
             {isEditing ? (
               <div className="flex items-center gap-1">
-                <Input 
-                  value={newTitle} 
-                  onChange={(e) => setNewTitle(e.target.value)} 
+                <Input
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
                   className="h-7 text-xs rounded-lg"
                   disabled={isRenaming}
                 />
-                <Button size="sm" onClick={handleRenameSubmit} disabled={isRenaming}>ОК</Button>
+                <Button
+                  size="sm"
+                  onClick={handleRenameSubmit}
+                  disabled={isRenaming}
+                >
+                  ОК
+                </Button>
               </div>
-                ) : (
-                  <h2 className="font-semibold text-sm text-primary">{chatDisplayTitle?.toUpperCase()}</h2>
-                )}
+            ) : (
+              <h2 className="font-semibold text-sm text-primary">
+                {chatDisplayTitle?.toUpperCase()}
+              </h2>
+            )}
           </div>
 
-
           <div className="flex items-center gap-1.5 shrink-0 mr-1">
-            
-             <ProtectByRole 
-              requiredRole="user" 
-              requiredOrgRole={OrgRole.RESPONSIBLE} 
+            <ProtectByRole
+              requiredRole="user"
+              requiredOrgRole={OrgRole.RESPONSIBLE}
               currentMemberRole={currentMemberRole}
             >
               <ChatMembersSheet chatId={activeTicketId} />
             </ProtectByRole>
 
-              <ProtectByRole requiredRole={USER_ROLE.ADMIN}>
+            <ProtectByRole requiredRole={USER_ROLE.ADMIN}>
               {!isEditing && (
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   disabled={isDeleting}
                   className="rounded-xl size-9 text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors"
                   onClick={handleDeleteChat}
@@ -158,12 +212,11 @@ export const ChatWindow = () => {
               )}
             </ProtectByRole>
 
-            {/* Кнопка переименования для Главного инженера (тебя) */}
             <ProtectByRole requiredRole={USER_ROLE.ADMIN}>
               {!isEditing && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="h-8 text-xs font-medium text-muted-foreground hover:text-foreground rounded-xl transition-colors px-3.5"
                   onClick={() => {
                     setNewTitle(chatDisplayTitle);
@@ -176,50 +229,54 @@ export const ChatWindow = () => {
             </ProtectByRole>
           </div>
         </div>
-       </WrapperHeaderScreen>
+      </WrapperHeaderScreen>
 
+      {/* ✅ Callback ref вместо useRef + useEffect */}
+      <div className="w-full h-[calc(100dvh-128px)] md:h-[calc(100vh-140px)] bg-muted/5">
+        <ScrollArea ref={setScrollContainerRef} className="px-4 w-full h-full">
+          <div className="w-full max-w-2xl mx-auto px-3 backdrop-blur-[1px]">
+            {isLoading && (
+              <div className="text-center text-xs text-muted-foreground py-4 animate-pulse">
+                Загрузка переписки...
+              </div>
+            )}
 
-      {/* Список сообщений из базы Beget */}
-       <div 
-          ref={scrollRef} 
-          className="w-full h-[calc(100dvh-160px)] md:h-[calc(100vh-140px)] bg-muted/5"
-        >
-          <ScrollArea ref={scrollRef} className="px-4 w-full h-full">
-            <div className="w-full max-w-2xl mx-auto px-3 backdrop-blur-[1px]"> 
-              {isLoading && (
-                <div className="text-center text-xs text-muted-foreground py-4 animate-pulse">Загрузка переписки...</div>
-              )}
-              
-              {error && (
-                <div className="text-center text-xs text-destructive py-4">Не удалось обновить историю</div>
-              )}
+            {error && (
+              <div className="text-center text-xs text-destructive py-4">
+                Не удалось обновить историю
+              </div>
+            )}
 
-              {!isLoading && !error && serverMessages.length === 0 && (
-                <div className="text-center text-xs text-muted-foreground py-4">
-                  В этой теме пока нет сообщений. Напишите что-нибудь!
-                </div>
-              )}
+            {!isLoading && !error && serverMessages.length === 0 && (
+              <div className="text-center text-xs text-muted-foreground py-4">
+                В этой теме пока нет сообщений. Напишите что-нибудь!
+              </div>
+            )}
 
-              {serverMessages.map((msg) => {
-                const time = new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-            
+            {serverMessages.map((msg) => {
+              const time = new Date(msg.createdAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
               const isMe = msg.profile?.userId === currentUserId;
 
               return (
-                  <div key={msg.id} className="pb-3">
-                    <span className={`text-[10px] text-muted-foreground block mb-0.5 px-1 font-medium ${isMe ? "text-right" : "text-left"}`}>
-                      {isMe ? "Вы" : msg.profile?.name || "Участник"}
-                    </span>
-                    <MessageItem 
-                      text={msg.text} 
-                      sender={isMe ? "user" : "support"} 
-                      timestamp={time} 
-                    />
-                  </div>
-                );
-                })}
+                <div key={msg.id} className="pb-3">
+                  <span
+                    className={`text-[10px] text-muted-foreground block mb-0.5 px-1 font-medium ${isMe ? "text-right" : "text-left"}`}
+                  >
+                    {isMe ? "Вы" : msg.profile?.name || "Участник"}
+                  </span>
+                  <MessageItem
+                    text={msg.text}
+                    sender={isMe ? "user" : "support"}
+                    timestamp={time}
+                  />
+                </div>
+              );
+            })}
           </div>
-      </ScrollArea>
+        </ScrollArea>
       </div>
       <MessageInput />
     </WrapperScreen>
