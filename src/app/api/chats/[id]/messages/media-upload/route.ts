@@ -1,3 +1,4 @@
+// src/app/api/chats/[id]/messages/media-upload/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@/app/lib/auth";
@@ -8,7 +9,16 @@ import path from "path";
 import { randomUUID } from "crypto";
 
 const UPLOAD_DIR = process.env.UPLOAD_DIR || "/opt/chat-app/uploads";
+
+// ✅ Чёткое разделение: медиа и документы в разных поддиректориях
+const MEDIA_DIR = path.join(UPLOAD_DIR, "media");
+const FILES_DIR = path.join(UPLOAD_DIR, "files");
+
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 МБ
+
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const VIDEO_TYPES = ["video/mp4", "video/webm"];
+const MEDIA_TYPES = [...IMAGE_TYPES, ...VIDEO_TYPES];
 
 export async function POST(
   req: NextRequest,
@@ -61,35 +71,39 @@ export async function POST(
       );
     }
 
-    const allowedTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/webp",
-      "image/gif",
-      "video/mp4",
-      "video/webm",
-    ];
-    if (!allowedTypes.includes(file.type)) {
+    // ✅ Определяем тип и целевую директорию
+    const isMedia = MEDIA_TYPES.includes(file.type);
+    const baseDir = isMedia ? MEDIA_DIR : FILES_DIR;
+    const fileType = isMedia
+      ? IMAGE_TYPES.includes(file.type)
+        ? "image"
+        : "video"
+      : "file";
+
+    // Разрешённые типы: медиа + любые файлы до 50МБ
+    if (!isMedia && file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { error: "Неподдерживаемый формат" },
+        {
+          error: `Файл слишком большой (макс. ${MAX_FILE_SIZE / 1024 / 1024} МБ)`,
+        },
         { status: 400 },
       );
     }
 
-    // 4. Сохранение на диск
+    // 4. Сохранение на диск в правильную поддиректорию
     const ext = file.name.split(".").pop() || "bin";
     const fileName = `${randomUUID()}.${ext}`;
-    const chatDir = path.join(UPLOAD_DIR, "chats", chatId);
+    const targetDir = path.join(baseDir, "chats", chatId);
 
-    await mkdir(chatDir, { recursive: true });
+    await mkdir(targetDir, { recursive: true });
 
-    const filePath = path.join(chatDir, fileName);
+    const filePath = path.join(targetDir, fileName);
     const buffer = Buffer.from(await file.arrayBuffer());
     await writeFile(filePath, buffer);
 
-    // Публичный URL (Nginx будет отдавать по этому пути)
-    const fileUrl = `/uploads/chats/${chatId}/${fileName}`;
-    const fileType = file.type.startsWith("image/") ? "image" : "video";
+    // ✅ URL отражает структуру: /uploads/media/... или /uploads/files/...
+    const urlPrefix = isMedia ? "media" : "files";
+    const fileUrl = `/uploads/${urlPrefix}/chats/${chatId}/${fileName}`;
 
     // 5. Запись в БД
     const message = await prisma.message.create({
@@ -127,7 +141,7 @@ export async function POST(
 
     return NextResponse.json({ message });
   } catch (error) {
-    console.error("Ошибка загрузки медиа:", error);
+    console.error("Ошибка загрузки:", error);
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

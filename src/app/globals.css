@@ -138,8 +138,11 @@ body{
   overflow: hidden;
 }
 
-body{
+.dark body{
   background: url('../../public/bg.webp') center center /contain repeat;
+}
+body{
+  background: url('../../public/bg-light.webp') center center /contain repeat;
 }
 
 
@@ -196,4 +199,17 @@ body{
 
 button{
   cursor: pointer;
+}
+.bg-messege_incoming{
+  background: -webkit-linear-gradient(90deg,#ababab,#d0d0d0,#c6c6c6); /* Chrome 10-25, Safari 5.1-6 */ 
+  background: linear-gradient(90deg,#ababab,#d0d0d0,#c6c6c6); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+}
+
+.dark .bg-messege_incoming{
+ background: -webkit-linear-gradient(90deg,#222120,#312e26,#45423a); /* Chrome 10-25, Safari 5.1-6 */ 
+ background: linear-gradient(90deg,#222120,#312e26,#45423a); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+}
+
+.bg-message_outcoming{
+ background: -webkit-linear-gradient(90deg,#003366,#0079c2); /* Chrome 10-25, Safari 5.1-6 */ background: linear-gradient(90deg,#003366,#0079c2); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
 }

@@ -7,7 +7,6 @@ import { prisma } from "./prisma/prisma-client.ts";
 
 dotenv.config({ path: ".env.development" });
 
-// Безопасная функция отправки push-уведомлений
 const sendPushNotification = async (profileId, notification) => {
   try {
     const module = await import("./src/shared/lib/web-push/send-push.js").catch(
@@ -26,7 +25,6 @@ const sendPushNotification = async (profileId, notification) => {
   }
 };
 
-// 1. HTTP Сервер + Обработка триггеров от Next.js
 const httpServer = createServer((req, res) => {
   if (req.method === "POST" && req.url === "/api/trigger") {
     let body = "";
@@ -34,8 +32,6 @@ const httpServer = createServer((req, res) => {
       body += chunk;
     });
 
-
-    // ✅ Исправление #1: async колбэк для работы await внутри
     req.on("end", async () => {
       try {
         const { event, payload } = JSON.parse(body);
@@ -73,7 +69,6 @@ const httpServer = createServer((req, res) => {
               });
             }
 
-            // ✅ Исправление #2: prisma теперь импортирован выше
             const chatMembers = await prisma.chatMember.findMany({
               where: { chatId: payload.message.chatId },
               select: { profileId: true },
@@ -87,8 +82,7 @@ const httpServer = createServer((req, res) => {
               if (isSupport) {
                 sendPushNotification(member.profileId, {
                   title: "Новое сообщение",
-                  body:
-                    payload.message.text?.substring(0, 100) || "📎 Медиа",
+                  body: payload.message.text?.substring(0, 100) || "📎 Медиа",
                   url: `/chats/${payload.message.chatId}`,
                   tag: `msg-${payload.message.chatId}`,
                 });
@@ -220,16 +214,11 @@ io.on("connection", (socket) => {
     console.log(`📤 ${userId} left chat:${chatId}`);
   });
 
-  // ✅ Исправление #3: УБРАН socket.on("message:new")
-  // Клиентская отправка текста идёт через HTTP POST → srv:message:new → triggerSocketEvent
-  // Этот обработчик был лишним и создавал конфликты
-
   socket.on("disconnect", () => {
     console.log(`❌ Отключен сокет: ${userId || "anonymous"} (${socket.id})`);
   });
 });
 
-// 3. Запуск
 const PORT = process.env.SOCKET_PORT || 4000;
 httpServer.listen(PORT, () => {
   console.log(`\n🚀 ========================================`);

@@ -9,7 +9,7 @@ import { DataTableColumnHeader } from "@/shared/ui/data-table-column-header";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
+import { Eye, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { DateRange } from "react-day-picker";
 
@@ -235,7 +235,7 @@ export const columns: ColumnDef<OrganizationWithCounts>[] = [
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-                 <Link href={`/organization/${organization.id}`}>Посмотреть / Редактировать</Link>
+                 <Link href={`/organization/${organization.id}`} className="flex items-center justify-start gap-2"><Eye/>Посмотреть</Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -1,9 +1,8 @@
 'use client';
 
-import ButtonSignOut from '@/features/auth-signout/ui/ButtonSignOut';
 import { useMediaQuery } from '@/shared/lib/hooks/useMediaQuery';
 import { cn } from '@/shared/lib/utils';
-import { MessagesSquare, CircleUser, Settings, Users, UserRoundCog } from 'lucide-react';
+import { MessagesSquare, Settings, Users, UserRoundCog } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -26,20 +25,18 @@ const MobileNav = ({ isAdmin }: { isAdmin: boolean }) => {
 
 
   return (
-    <div className="flex bg-background gap-2 justify-center py-4 px-1 border-none">
-      {/* 1. Чаты */}
+    <div className="fixed bottom-0 w-full z-50 flex bg-background gap-2 justify-center py-4 px-1 border-none">
+
       <Link href="/chats" className={linkClass("/chats")}>
         <MessagesSquare className="size-5" />
         <span className="text-xs">Чаты</span>
       </Link>
 
-      {/* 2. Аккаунт */}
       <Link href="/account" className={linkClass("/account")}>
-        <CircleUser className="size-5" />
-        <span className="text-xs">Профиль</span>
+        <Settings  className="size-5" />
+        <span className="text-xs">Настройки</span>
       </Link>
 
-      {/* 🚀 4. Клиенты (Админка компаний) — виден ВСЕМ админам */}
       {isAdmin && (
         <Link href="/admin/organizations" className={linkClass("/admin/organizations")}>
           <Users className="size-5" />
@@ -47,7 +44,6 @@ const MobileNav = ({ isAdmin }: { isAdmin: boolean }) => {
         </Link>
       )}
 
-      {/* 🚀 5. Инженеры (Новая ссылка для админа техподдержки, которую ты просил) */}
       {isAdmin && (
         <Link href="/admin/staff" className={linkClass("/admin/staff")}>
           <UserRoundCog  className="size-5" />

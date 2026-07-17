@@ -17,7 +17,7 @@ type Session = {
   updatedAt: Date;
   expiresAt: Date;
 }
-const ActiveSessions = () => {
+export  const ActiveSessions = () => {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
@@ -90,8 +90,6 @@ const parseSession = (ua?: string | null) => {
         ) : (
           sessions.map((session) => {
           const { device, browser, Icon } = parseSession(session.userAgent);
-
-          console.log('******************', session)
           return (
             <div key={session.id} className="flex items-center justify-between rounded-lg border p-3">
               <div className="flex items-center gap-3">
@@ -125,4 +123,3 @@ const parseSession = (ua?: string | null) => {
   );
 };
 
-export default ActiveSessions;

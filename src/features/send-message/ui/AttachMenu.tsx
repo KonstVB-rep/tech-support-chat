@@ -35,7 +35,7 @@ const AttachMenu = ({ isOpen, onClose, onFileSelect }: AttachMenuProps) => {
       />
 
       {/* Меню */}
-      <div className="absolute bottom-full left-0 right-0 mb-2 bg-background border border-border rounded-xl shadow-lg p-2 z-50 md:relative md:shadow-none">
+      <div className="absolute bottom-full left-0 right-0 mb-2 bg-background border border-border rounded-xl shadow-lg p-2 z-50">
         <div className="flex items-center justify-between px-2 py-1 border-b border-border mb-2">
           <span className="text-sm font-semibold">Прикрепить</span>
           <button

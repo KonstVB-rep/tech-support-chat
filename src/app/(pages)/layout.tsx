@@ -19,9 +19,6 @@ const PageLayout = async ({ children }: PageLayoutProps) => {
       
       <div className="flex flex-col md:flex-row w-full overflow-hidden">
         {children}
-        <Suspense>
-          <MobileNavWrapper />
-        </Suspense>
       </div>
     </div>
   );

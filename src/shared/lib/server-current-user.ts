@@ -20,7 +20,7 @@ export const getCurrentUser = cache(async () => {
   return session?.user ?? null;
 });
 
-export const requireAuth = async (redirectUrl = "/sign-in") => {
+export const requireAuth = async (redirectUrl = "/auth/sign-in") => {
   const user = await getCurrentUser();
   if (!user) {
     redirect(redirectUrl);

@@ -8,6 +8,7 @@ import { updateTag } from "next/cache"; // ← Заменяем revalidateTag н
 import { triggerSocketEvent } from "@/shared/lib/socket-trigger";
 import { getSession } from "@/shared/lib/server-current-user";
 
+const UPLOAD_DIR = process.env.UPLOAD_DIR || "/opt/chat-app/uploads";
 export const uploadAvatarAction = async (formData: FormData) => {
   const session = await getSession();
   if (!session?.user) {
@@ -24,13 +25,7 @@ export const uploadAvatarAction = async (formData: FormData) => {
     throw new Error("Файл слишком большой (макс. 5MB)");
   }
 
-  // Сохраняем файл
-  const uploadDir = path.join(
-    process.cwd(),
-    "public",
-    "uploads",
-    session.user.id,
-  );
+  const uploadDir = path.join(UPLOAD_DIR, "media", "avatars", session.user.id);
   await mkdir(uploadDir, { recursive: true });
 
   const ext = file.name.split(".").pop() || "webp";

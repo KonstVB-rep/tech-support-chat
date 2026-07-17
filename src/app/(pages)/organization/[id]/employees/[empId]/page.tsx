@@ -11,7 +11,7 @@ const EmployeeSinglePage = async ({params}: {params: Promise<{empId: string}>}) 
 
     const user = await getCurrentUser();
 
-    if (!user) redirect("/sign-in");
+    if (!user) redirect("/auth/sign-in");
 
     const {empId} = await params;
 

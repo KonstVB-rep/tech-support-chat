@@ -1,28 +1,23 @@
 "use client";
 
-import { ChevronRight, LaptopMinimalCheck, User } from "lucide-react";
+import { ChevronRight, LaptopMinimalCheck, PaintbrushVertical, User } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { ActiveScreenKeys } from "@/app/(pages)/account/AccountClientContent";
 
 interface SidebarProfileListProps {
-  setActiveScreen: React.Dispatch<React.SetStateAction<string>>;
+  setActiveScreen:(screen:ActiveScreenKeys) => void;
 }
 
 export const SidebarProfileList = ({ setActiveScreen }: SidebarProfileListProps) => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  useEffect(() => {
-    const screen = searchParams.get("screen");
-      setActiveScreen(screen ? screen : "profile");
-  }, [searchParams, setActiveScreen]);
-
   const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const button = (e.target as HTMLElement).closest("[data-screen]");
 
     if (button instanceof HTMLElement) {
-      const screen = button.dataset.screen;
+      const screen = button.dataset.screen as ActiveScreenKeys; 
       if (screen) {
         console.log(`⌨️ Переключение экрана настроек PWA на: ${screen}`);
 
@@ -63,11 +58,22 @@ export const SidebarProfileList = ({ setActiveScreen }: SidebarProfileListProps)
       </Button>
 
       <Button
+        data-screen="decoration"
+        className="flex items-center justify-start flex-1 w-full h-10 p-3"
+        variant="outline"
+      >
+        <span className="w-full text-sm font-semibold flex items-center justify-start gap-2">
+          <PaintbrushVertical className="h-4 w-4 text-muted-foreground" /> Оформление
+        </span>
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      </Button>
+
+      <Button
         data-screen="accountDel"
         className="flex items-center justify-start flex-1 w-full h-10 p-3 hover:text-destructive hover:bg-destructive/5"
         variant="destructive"
       >
-        <span className="w-full text-sm font-semibold flex items-center justify-start">
+        <span className="w-full text-sm font-semibold flex items-center justify-start text-white">
           Удалить аккаунт
         </span>
         <ChevronRight className="h-4 w-4" />

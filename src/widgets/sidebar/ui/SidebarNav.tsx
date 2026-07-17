@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleUser, MessagesSquare, Settings, Users, UserRoundCog } from 'lucide-react';
+import { MessagesSquare, Settings, Users, UserRoundCog } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/shared/lib/utils';
@@ -38,8 +38,8 @@ export const SidebarNav = ({ isAdmin }: SidebarNavProps) => {
 
       {/* 2. Аккаунт */}
       <Link href="/account" className={linkClass("/account")}>
-        <CircleUser className="size-5" />
-        <span className="text-xs">Профиль</span>
+        <Settings className="h-4 w-4 text-muted-foreground" />
+        <span className="text-xs">Настройки</span>
       </Link>
 
       {/* 🚀 4. Клиенты (Админка компаний) — виден ВСЕМ админам */}

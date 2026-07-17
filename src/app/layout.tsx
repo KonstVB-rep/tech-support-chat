@@ -4,6 +4,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 import RootProvider from "./providers/root-provider";
+import { MobileNavWrapper } from "@/widgets/mobile-nav/MobileNavWrapper";
+import { Suspense } from "react";
 
 export const viewport: Viewport = {
   themeColor: "#000000",
@@ -49,8 +51,11 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <RootProvider>
-           <div className="flex w-full">
+           <div className="flex w-full pb-[88px] md:pb-0">
               {children}
+              <Suspense>
+                <MobileNavWrapper />
+              </Suspense>
             </div>
             <PwaInstallBanner />
         </RootProvider>

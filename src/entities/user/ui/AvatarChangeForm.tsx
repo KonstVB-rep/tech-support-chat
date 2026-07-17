@@ -41,9 +41,6 @@ const handleRemove = (e: React.MouseEvent) => {
   remove.mutate(); 
 };
 
-
-console.log(previewUrl,'previewUrl')
-
   return (
     <div className="flex flex-col items-center gap-4 p-4">
       <Label htmlFor="avatar-upload" className="cursor-pointer group relative">

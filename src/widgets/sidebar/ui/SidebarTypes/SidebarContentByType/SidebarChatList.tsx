@@ -1,3 +1,7 @@
+// src/entities/chat/ui/SidebarChatList.tsx
+"use client";
+
+import { useEffect, useState, useCallback, Fragment } from "react";
 import { cn } from "@/shared/lib/utils";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 import { useActiveTicketId, useSetActiveTicketId } from "@/store/useChatStore";
@@ -5,8 +9,6 @@ import type { Chat } from "../../../api/useGetChats";
 import { Button } from "@/shared/ui/button";
 import { DrawerComponent } from "@/shared/ui/custom/DrawerComponent";
 import { ChatWindow } from "@/widgets/chat-window";
-import { Fragment } from "react/jsx-runtime";
-import { ChatInfo } from "@/entities/chat";
 
 interface ChatListProps {
   chats: Chat[];
@@ -37,6 +39,20 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
   const setActiveTicketId = useSetActiveTicketId();
   const activeTicketId = useActiveTicketId();
 
+  // 🎯 Добавляем контролируемое состояние для единственного мобильного дровера
+  const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
+  
+  // 🎯 Добавляем локальный стейт для моментального переключения чата в шторке
+  const [localMobileChatId, setLocalMobileChatId] = useState<string | null>(activeTicketId);
+
+  // Синхронизируем локальный стейт при внешних изменениях (например, очистке чата через Zustand)
+  useEffect(() => {
+    setLocalMobileChatId(activeTicketId);
+    if (!activeTicketId) {
+      setIsMobileChatOpen(false);
+    }
+  }, [activeTicketId]);
+
   if (chats.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center flex-1 p-6 text-center">
@@ -46,145 +62,85 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
     );
   }
 
-  const selectChat = (chatId: string) => {
+  // 🎯 Оптимизированный атомарный метод выбора чата (Google Style)
+  const handleChatSelect = (chatId: string) => {
+    // 1. Мгновенно переключаем локальный стейт для мобильной версии (0 мс ожидания)
+    // Благодаря этому ChatWindow внутри шторки ПЕРЕРИСУЕТСЯ ДО начала анимации выезда!
+    setLocalMobileChatId(chatId);
+
+    // 2. В фоне асинхронно обновляем глобальный Zustand-стор проекта
     if (chatId !== activeTicketId) {
       setActiveTicketId(chatId);
+    }
+
+    // 3. Если мы на мобильном устройстве, плавно открываем шторку
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setIsMobileChatOpen(true);
     }
   };
 
   return (
-    <div className="flex-1 overflow-y-auto px-3">
+    <div className="flex-1 overflow-y-auto px-3 select-none flex flex-col gap-1.5">
       {chats.map((chat) => {
-        const isActive = chat.id === activeTicketId;
-        const displayTitle =
-          chat.title || chat.organization?.name || "Обращение в поддержку";
+        const isActiveDesktop = chat.id === activeTicketId;
+        const displayTitle = chat.title || chat.organization?.name || "Обращение в поддержку";
 
         return (
-          <Fragment key={chat.id}>
-            <ChatSelect
-              displayTitle={displayTitle}
-              isActive={isActive}
-              chat={chat}
-              selectChat={selectChat}
-              className="hidden md:flex"
-            />
-            {/* <Button
-              onClick={() => {
-                selectChat(chat.id);
-              }}
-              variant="ghost"
-              className={cn(
-                "hidden w-full md:flex items-center gap-3 px-3 py-2.5 hover:bg-muted/50 transition-colors text-left h-auto rounded-md",
-                isActive && "bg-primary/10 hover:bg-primary/15",
-              )}
-            >
-              <Avatar className="w-11 h-11 border border-border/50 flex-shrink-0">
-                <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-semibold">
-                  {displayTitle.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+          <Button
+            key={chat.id}
+            onClick={() => handleChatSelect(chat.id)}
+            variant="ghost"
+            className={cn(
+              "w-full items-center gap-3 px-3 py-2.5 hover:bg-muted/50 transition-colors text-left h-auto rounded-md flex",
+              // 🎯 ИСПРАВЛЕНО: На десктопе (md и выше) подсвечиваем активный чат, 
+              // а на мобилках кнопка всегда остается чистой и однородной без заливки
+              isActiveDesktop && "md:bg-primary/10 md:hover:bg-primary/15"
+            )}
+          >
+            <Avatar className="w-11 h-11 border border-border/50 flex-shrink-0">
+              <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-semibold">
+                {displayTitle.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
 
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-0.5">
-                  <h3 className="font-semibold text-sm truncate text-primary">
-                    {chat.title}
-                  </h3>
-                  <span className="text-[10px] text-muted-foreground flex-shrink-0 ml-2">
-                    {formatTime(chat.updatedAt)}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between gap-2 mt-1">
-                  <p className="text-xs text-muted-foreground truncate max-w-[130px]">
-                    {chat.organization?.name || "Платформа"}
-                  </p>
-
-                  <p className="text-xs text-muted-foreground shrink-0 ml-auto font-medium">
-                    {chat._count.messages} сообщ.
-                  </p>
-                </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-0.5">
+                <h3 className="font-semibold text-sm truncate text-primary">
+                  {displayTitle}
+                </h3>
+                <span className="text-[10px] text-muted-foreground flex-shrink-0 ml-2">
+                  {formatTime(chat.updatedAt)}
+                </span>
               </div>
-            </Button> */}
 
-            <DrawerComponent
-              trigger={
-                <div className="w-full md:hidden">
-                  <ChatSelect
-                    displayTitle={displayTitle}
-                    isActive={isActive}
-                    chat={chat}
-                    selectChat={selectChat}
-                    className="flex"
-                  />
-                </div>
-              }
-              className="data-[vaul-drawer-direction=bottom]:max-h-[100vh] data-[vaul-drawer-direction=bottom]:h-[100dvh] md:hidden"
-              side={"bottom"}
-            >
-              <div className="px-4 flex flex-col gap-3">
-                <ChatWindow />
+              <div className="flex items-center justify-between gap-2 mt-1">
+                <p className="text-xs text-muted-foreground truncate max-w-[130px]">
+                  {chat.organization?.name || "Платформа"}
+                </p>
+
+                <p className="text-xs text-muted-foreground shrink-0 ml-auto font-medium">
+                  {chat._count.messages} сообщ.
+                </p>
               </div>
-            </DrawerComponent>
-          </Fragment>
+            </div>
+          </Button>
         );
       })}
+
+      {/* 🎯 ЕДИНЫЙ КОНТРОЛИРУЕМЫЙ ДРОВЕР НА ВЕСЬ КОМПОНЕНТ (Вынесен за пределы цикла) */}
+      <DrawerComponent
+        open={isMobileChatOpen}
+        onOpenChange={setIsMobileChatOpen}
+        className="data-[vaul-drawer-direction=left]:max-h-[100vh] data-[vaul-drawer-direction=left]:h-[100dvh] md:hidden max-w-full data-[vaul-drawer-direction=left]:w-full h-full"
+        side={"left"}
+      >
+        <div className="md:px-4 flex flex-col gap-3 relative h-full">
+          <div className="absolute right-0 h-3/12 bg-chart-2 rounded-s-md top-1/2 -translate-y-1/2 w-2" />
+          {/* Передаем принудительно localMobileChatId вместо глобального activeTicketId */}
+          {/* Благодаря этому в шторке никогда не моргнет предыдущая переписка */}
+          <ChatWindow />
+        </div>
+      </DrawerComponent>
     </div>
-  );
-};
-
-type ChatSelectProps = {
-  displayTitle: string;
-  isActive: boolean;
-  chat: Chat;
-  selectChat: (chatId: string) => void;
-  className?: string;
-};
-
-const ChatSelect = ({
-  displayTitle,
-  isActive,
-  chat,
-  selectChat,
-  className,
-}: ChatSelectProps) => {
-  return (
-    <Button
-      onClick={() => {
-        selectChat(chat.id);
-      }}
-      variant="ghost"
-      className={cn(
-        "w-full items-center gap-3 px-3 py-2.5 hover:bg-muted/50 transition-colors text-left h-auto rounded-md",
-        className,
-        isActive && "bg-primary/10 hover:bg-primary/15",
-      )}
-    >
-      <Avatar className="w-11 h-11 border border-border/50 flex-shrink-0">
-        <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-semibold">
-          {displayTitle.charAt(0).toUpperCase()}
-        </AvatarFallback>
-      </Avatar>
-
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-0.5">
-          <h3 className="font-semibold text-sm truncate text-primary">
-            {chat.title}
-          </h3>
-          <span className="text-[10px] text-muted-foreground flex-shrink-0 ml-2">
-            {formatTime(chat.updatedAt)}
-          </span>
-        </div>
-
-        <div className="flex items-center justify-between gap-2 mt-1">
-          <p className="text-xs text-muted-foreground truncate max-w-[130px]">
-            {chat.organization?.name || "Платформа"}
-          </p>
-
-          <p className="text-xs text-muted-foreground shrink-0 ml-auto font-medium">
-            {chat._count.messages} сообщ.
-          </p>
-        </div>
-      </div>
-    </Button>
   );
 };

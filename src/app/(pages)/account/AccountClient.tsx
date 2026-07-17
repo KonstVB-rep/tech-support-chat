@@ -5,7 +5,7 @@ import AccountClientContent from "./AccountClientContent";
 
 export const AccountClient = async () => {
   const user = await getCurrentUser();
-  if (!user) redirect("/sign-in");
+  if (!user) redirect("/auth/sign-in");
 
   const profile = await getProfile(user.id);
   

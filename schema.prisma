@@ -228,6 +228,10 @@ model Message {
   profileId String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  fileUrl   String?   
+  fileType  String?    
+  fileName  String?   
+  fileSize  Int?      
 
   chat    Chat    @relation(fields: [chatId], references: [id], onDelete: Cascade)
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Restrict)

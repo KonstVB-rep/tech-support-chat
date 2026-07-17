@@ -4,7 +4,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { authClient } from "@/app/lib/auth-client";
-import { MessageItem } from "@/entities/message";
 import { MessageInput } from "@/features/send-message";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
@@ -25,6 +24,8 @@ import { OrgRole } from "@prisma/client";
 import { useGetCurrentMemberRole } from "@/entities/employee/api/useGetCurrentMemberRole";
 import { getSocket } from "@/shared/lib/socket";
 import type { MessagesResponse, Message } from "@/entities/chat/api/chat-api";
+import { useSocketStatus } from "@/shared/lib/hooks/useSocketStatus";
+import { MessageItem } from "@/entities/message";
 
 export const ChatWindow = () => {
   const activeTicketId = useActiveTicketId();
@@ -37,9 +38,8 @@ export const ChatWindow = () => {
 
   const { mutate: renameChat, isPending: isRenaming } = useUpdateChatTitle();
   const { mutate: deleteChat, isPending: isDeleting } = useDeleteChat();
+  const socketStatus = useSocketStatus();
 
-  // ✅ Паттерн синхронизации стейта при рендере (вместо useEffect)
-  // Убирает лишний цикл обновления, Biome не ругается
   const [prevId, setPrevId] = useState(activeTicketId);
   const [newTitle, setNewTitle] = useState("");
   const [isEditing, setIsEditMode] = useState(false);
@@ -54,8 +54,7 @@ export const ChatWindow = () => {
   const chatInfo = messagesData?.chat || null;
   const chatDisplayTitle = chatInfo?.title || "Загрузка темы...";
 
-  // ✅ Автоскролл через callback ref (вместо useEffect с зависимостями)
-  // Вызывается после каждого обновления DOM, requestAnimationFrame ждёт layout
+
   const setScrollContainerRef = useCallback(
     (node: HTMLDivElement | null) => {
       if (!node) return;
@@ -73,7 +72,7 @@ export const ChatWindow = () => {
     [],
   );
 
-  // Подписка на входящие сообщения + вход в комнату
+ 
   useEffect(() => {
     if (!activeTicketId) return;
 
@@ -106,7 +105,7 @@ export const ChatWindow = () => {
     };
   }, [activeTicketId, queryClient]);
 
-  // Слушатель удаления из чата
+
   useEffect(() => {
     if (!activeTicketId) return;
 
@@ -147,6 +146,8 @@ export const ChatWindow = () => {
 
   const currentMemberRole = useGetCurrentMemberRole(chatInfo?.organizationId);
   const currentUserId = session?.user?.id;
+
+
 
   if (!activeTicketId) {
     return (
@@ -232,7 +233,7 @@ export const ChatWindow = () => {
       </WrapperHeaderScreen>
 
       {/* ✅ Callback ref вместо useRef + useEffect */}
-      <div className="w-full h-[calc(100dvh-128px)] md:h-[calc(100vh-140px)] bg-muted/5">
+      <div className="flex flex-col flex-1 min-h-0 w-full mx-auto">
         <ScrollArea ref={setScrollContainerRef} className="px-4 w-full h-full">
           <div className="w-full max-w-2xl mx-auto px-3 backdrop-blur-[1px]">
             {isLoading && (
@@ -271,6 +272,9 @@ export const ChatWindow = () => {
                     text={msg.text}
                     sender={isMe ? "user" : "support"}
                     timestamp={time}
+                    fileUrl={msg.fileUrl}
+                    fileType={msg.fileType}
+                    fileName={msg.fileName}
                   />
                 </div>
               );
@@ -278,9 +282,17 @@ export const ChatWindow = () => {
           </div>
         </ScrollArea>
       </div>
+
+      {socketStatus !== "connected" && (
+        <div className="w-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-center py-1.5 text-xs font-medium animate-pulse border-t border-amber-500/20">
+          {socketStatus === "connecting" ? "⚠️ Соединение с сервером потеряно. Переподключение..." : "❌ Нет связи с сервером поддержки"}
+        </div>
+      )}
+      <div className="shrink-0 w-full">
       <MessageInput />
+      </div>
+
     </WrapperScreen>
   );
 };
-
 export default ChatWindow;
