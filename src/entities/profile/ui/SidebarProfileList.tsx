@@ -1,15 +1,22 @@
 "use client";
 
-import { ChevronRight, LaptopMinimalCheck, PaintbrushVertical, User } from "lucide-react";
+import {
+  ChevronRight,
+  LaptopMinimalCheck,
+  PaintbrushVertical,
+  User,
+} from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ActiveScreenKeys } from "@/app/(pages)/account/AccountClientContent";
 
 interface SidebarProfileListProps {
-  setActiveScreen:(screen:ActiveScreenKeys) => void;
+  setActiveScreen: (screen: ActiveScreenKeys) => void;
 }
 
-export const SidebarProfileList = ({ setActiveScreen }: SidebarProfileListProps) => {
+export const SidebarProfileList = ({
+  setActiveScreen,
+}: SidebarProfileListProps) => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -17,7 +24,7 @@ export const SidebarProfileList = ({ setActiveScreen }: SidebarProfileListProps)
     const button = (e.target as HTMLElement).closest("[data-screen]");
 
     if (button instanceof HTMLElement) {
-      const screen = button.dataset.screen as ActiveScreenKeys; 
+      const screen = button.dataset.screen as ActiveScreenKeys;
       if (screen) {
         console.log(`⌨️ Переключение экрана настроек PWA на: ${screen}`);
 
@@ -52,7 +59,8 @@ export const SidebarProfileList = ({ setActiveScreen }: SidebarProfileListProps)
         variant="outline"
       >
         <span className="w-full text-sm font-semibold flex items-center justify-start gap-2">
-          <LaptopMinimalCheck className="h-4 w-4 text-muted-foreground" /> Сессия
+          <LaptopMinimalCheck className="h-4 w-4 text-muted-foreground" />{" "}
+          Сессия
         </span>
         <ChevronRight className="h-4 w-4 text-muted-foreground" />
       </Button>
@@ -63,7 +71,8 @@ export const SidebarProfileList = ({ setActiveScreen }: SidebarProfileListProps)
         variant="outline"
       >
         <span className="w-full text-sm font-semibold flex items-center justify-start gap-2">
-          <PaintbrushVertical className="h-4 w-4 text-muted-foreground" /> Оформление
+          <PaintbrushVertical className="h-4 w-4 text-muted-foreground" />{" "}
+          Оформление
         </span>
         <ChevronRight className="h-4 w-4 text-muted-foreground" />
       </Button>

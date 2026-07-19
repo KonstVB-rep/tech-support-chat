@@ -6,17 +6,18 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type z from "zod";
 import { prisma } from "@/prisma/prisma-client";
+
+import { auth } from "../lib/auth";
+import { updateTag } from "next/cache";
+import { getSession } from "@/shared/lib/server-current-user";
+import { triggerSocketEvent } from "@/shared/lib/socket-trigger";
 import {
   passwordSchema,
   validationSchemaResetPassword,
   validationSchemaResetPasswordConfirm,
   validationSchemaSignIn,
   validationSchemaSignUp,
-} from "../(auth)/auth/model/schema";
-import { auth } from "../lib/auth";
-import { updateTag } from "next/cache";
-import { getSession } from "@/shared/lib/server-current-user";
-import { triggerSocketEvent } from "@/shared/lib/socket-trigger";
+} from "@/app/(auth)/auth/model/schema";
 
 type ActionState =
   | {
@@ -337,7 +338,6 @@ export const changePassword = async (
   const { newPassword, currentPassword } = validated.data;
 
   try {
-    // ✅ headers передаются ОТДЕЛЬНО от body
     await auth.api.changePassword({
       body: {
         newPassword,

@@ -3,9 +3,9 @@ import { getSession } from "@/shared/lib/server-current-user";
 import MobileNav from "@/widgets/mobile-nav/MobileNav";
 
 export const MobileNavWrapper = async () => {
-
   const session = await getSession();
-  const isAdmin = session?.user?.role?.toLowerCase() === USER_ROLE.ADMIN.toLowerCase();
+  const isAdmin =
+    session?.user?.role?.toLowerCase() === USER_ROLE.ADMIN.toLowerCase();
 
-  return <MobileNav isAdmin={isAdmin} />
+  return <MobileNav isAdmin={isAdmin} />;
 };

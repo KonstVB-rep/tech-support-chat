@@ -73,7 +73,7 @@ export const updateEmployeeAction = async (
       };
     }
 
-    (await prisma.organizationMember.update({
+    await prisma.organizationMember.update({
       where: { id: employeeId },
       data: {
         position: position || null,
@@ -100,7 +100,7 @@ export const updateEmployeeAction = async (
       // ]);
 
       // 5. РЕВАЛИДАЦИЯ: Моментально сбрасываем серверный кэш таблицы сотрудников этой компании
-      updateTag(`employees-${organizationId}`));
+      updateTag(`employees-${organizationId}`);
     // updateTag(`employees-${organizationId}-${employeeId}`));
 
     return {

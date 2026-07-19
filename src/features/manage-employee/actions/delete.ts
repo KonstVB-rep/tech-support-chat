@@ -67,7 +67,11 @@ export const deleteEmployeeAction = async (
     });
 
     if (!membersData.length) {
-      return { success: false, deletedCount: 0, error: "Сотрудники не найдены" };
+      return {
+        success: false,
+        deletedCount: 0,
+        error: "Сотрудники не найдены",
+      };
     }
 
     const timestamp = Math.floor(Date.now() / 1000);

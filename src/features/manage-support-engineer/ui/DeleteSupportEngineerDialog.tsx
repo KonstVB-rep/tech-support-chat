@@ -19,12 +19,12 @@ type DeleteSupportEngineerDialogProps = {
   engineerIds: string | string[];
   engineerName?: string;
   onAfterDelete?: () => void;
-}
+};
 
 export const DeleteSupportEngineerDialog = ({
   engineerIds: ids,
   engineerName,
-  onAfterDelete
+  onAfterDelete,
 }: DeleteSupportEngineerDialogProps) => {
   const [isPending, startDeleteTransition] = useTransition();
   const [open, setOpen] = useState(false);
@@ -34,13 +34,13 @@ export const DeleteSupportEngineerDialog = ({
 
   const title = isMultiple
     ? `Будут удалены инженероы: ${idsArray.length}?`
-    : engineerName 
+    : engineerName
       ? `Удалить инженера "${engineerName}"?`
       : "Удалить выбранного инженера?";
 
-
-  const description = isMultiple ? `Выбранные инженеры больше не смогут войти приложение, а все их активные сессии будут мгновенно аннулированы.` : `${engineerName} больше не сможет войти в приложение, а все его активные сессии будут мгновенно аннулированы.`
-
+  const description = isMultiple
+    ? `Выбранные инженеры больше не смогут войти приложение, а все их активные сессии будут мгновенно аннулированы.`
+    : `${engineerName} больше не сможет войти в приложение, а все его активные сессии будут мгновенно аннулированы.`;
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -48,9 +48,9 @@ export const DeleteSupportEngineerDialog = ({
     startDeleteTransition(async () => {
       const res = await deleteSupportEngineerAction(ids);
 
-       if (res.success) {
+      if (res.success) {
         toast.success(`Инженера ${engineerName} успешно удален`);
-        onAfterDelete && onAfterDelete();
+        onAfterDelete?.();
         setOpen(false);
       } else {
         toast.error(res.error || "Не удалось отключить аккаунт сотрудника");
@@ -58,13 +58,12 @@ export const DeleteSupportEngineerDialog = ({
     });
   };
 
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           variant="destructive"
-          className="text-white disabled:opacity-50 shrink-0 w-full flex justify-start items-center gap-2"
+          className="text-white disabled:opacity-50 shrink-0 w-full flex justify-start items-center gap-2 field-height"
           title="Деактивировать инженера"
         >
           <Trash2 className="h-4 w-4" /> Удалить

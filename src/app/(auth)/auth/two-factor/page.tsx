@@ -1,38 +1,48 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { RefreshCwIcon } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
-import { authClient } from "@/app/lib/auth-client"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/shared/ui/card"
-import { Field, FieldLabel } from "@/shared/ui/field"
-import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@/shared/ui/input-otp"
-import { Button } from "@/shared/ui/button"
-
-
+import { useState } from "react";
+import { RefreshCwIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { authClient } from "@/app/lib/auth-client";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/shared/ui/card";
+import { Field, FieldLabel } from "@/shared/ui/field";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+  InputOTPSeparator,
+} from "@/shared/ui/input-otp";
+import { Button } from "@/shared/ui/button";
 
 export default function TwoFactor() {
-  const [code, setCode] = useState("")
-  const router = useRouter()
+  const [code, setCode] = useState("");
+  const router = useRouter();
 
   const verifyInitialCode = async (e: React.SubmitEvent<HTMLFormElement>) => {
     // Теперь TypeScript знает про preventDefault()
-    e.preventDefault()
+    e.preventDefault();
 
     const { error } = await authClient.twoFactor.verifyTotp({
       code,
       trustDevice: false,
-    })
+    });
 
     if (error) {
-      toast.error(error.message || "Неверный код")
-      return
+      toast.error(error.message || "Неверный код");
+      return;
     }
 
-    setCode("")
-    router.replace("/")
-  }
+    setCode("");
+    router.replace("/");
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
@@ -50,7 +60,9 @@ export default function TwoFactor() {
             <CardContent>
               <Field>
                 <div className="flex items-center justify-between">
-                  <FieldLabel htmlFor="otp-verification">Verification code</FieldLabel>
+                  <FieldLabel htmlFor="otp-verification">
+                    Verification code
+                  </FieldLabel>
                   <Button size="xs" variant="outline">
                     <RefreshCwIcon />
                     Resend Code
@@ -89,5 +101,5 @@ export default function TwoFactor() {
         </form>
       </div>
     </div>
-  )
+  );
 }

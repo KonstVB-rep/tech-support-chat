@@ -12,7 +12,7 @@ interface MessageProps {
   fileName?: string | null;
 }
 
-export const MessageItem =({
+export const MessageItem = ({
   text,
   sender,
   timestamp,
@@ -33,7 +33,6 @@ export const MessageItem =({
             : "bg-messege_incoming text-foreground rounded-bl-none border border-border/60"
         }`}
       >
-        {/* ✅ Изображение */}
         {fileUrl && fileType === "image" && (
           <div className="relative w-full max-w-[300px] rounded-lg overflow-hidden mb-2">
             <Image
@@ -103,4 +102,4 @@ export const MessageItem =({
       </div>
     </div>
   );
-}
+};

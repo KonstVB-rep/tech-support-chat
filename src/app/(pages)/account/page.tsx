@@ -1,14 +1,12 @@
-
 import { Suspense } from "react";
 import { AccountClient } from "./AccountClient";
 
-const AccountPage =  () => {
-
+const AccountPage = () => {
   return (
-        <Suspense fallback={"Загрузка..."}>
-          <AccountClient />
-        </Suspense>
+    <Suspense fallback={"Загрузка..."}>
+      <AccountClient />
+    </Suspense>
   );
-}
+};
 
 export default AccountPage;

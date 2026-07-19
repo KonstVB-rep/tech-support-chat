@@ -5,7 +5,6 @@ import { EmployeeWithProfile } from "@/entities/employee";
 import {
   DeleteEmployeeDialog,
   UpdateEmployee,
-  UpdateEmployeeDialog,
 } from "@/features/manage-employee";
 import { PushSettingsToggle } from "@/features/pwa-push/ui/PushSettingsToggle";
 import { cn } from "@/shared/lib/utils";
@@ -13,18 +12,9 @@ import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { DrawerComponent } from "@/shared/ui/custom/DrawerComponent";
 import { DataTableColumnHeader } from "@/shared/ui/data-table-column-header";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Eye, MoreHorizontal } from "lucide-react";
-import Link from "next/link";
+import { Eye } from "lucide-react";
 
 export const columns: ColumnDef<EmployeeWithProfile, unknown>[] = [
   {
@@ -124,15 +114,15 @@ export const columns: ColumnDef<EmployeeWithProfile, unknown>[] = [
 
       return (
         <DrawerComponent
-          buttonTriggerInnerContent={
-            <>
+          trigger={
+            <Button variant="ghost" size="icon">
               <span className="sr-only">Открыть меню</span>
               <Eye className="h-4 w-4" />
-            </>
+            </Button>
           }
           side="right"
         >
-          <div className="no-scrollbar overflow-y-auto px-4 flex flex-col gap-3 h-full overflow-hidden">
+          <div className="no-scrollbar overflow-y-auto p-4 flex flex-col gap-3 h-full overflow-hidden">
             <UpdateEmployee employee={employee} />
             <PushSettingsToggle
               profileId={employee.profileId}

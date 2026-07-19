@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev:seed": "cp -r tests/fixtures uploads/media/chats/_demo 2>/dev/null; next dev",
     "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",

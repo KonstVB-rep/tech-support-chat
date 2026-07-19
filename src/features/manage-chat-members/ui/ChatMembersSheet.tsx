@@ -3,10 +3,20 @@
 
 import { useState } from "react";
 import { Button } from "@/shared/ui/button";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/shared/ui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/shared/ui/drawer";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import { Users, UserPlus, UserMinus, Loader } from "lucide-react";
-import { useChatMembers, useAddChatMember, useRemoveChatMember } from "../api/useChatMembersMutations";
+import {
+  useChatMembers,
+  useAddChatMember,
+  useRemoveChatMember,
+} from "../api/useChatMembersMutations";
 import { useMediaQuery } from "@/shared/lib/hooks/useMediaQuery";
 
 interface ChatMembersSheetProps {
@@ -19,7 +29,8 @@ export const ChatMembersSheet = ({ chatId }: ChatMembersSheetProps) => {
 
   const { data: employees = [], isLoading } = useChatMembers(chatId, isOpen);
   const { mutate: addMember, isPending: isAdding } = useAddChatMember(chatId);
-  const { mutate: removeMember, isPending: isRemoving } = useRemoveChatMember(chatId);
+  const { mutate: removeMember, isPending: isRemoving } =
+    useRemoveChatMember(chatId);
 
   const isMutating = isAdding || isRemoving;
 
@@ -27,7 +38,8 @@ export const ChatMembersSheet = ({ chatId }: ChatMembersSheetProps) => {
     <div className="space-y-2.5 p-4 max-h-[350px] overflow-y-auto pr-1 select-none">
       {isLoading ? (
         <div className="flex items-center justify-center py-6 text-muted-foreground gap-2 text-xs">
-          <Loader className="size-4 animate-spin text-blue-600" /> Синхронизация списка...
+          <Loader className="size-4 animate-spin text-blue-600" /> Синхронизация
+          списка...
         </div>
       ) : employees.length === 0 ? (
         <div className="text-center text-xs text-muted-foreground py-6">
@@ -35,14 +47,14 @@ export const ChatMembersSheet = ({ chatId }: ChatMembersSheetProps) => {
         </div>
       ) : (
         employees.map((emp) => (
-          <div 
-            key={emp.profileId} 
+          <div
+            key={emp.profileId}
             className="flex items-center justify-between p-2 rounded-xl border border-border/40 bg-muted/5"
           >
             <span className="text-xs font-semibold truncate max-w-[170px] md:max-w-[200px]">
               {emp.name}
             </span>
-            
+
             {emp.isInChat ? (
               <Button
                 variant="ghost"
@@ -73,13 +85,22 @@ export const ChatMembersSheet = ({ chatId }: ChatMembersSheetProps) => {
     return (
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" className="rounded-xl size-9 text-muted-foreground hover:text-foreground">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-xl size-9 text-muted-foreground hover:text-foreground"
+          >
             <Users className="size-5" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-0 rounded-xl shadow-2xl border-border/60" align="end">
+        <PopoverContent
+          className="w-80 p-0 rounded-xl shadow-2xl border-border/60"
+          align="end"
+        >
           <div className="px-4 pt-3 pb-1 border-b border-border/40">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Доступы к переписке</h4>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Доступы к переписке
+            </h4>
           </div>
           {renderList()}
         </PopoverContent>
@@ -90,7 +111,11 @@ export const ChatMembersSheet = ({ chatId }: ChatMembersSheetProps) => {
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-xl size-9 text-muted-foreground active:bg-muted">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-xl size-9 text-muted-foreground active:bg-muted"
+        >
           <Users className="size-5" />
         </Button>
       </DrawerTrigger>

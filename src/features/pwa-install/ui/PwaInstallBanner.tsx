@@ -1,15 +1,16 @@
-'use client';
-import { Button } from '@/shared/ui/button';
-import { useEffect, useState } from 'react';
+"use client";
+import { Button } from "@/shared/ui/button";
+import { useEffect, useState } from "react";
 
 // Описываем тип для события браузера, так как в стандартном TS его нет
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
 export default function PwaInstallBanner() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -22,16 +23,19 @@ export default function PwaInstallBanner() {
       setIsVisible(true);
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
 
     // Если приложение УЖЕ установлено, скрываем баннер
-    window.addEventListener('appinstalled', () => {
+    window.addEventListener("appinstalled", () => {
       setIsVisible(false);
       setDeferredPrompt(null);
     });
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt,
+      );
     };
   }, []);
 
@@ -52,7 +56,7 @@ export default function PwaInstallBanner() {
 
   // Если браузер не разрешил установку, ничего не рендерим
   // if (!isVisible) return null;
-   if (true) return null;
+  if (true) return null;
 
   return (
     <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-sm bg-white border border-gray-200 rounded-2xl p-4 shadow-2xl z-50 animate-fade-in-up">
@@ -61,13 +65,15 @@ export default function PwaInstallBanner() {
         <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white text-xl font-bold shrink-0 shadow-md">
           💬
         </div>
-        
+
         <div className="flex-1">
-          <h3 className="font-semibold text-gray-900 text-sm">Установить чат поддержки</h3>
+          <h3 className="font-semibold text-gray-900 text-sm">
+            Установить чат поддержки
+          </h3>
           <p className="text-xs text-gray-500 mt-0.5">
             Добавьте приложение на экран для мгновенного доступа и уведомлений.
           </p>
-          
+
           <div className="flex gap-2 mt-3">
             <Button
               onClick={handleInstallClick}

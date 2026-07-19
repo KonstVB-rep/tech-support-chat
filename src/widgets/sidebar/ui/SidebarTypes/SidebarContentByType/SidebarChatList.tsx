@@ -41,9 +41,11 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
 
   // 🎯 Добавляем контролируемое состояние для единственного мобильного дровера
   const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
-  
+
   // 🎯 Добавляем локальный стейт для моментального переключения чата в шторке
-  const [localMobileChatId, setLocalMobileChatId] = useState<string | null>(activeTicketId);
+  const [localMobileChatId, setLocalMobileChatId] = useState<string | null>(
+    activeTicketId,
+  );
 
   // Синхронизируем локальный стейт при внешних изменениях (например, очистке чата через Zustand)
   useEffect(() => {
@@ -83,7 +85,8 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
     <div className="flex-1 overflow-y-auto px-3 select-none flex flex-col gap-1.5">
       {chats.map((chat) => {
         const isActiveDesktop = chat.id === activeTicketId;
-        const displayTitle = chat.title || chat.organization?.name || "Обращение в поддержку";
+        const displayTitle =
+          chat.title || chat.organization?.name || "Обращение в поддержку";
 
         return (
           <Button
@@ -92,9 +95,9 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
             variant="ghost"
             className={cn(
               "w-full items-center gap-3 px-3 py-2.5 hover:bg-muted/50 transition-colors text-left h-auto rounded-md flex",
-              // 🎯 ИСПРАВЛЕНО: На десктопе (md и выше) подсвечиваем активный чат, 
+              // 🎯 ИСПРАВЛЕНО: На десктопе (md и выше) подсвечиваем активный чат,
               // а на мобилках кнопка всегда остается чистой и однородной без заливки
-              isActiveDesktop && "md:bg-primary/10 md:hover:bg-primary/15"
+              isActiveDesktop && "md:bg-primary/10 md:hover:bg-primary/15",
             )}
           >
             <Avatar className="w-11 h-11 border border-border/50 flex-shrink-0">

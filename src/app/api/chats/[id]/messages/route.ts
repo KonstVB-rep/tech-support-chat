@@ -27,7 +27,6 @@ async function checkChatAccess(
 
   if (!chat) return { allowed: false, error: "Чат не найден", status: 404 };
 
-  // 3. Если чат привязан к компании, проверяем, является ли юзер RESPONSIBLE менеджером этой компании
   if (chat.organizationId) {
     const orgMembership = await prisma.organizationMember.findUnique({
       where: {
@@ -39,13 +38,11 @@ async function checkChatAccess(
       select: { role: true },
     });
 
-    // Руководители компании имеют сквозной легальный доступ ко всем тикетам своего завода!
     if (orgMembership && orgMembership.role === "RESPONSIBLE") {
       return { allowed: true };
     }
   }
 
-  // 4. Для всех остальных (рядовых MEMBER) — проверяем строгое физическое присутствие в чате
   const isChatMember = await prisma.chatMember.findUnique({
     where: {
       chatId_profileId: { chatId, profileId: userProfileId },

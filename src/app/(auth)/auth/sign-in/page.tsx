@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { authClient } from "@/app/lib/auth-client";
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
@@ -8,7 +8,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { type SchemaPropsSignIn, validationSchemaSignIn } from "../model/schema";
+import {
+  type SchemaPropsSignIn,
+  validationSchemaSignIn,
+} from "../model/schema";
 import InputPassword from "@/shared/ui/custom/InputPassword";
 import { Button } from "@/shared/ui/button";
 import { Loader } from "lucide-react";
@@ -20,7 +23,7 @@ const initialState = {
 
 export default function SignInPage() {
   const router = useRouter();
-  
+
   // 🚀 БЕСТ-ПРАКТИКС: Достаем formState для контроля состояния отправки формы
   const form = useForm<SchemaPropsSignIn>({
     resolver: zodResolver(validationSchemaSignIn),
@@ -33,7 +36,6 @@ export default function SignInPage() {
   const { isSubmitting } = form.formState;
 
   const onSubmit = async (values: SchemaPropsSignIn) => {
-    // Возвращаем промис Better Auth, чтобы react-hook-form сама переключила isSubmitting в true
     return await authClient.signIn.email(
       {
         email: values.email,
@@ -58,15 +60,16 @@ export default function SignInPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-4 w-full">
-      <form className="flex flex-col gap-3 w-64 p-4" onSubmit={form.handleSubmit(onSubmit)}>
-        
+      <form
+        className="flex flex-col gap-3 w-64 p-4"
+        onSubmit={form.handleSubmit(onSubmit)}
+      >
         {/* Email */}
         <Controller
           control={form.control}
           name="email"
           render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid} className="bg-card">
-              <FieldLabel htmlFor="form-email"></FieldLabel>
+            <Field data-invalid={fieldState.invalid}>
               <Input
                 {...field}
                 aria-invalid={fieldState.invalid}
@@ -74,20 +77,19 @@ export default function SignInPage() {
                 id="form-email"
                 placeholder="example@email.ru"
                 required
-                className="field-height bg-card"
+                className="field-height dark:bg-card"
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />
-        
+
         {/* Пароль */}
         <Controller
           name="password"
           control={form.control}
           render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid} className="bg-card">
-              <FieldLabel htmlFor="password"></FieldLabel>
+            <Field data-invalid={fieldState.invalid}>
               <InputPassword
                 {...field}
                 value={field.value ?? ""}
@@ -95,15 +97,12 @@ export default function SignInPage() {
                 aria-invalid={fieldState.invalid}
                 autoComplete="current-password"
                 placeholder="••••••••"
-                className="field-height bg-card"
-                />
-              {fieldState.invalid && (
-                <FieldError errors={[fieldState.error]} />
-              )}
+                className="field-height dark:bg-card"
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />
-
 
         <Button
           aria-label="Отправить форму"
@@ -113,13 +112,19 @@ export default function SignInPage() {
         >
           {isSubmitting ? (
             <span className="flex items-center gap-2">
-              <Loader className="h-5 w-5 animate-spin" />Вход...
+              <Loader className="h-5 w-5 animate-spin" />
+              Вход...
             </span>
-          ) : "Войти" }
+          ) : (
+            "Войти"
+          )}
         </Button>
-        
+
         <div className="grid justify-center gap-2">
-          <Link className="text-center block text-sm text-muted-foreground hover:text-foreground transition-colors" href="/auth/forgot-password">
+          <Link
+            className="text-center block text-sm text-muted-foreground hover:text-foreground transition-colors"
+            href="/auth/forgot-password"
+          >
             Забыли пароль?
           </Link>
         </div>

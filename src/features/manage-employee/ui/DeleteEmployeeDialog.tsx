@@ -1,4 +1,3 @@
-
 "use client";
 import { useState, useTransition } from "react";
 import {
@@ -20,10 +19,10 @@ import { cn } from "@/shared/lib/utils";
 
 interface DeleteOrgDialogProps {
   ids: string[] | string;
-  organizationId: string; 
-  employeeName?: string,
-  onAfterDelete?: () => void,
-  justify?: "start" | "end" | "center" | "between" | "around" | "evenly"
+  organizationId: string;
+  employeeName?: string;
+  onAfterDelete?: () => void;
+  justify?: "start" | "end" | "center" | "between" | "around" | "evenly";
 }
 
 export const DeleteEmployeeDialog = ({
@@ -31,7 +30,7 @@ export const DeleteEmployeeDialog = ({
   organizationId,
   employeeName,
   onAfterDelete,
-  justify = "center"
+  justify = "center",
 }: DeleteOrgDialogProps) => {
   const [isPending, startDeleteTransition] = useTransition();
 
@@ -42,7 +41,7 @@ export const DeleteEmployeeDialog = ({
 
   const title = isMultiple
     ? `Удалить ${idsArray.length} сотрудников?`
-    : employeeName 
+    : employeeName
       ? `Удалить сотрудника "${employeeName}"?`
       : "Удалить выбранного сотрудника?";
 
@@ -50,13 +49,13 @@ export const DeleteEmployeeDialog = ({
     e.preventDefault();
 
     startDeleteTransition(async () => {
-      const res = await deleteEmployeeAction(ids,organizationId);
+      const res = await deleteEmployeeAction(ids, organizationId);
 
       if (res.success) {
         toast.success(
-          isMultiple 
-            ? `Успешно удалено сотрудников: ${res.deletedCount}` 
-            : `${employeeName} успешно удалена из системы`
+          isMultiple
+            ? `Успешно удалено сотрудников: ${res.deletedCount}`
+            : `${employeeName} успешно удалена из системы`,
         );
         onAfterDelete && onAfterDelete();
         setOpen(false);
@@ -69,17 +68,26 @@ export const DeleteEmployeeDialog = ({
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" className={cn("w-full text-white py-3 flex items-center gap-2",justify)}><Trash className="w-4 h-4" />Удалить</Button>
+        <Button
+          variant="destructive"
+          className={cn(
+            "w-full text-white py-3 flex items-center gap-2 field-height",
+            justify,
+          )}
+        >
+          <Trash className="w-4 h-4" />
+          Удалить
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent onClick={(e) => e.stopPropagation()}>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>Это действие нельзя отменить.Вы уверены?</AlertDialogDescription>
+          <AlertDialogDescription>
+            Это действие нельзя отменить.Вы уверены?
+          </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>
-            Отмена
-          </AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>Отмена</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDelete}
             disabled={isPending}

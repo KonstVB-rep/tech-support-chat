@@ -15,13 +15,11 @@ import {
 } from "@/shared/ui/select";
 import { Controller, UseFormReturn } from "react-hook-form";
 
-
 interface EmployeeFormProps {
   form: UseFormReturn<EmployeeFormValues>;
   formAction: (formData: FormData) => void;
   isPending?: boolean;
   submitText?: string;
-
 }
 
 export const EmployeeForm = ({
@@ -30,14 +28,13 @@ export const EmployeeForm = ({
   isPending = false,
   submitText = "Сохранить",
 }: EmployeeFormProps) => {
-
   return (
     <div className="flex items-center justify-center w-full h-full">
       <Card className="w-full max-w-3xl min-w-2xs h-fit bg-transparent shadow-none ring-0">
         <form id="employee-form" action={formAction}>
-        <CardContent>
+          <CardContent>
             <FieldGroup>
-           <Controller
+              <Controller
                 name="email"
                 control={form.control}
                 render={({ field, fieldState }) => (
@@ -139,13 +136,13 @@ export const EmployeeForm = ({
                       aria-invalid={fieldState.invalid}
                       autoComplete="off"
                       className="field-height"
-                      />
+                    />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
                   </Field>
                 )}
-                />
+              />
 
               <Controller
                 name="role"
@@ -164,7 +161,9 @@ export const EmployeeForm = ({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="MEMBER">Сотрудник</SelectItem>
-                        <SelectItem value="RESPONSIBLE">Ответственное лицо</SelectItem>
+                        <SelectItem value="RESPONSIBLE">
+                          Ответственное лицо
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     {fieldState.invalid && (
@@ -174,24 +173,24 @@ export const EmployeeForm = ({
                 )}
               />
             </FieldGroup>
-        </CardContent>
+          </CardContent>
 
-        <CardFooter className="border-none bg-transparent">
-          <Field orientation="horizontal">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => form.reset()}
-              disabled={isPending}
-            >
-              Сбросить
-            </Button>
-            <Button type="submit" form="employee-form" disabled={isPending}>
-              {isPending ? "Сохранение..." : submitText}
-            </Button>
-          </Field>
-        </CardFooter>
-               </form>
+          <CardFooter className="border-none bg-transparent">
+            <Field orientation="horizontal">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => form.reset()}
+                disabled={isPending}
+              >
+                Сбросить
+              </Button>
+              <Button type="submit" form="employee-form" disabled={isPending}>
+                {isPending ? "Сохранение..." : submitText}
+              </Button>
+            </Field>
+          </CardFooter>
+        </form>
       </Card>
     </div>
   );

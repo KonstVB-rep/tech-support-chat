@@ -33,8 +33,11 @@ export const ChatWindow = () => {
   const queryClient = useQueryClient();
 
   const { data: session } = authClient.useSession();
-  const { data: messagesData, isLoading, error } =
-    useGetMessages(activeTicketId);
+  const {
+    data: messagesData,
+    isLoading,
+    error,
+  } = useGetMessages(activeTicketId);
 
   const { mutate: renameChat, isPending: isRenaming } = useUpdateChatTitle();
   const { mutate: deleteChat, isPending: isDeleting } = useDeleteChat();
@@ -52,27 +55,22 @@ export const ChatWindow = () => {
 
   const serverMessages = messagesData?.messages || [];
   const chatInfo = messagesData?.chat || null;
-  const chatDisplayTitle = chatInfo?.title || "Загрузка темы...";
+  const chatDisplayTitle = chatInfo?.title || "Загрузка чата...";
 
+  const setScrollContainerRef = useCallback((node: HTMLDivElement | null) => {
+    if (!node) return;
 
-  const setScrollContainerRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (!node) return;
-
-      const viewport = node.querySelector("[data-radix-scroll-area-viewport]");
-      if (viewport) {
-        requestAnimationFrame(() => {
-          viewport.scrollTo({
-            top: viewport.scrollHeight,
-            behavior: "smooth",
-          });
+    const viewport = node.querySelector("[data-radix-scroll-area-viewport]");
+    if (viewport) {
+      requestAnimationFrame(() => {
+        viewport.scrollTo({
+          top: viewport.scrollHeight,
+          behavior: "smooth",
         });
-      }
-    },
-    [],
-  );
+      });
+    }
+  }, []);
 
- 
   useEffect(() => {
     if (!activeTicketId) return;
 
@@ -104,7 +102,6 @@ export const ChatWindow = () => {
       socket.emit("chat:leave", activeTicketId);
     };
   }, [activeTicketId, queryClient]);
-
 
   useEffect(() => {
     if (!activeTicketId) return;
@@ -147,8 +144,6 @@ export const ChatWindow = () => {
   const currentMemberRole = useGetCurrentMemberRole(chatInfo?.organizationId);
   const currentUserId = session?.user?.id;
 
-
-
   if (!activeTicketId) {
     return (
       <div className="px-2 flex items-center justify-center h-full bg-muted/10 text-muted-foreground text-sm select-none">
@@ -158,9 +153,9 @@ export const ChatWindow = () => {
   }
 
   return (
-    <WrapperScreen>
+    <WrapperScreen className="chat-field">
       <WrapperHeaderScreen>
-        <div className="ml-3 flex items-center justify-between gap-2 w-full">
+        <div className="ml-3 bg-primary-foreground flex items-center justify-between gap-2 w-full">
           <div className="flex items-center gap-1">
             <Button size="icon" onClick={() => clearChat()} variant="ghost">
               <ChevronLeft className="h-6 w-6" />
@@ -261,6 +256,8 @@ export const ChatWindow = () => {
               });
               const isMe = msg.profile?.userId === currentUserId;
 
+              console.log(msg, "**********************************");
+
               return (
                 <div key={msg.id} className="pb-3">
                   <span
@@ -285,13 +282,14 @@ export const ChatWindow = () => {
 
       {socketStatus !== "connected" && (
         <div className="w-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-center py-1.5 text-xs font-medium animate-pulse border-t border-amber-500/20">
-          {socketStatus === "connecting" ? "⚠️ Соединение с сервером потеряно. Переподключение..." : "❌ Нет связи с сервером поддержки"}
+          {socketStatus === "connecting"
+            ? "⚠️ Соединение с сервером потеряно. Переподключение..."
+            : "❌ Нет связи с сервером поддержки"}
         </div>
       )}
       <div className="shrink-0 w-full">
-      <MessageInput />
+        <MessageInput />
       </div>
-
     </WrapperScreen>
   );
 };

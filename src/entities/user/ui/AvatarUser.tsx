@@ -1,7 +1,6 @@
-'use client';
+"use client";
 import { authClient } from "@/app/lib/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
-
 
 const AvatarUser = () => {
   return (

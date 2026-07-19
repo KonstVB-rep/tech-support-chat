@@ -24,12 +24,10 @@ export default function SupportEngineersPage() {
   );
 }
 
-
 const SupportEngineersList = async () => {
   const engineers = await getSupportEngineers();
   return <SupportEngineersTable data={engineers} />;
 };
-
 
 const SupportEngineersTableSkeleton = () => {
   return (

@@ -25,11 +25,18 @@ export const UpdateSupportEngineerForm = ({
   onSuccess,
   submitText = "Сохранить",
 }: UpdateSupportEngineerFormProps) => {
-  const initialState: ActionState = { success: false, message: null, error: null };
-  const [state, formAction, isPending] = useActionState(updateSupportEngineerAction, initialState);
+  const initialState: ActionState = {
+    success: false,
+    message: null,
+    error: null,
+  };
+  const [state, formAction, isPending] = useActionState(
+    updateSupportEngineerAction,
+    initialState,
+  );
 
   const form = useForm<UpdateSupportEngineerFormValues>({
-    resolver: zodResolver(updateSupportEngineerSchema), 
+    resolver: zodResolver(updateSupportEngineerSchema),
     defaultValues: {
       email: engineer.profile?.email ?? "",
       name: engineer.profile?.name ?? "",
@@ -41,7 +48,7 @@ export const UpdateSupportEngineerForm = ({
   useEffect(() => {
     if (state.success && state.message) {
       toast.success(state.message);
-      onSuccess?.(); 
+      onSuccess?.();
     }
     if (state.error) {
       toast.error(state.error);
@@ -50,7 +57,7 @@ export const UpdateSupportEngineerForm = ({
 
   useEffect(() => {
     form.reset({
-       email: engineer.profile?.email ?? "",
+      email: engineer.profile?.email ?? "",
       name: engineer.profile?.name ?? "",
       password: "",
       phone: engineer.profile?.phone ?? "",
@@ -61,8 +68,8 @@ export const UpdateSupportEngineerForm = ({
     const isValid = await form.trigger();
     if (!isValid) return;
 
-    formData.append("id", engineer.id); 
-     startTransition(() => {
+    formData.append("id", engineer.id);
+    startTransition(() => {
       formAction(formData);
     });
   };

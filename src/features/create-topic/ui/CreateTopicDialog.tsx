@@ -13,14 +13,17 @@ import {
   DialogTrigger,
 } from "@/shared/ui/dialog";
 import { Input } from "@/shared/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/shared/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 
 import { cn } from "@/shared/lib/utils";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/shared/ui/command";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/shared/ui/command";
 import { Building2, Check, Loader, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useCreateTopic } from "../api/useCreateTopic";
@@ -30,7 +33,7 @@ const CreateTopicDialog = () => {
   const [title, setTitle] = useState("");
   const [selectedOrgId, setSelectedOrgId] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  
+
   // Дополнительный стейт для открытия выпадающего списка поиска
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
@@ -40,7 +43,9 @@ const CreateTopicDialog = () => {
     useGetOrganizationsList(isOpen);
 
   // Находим имя выбранной организации, чтобы отобразить его на кнопке триггера
-  const selectedOrgName = organizations.find((org) => org.id === selectedOrgId)?.name;
+  const selectedOrgName = organizations.find(
+    (org) => org.id === selectedOrgId,
+  )?.name;
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -49,8 +54,8 @@ const CreateTopicDialog = () => {
 
     if (!trimmedTitle || !selectedOrgId || isPending) {
       toast.error("Заполните все поля: название, организация");
-      return
-    };
+      return;
+    }
 
     createTopic(
       {
@@ -86,15 +91,18 @@ const CreateTopicDialog = () => {
       <DialogContent className="sm:max-w-[425px] rounded-2xl">
         <DialogHeader>
           <DialogTitle>Новый чат/тема</DialogTitle>
-          <DialogDescription>Укажите название темы/чата и выберите клиента.</DialogDescription>
+          <DialogDescription>
+            Укажите название темы/чата и выберите клиента.
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-3 pt-2">
           <div className="flex flex-col gap-3">
-            
             {/* 🚀 2026 BEST PRACTICE: Заменяем Select на выпадающий список с поиском (Combobox) */}
             <div className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-muted-foreground">Организация клиента</span>
+              <span className="text-xs font-medium text-muted-foreground">
+                Организация клиента
+              </span>
               <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -104,7 +112,12 @@ const CreateTopicDialog = () => {
                     disabled={isLoadingOrgs || isPending}
                     className="w-full h-10 justify-between rounded-xl font-medium text-sm border-muted bg-background px-3 hover:bg-background"
                   >
-                    <span className={cn("truncate", !selectedOrgId && "text-muted-foreground font-normal")}>
+                    <span
+                      className={cn(
+                        "truncate",
+                        !selectedOrgId && "text-muted-foreground font-normal",
+                      )}
+                    >
                       {selectedOrgId ? selectedOrgName : "Поиск организации..."}
                     </span>
                     {isLoadingOrgs ? (
@@ -114,9 +127,15 @@ const CreateTopicDialog = () => {
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 rounded-xl shadow-xl overflow-hidden" align="start">
+                <PopoverContent
+                  className="w-[var(--radix-popover-trigger-width)] p-0 rounded-xl shadow-xl overflow-hidden"
+                  align="start"
+                >
                   <Command>
-                    <CommandInput placeholder="Введите название для поиска..." className="h-10 text-sm" />
+                    <CommandInput
+                      placeholder="Введите название для поиска..."
+                      className="h-10 text-sm"
+                    />
                     <CommandList className="max-h-[220px] overflow-y-auto">
                       <CommandEmpty className="py-3 text-center text-xs text-muted-foreground">
                         Организация не найдена
@@ -136,7 +155,9 @@ const CreateTopicDialog = () => {
                             <Check
                               className={cn(
                                 "size-4 text-blue-600 shrink-0",
-                                selectedOrgId === org.id ? "opacity-100" : "opacity-0"
+                                selectedOrgId === org.id
+                                  ? "opacity-100"
+                                  : "opacity-0",
                               )}
                             />
                           </CommandItem>
@@ -149,7 +170,9 @@ const CreateTopicDialog = () => {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-muted-foreground">Название темы / Объекта</span>
+              <span className="text-xs font-medium text-muted-foreground">
+                Название темы / Объекта
+              </span>
               <Input
                 id="topic-title"
                 type="text"

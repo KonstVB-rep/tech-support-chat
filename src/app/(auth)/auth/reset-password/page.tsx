@@ -1,33 +1,34 @@
-"use client"
+"use client";
 
-
-import { resetPasswordConfirmAction } from "@/app/actions/auth"
-import ButtonSubmitForm from "@/shared/ui/custom/ButtonSubmitForm"
-import { Field, FieldError } from "@/shared/ui/field"
-import { Input } from "@/shared/ui/input"
-import { zodResolver } from "@hookform/resolvers/zod"
-import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
-import { useActionState, useEffect } from "react"
-import { Controller, useForm } from "react-hook-form"
-import { toast } from "sonner"
+import { resetPasswordConfirmAction } from "@/app/actions/auth";
+import ButtonSubmitForm from "@/shared/ui/custom/ButtonSubmitForm";
+import { Field, FieldError } from "@/shared/ui/field";
+import { Input } from "@/shared/ui/input";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useActionState, useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
 import {
-    type SchemaPropsResetPasswordConfirm,
-    validationSchemaResetPasswordConfirm,
-} from "../model/schema"
-
+  type SchemaPropsResetPasswordConfirm,
+  validationSchemaResetPasswordConfirm,
+} from "../model/schema";
 
 const initialState = {
   password: "",
   confirmPassword: "",
-}
+};
 
 export default function ResetPasswordConfirmPage() {
-  const searchParams = useSearchParams()
-  const token = searchParams.get("token")
-  const router = useRouter()
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+  const router = useRouter();
 
-  const [state, formAction] = useActionState(resetPasswordConfirmAction, undefined)
+  const [state, formAction] = useActionState(
+    resetPasswordConfirmAction,
+    undefined,
+  );
 
   const form = useForm<SchemaPropsResetPasswordConfirm>({
     resolver: zodResolver(validationSchemaResetPasswordConfirm),
@@ -35,34 +36,34 @@ export default function ResetPasswordConfirmPage() {
     resetOptions: {
       keepDefaultValues: true,
     },
-  })
+  });
 
   useEffect(() => {
-    let timeout = null
+    let timeout = null;
     if (state?.success) {
-      toast.success("Пароль успешно изменён!")
+      toast.success("Пароль успешно изменён!");
       timeout = setTimeout(() => {
-        router.push("/auth/sign-in")
-      }, 1500)
+        router.push("/auth/sign-in");
+      }, 1500);
     }
-    ;() => {
-      if (timeout) clearTimeout(timeout)
-    }
-  }, [state?.success, router])
+    () => {
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [state?.success, router]);
 
   const onSubmit = (formData: FormData) => {
     if (!token) {
-      toast.error("Токен отсутствует или недействителен")
-      return
+      toast.error("Токен отсутствует или недействителен");
+      return;
     }
-    formData.append("token", token)
-    console.log(Object.fromEntries(formData), "formData")
-    formAction(formData)
-  }
+    formData.append("token", token);
+    console.log(Object.fromEntries(formData), "formData");
+    formAction(formData);
+  };
 
-  const errorMessage = state?.error
+  const errorMessage = state?.error;
 
-  console.log(token, "token")
+  console.log(token, "token");
 
   return (
     <div className="flex flex-col items-center justify-center h-screen gap-4">
@@ -115,15 +116,24 @@ export default function ResetPasswordConfirmPage() {
           )}
         />
 
-        <ButtonSubmitForm aria-label="Сменить пароль" disabled={!token} title="Сменить пароль" />
+        <ButtonSubmitForm
+          aria-label="Сменить пароль"
+          disabled={!token}
+          title="Сменить пароль"
+        />
 
         <div className="text-center">
-          <Link className="text-sm text-gray-600 hover:underline" href="/auth/sign-in">
+          <Link
+            className="text-sm text-gray-600 hover:underline"
+            href="/auth/sign-in"
+          >
             Вернуться к входу
           </Link>
         </div>
 
-        {errorMessage && <p className="text-red-500 text-center text-sm">{errorMessage}</p>}
+        {errorMessage && (
+          <p className="text-red-500 text-center text-sm">{errorMessage}</p>
+        )}
 
         {state?.success && (
           <p className="text-green-600 text-center">
@@ -132,5 +142,5 @@ export default function ResetPasswordConfirmPage() {
         )}
       </form>
     </div>
-  )
+  );
 }

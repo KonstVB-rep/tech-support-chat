@@ -2,12 +2,12 @@
 
 import { Button } from "@/shared/ui/button";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/shared/ui/dialog";
 import { Plus } from "lucide-react";
 import { AddEmployeeForm } from "./AddEmployeeForm";
@@ -16,8 +16,9 @@ interface AddEmployeeDialogProps {
   organizationId: string;
 }
 
-export const AddEmployeeDialog = ({ organizationId }: AddEmployeeDialogProps) => {
-
+export const AddEmployeeDialog = ({
+  organizationId,
+}: AddEmployeeDialogProps) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -34,9 +35,7 @@ export const AddEmployeeDialog = ({ organizationId }: AddEmployeeDialogProps) =>
           </DialogDescription>
         </DialogHeader>
 
-        <AddEmployeeForm
-          organizationId={organizationId}
-        />
+        <AddEmployeeForm organizationId={organizationId} />
       </DialogContent>
     </Dialog>
   );

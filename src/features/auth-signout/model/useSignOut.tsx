@@ -1,8 +1,6 @@
-
 import { authClient } from "@/app/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-
 
 export function useSignOut() {
   const router = useRouter();

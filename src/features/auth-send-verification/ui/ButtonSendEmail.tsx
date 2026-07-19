@@ -1,9 +1,8 @@
-"use client"
+"use client";
 import { sendVerificationEmail } from "@/app/actions/auth";
 import ButtonSubmitForm from "@/shared/ui/custom/ButtonSubmitForm";
 
 import { useActionState } from "react";
-
 
 const ButtonSendEmail = ({ email }: { email: string }) => {
   // state здесь пригодится для вывода ошибок или успеха

@@ -13,7 +13,10 @@ export const employeeFormSchema = z.object({
 
 export const updateEmployeeFormSchema = z.object({
   email: z.email("Некорректный email").optional(),
-  name: z.string().min(2, "Имя должно содержать не менее 2 символов.").optional(),
+  name: z
+    .string()
+    .min(2, "Имя должно содержать не менее 2 символов.")
+    .optional(),
   position: z.string().optional(),
   phone: z.string().optional(),
   role: z.enum(["RESPONSIBLE", "MEMBER"], {

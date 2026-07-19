@@ -42,7 +42,7 @@ export const useDataTable = <TData extends { id: string }>({
     onSortingChange: setSorting,
     onRowSelectionChange: setRowSelection,
     onGlobalFilterChange: setGlobalFilter,
-    onColumnVisibilityChange: setColumnVisibility, 
+    onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -58,12 +58,14 @@ export const useDataTable = <TData extends { id: string }>({
   // Расчет выбранных строк
   const selectedRows = table.getFilteredSelectedRowModel().rows;
   const selectedIds = useMemo(() => {
-    return selectedRows.map((row) => row.original?.id as string).filter(Boolean);
+    return selectedRows
+      .map((row) => row.original?.id as string)
+      .filter(Boolean);
   }, [selectedRows]);
 
   const hasSelection = selectedIds.length > 0;
   const selectedCount = selectedIds.length;
-  
+
   const resetSelection = () => {
     table.resetRowSelection();
   };
@@ -71,26 +73,32 @@ export const useDataTable = <TData extends { id: string }>({
   if (!isMounted) {
     return {
       table: null,
-      sorting, setSorting,
-      rowSelection, setRowSelection,
-      globalFilter, setGlobalFilter,
+      sorting,
+      setSorting,
+      rowSelection,
+      setRowSelection,
+      globalFilter,
+      setGlobalFilter,
       selectedIds: [],
       hasSelection: false,
       selectedCount: 0,
       resetSelection,
-      isMounted: false
+      isMounted: false,
     };
   }
 
   return {
     table,
-    sorting, setSorting,
-    rowSelection, setRowSelection,
-    globalFilter, setGlobalFilter,
+    sorting,
+    setSorting,
+    rowSelection,
+    setRowSelection,
+    globalFilter,
+    setGlobalFilter,
     selectedIds,
     hasSelection,
     selectedCount,
     resetSelection,
-    isMounted: true
+    isMounted: true,
   };
 };

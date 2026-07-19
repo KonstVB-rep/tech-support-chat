@@ -4,8 +4,6 @@ import { Button } from "@/shared/ui/button";
 import { useSignOut } from "../model/useSignOut";
 import { LogOut } from "lucide-react";
 
-
-
 const ButtonSignOut = ({
   className,
   size,
@@ -33,7 +31,7 @@ const ButtonSignOut = ({
   return (
     <form onSubmit={handleSignOut}>
       <Button className={className} size={size} type="submit" variant={variant}>
-       {withIcon && <LogOut />} {withText && "Выйти"}
+        {withIcon && <LogOut />} {withText && "Выйти"}
       </Button>
     </form>
   );

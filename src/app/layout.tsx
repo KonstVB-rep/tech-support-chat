@@ -4,8 +4,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 import RootProvider from "./providers/root-provider";
-import { MobileNavWrapper } from "@/widgets/mobile-nav/MobileNavWrapper";
-import { Suspense } from "react";
 
 export const viewport: Viewport = {
   themeColor: "#000000",
@@ -14,7 +12,6 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
 };
-
 
 export const metadata: Metadata = {
   title: "Чат техподдержки",
@@ -26,7 +23,6 @@ export const metadata: Metadata = {
     title: "ЧатПоддержки",
   },
 };
-
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,16 +47,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <RootProvider>
-           <div className="flex w-full pb-[88px] md:pb-0">
-              {children}
-              <Suspense>
-                <MobileNavWrapper />
-              </Suspense>
-            </div>
-            <PwaInstallBanner />
+          <div className="flex w-full pb-[88px] md:pb-0">{children}</div>
+          <PwaInstallBanner />
         </RootProvider>
       </body>
-
     </html>
   );
 }

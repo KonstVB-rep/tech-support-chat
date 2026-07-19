@@ -47,13 +47,13 @@ export const PushSettingsToggle = ({
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2 text-[11px] text-amber-700 font-medium">
           <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />
           <span>
-            Инженерам запрещено отключать уведомления. Для изменения
-            обратитесь к администратору.
+            Инженерам запрещено отключать уведомления. Для изменения обратитесь
+            к администратору.
           </span>
         </div>
       )}
 
-      <div className="flex items-center justify-between p-2 rounded-xl hover:bg-muted/30 transition-colors" >
+      <div className="flex items-center justify-between p-2 rounded-xl hover:bg-muted/30 transition-colors">
         <div>
           <label className="text-xs font-bold">Push-уведомления</label>
           <p className="text-[10px] text-muted-foreground">

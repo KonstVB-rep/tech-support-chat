@@ -1,12 +1,18 @@
-
-"use client";  
+"use client";
 
 import { OrganizationWithCounts } from "@/entities/organization";
 import { DeleteOrganizationDialog } from "@/features/manage-organization";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { DataTableColumnHeader } from "@/shared/ui/data-table-column-header";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/shared/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Eye, MoreHorizontal } from "lucide-react";
@@ -15,7 +21,7 @@ import { DateRange } from "react-day-picker";
 
 const startOfDay = (date: Date): Date => {
   const result = new Date(date);
-  result.setHours(0,0,0,0);
+  result.setHours(0, 0, 0, 0);
   return result;
 };
 
@@ -46,31 +52,39 @@ export const columns: ColumnDef<OrganizationWithCounts>[] = [
           onCheckedChange={(value) => row.toggleSelected(!!value)}
           aria-label="Select row"
         />
-      )
+      );
     },
     enableSorting: false,
     enableHiding: false,
-    maxSize: 60
+    maxSize: 60,
   },
   {
     id: "name",
     header: ({ column }) => (
-      <DataTableColumnHeader className="justify-center" column={column} title="Название" />
+      <DataTableColumnHeader
+        className="justify-center"
+        column={column}
+        title="Название"
+      />
     ),
     cell: ({ row }) => {
       const value = row.getValue("name") as string;
-      return <div>{value}</div>
+      return <div>{value}</div>;
     },
     accessorFn: (row: OrganizationWithCounts) => row.name,
   },
   {
     id: "inn",
     header: ({ column }) => (
-      <DataTableColumnHeader className="justify-center" column={column} title="ИНН" />
+      <DataTableColumnHeader
+        className="justify-center"
+        column={column}
+        title="ИНН"
+      />
     ),
     cell: ({ row }) => {
       const value = row.getValue("inn") as string;
-      return <div>{value}</div>
+      return <div>{value}</div>;
     },
     accessorFn: (row: OrganizationWithCounts) => row.inn,
   },
@@ -79,27 +93,32 @@ export const columns: ColumnDef<OrganizationWithCounts>[] = [
     header: () => <div className="text-center uppercase text-sm">Описание</div>,
     cell: ({ row }) => {
       const value = row.getValue("description") as string;
-      return <div>{value}</div>
+      return <div>{value}</div>;
     },
     accessorFn: (row: OrganizationWithCounts) => row.description,
   },
   {
     id: "contractNumber",
-    header: () => <div className="text-center uppercase text-sm">Номер договора</div>,
+    header: () => (
+      <div className="text-center uppercase text-sm">Номер договора</div>
+    ),
     cell: ({ row }) => {
       const value = row.getValue("contractNumber") as string;
-      return <div>{value}</div>
+      return <div>{value}</div>;
     },
     accessorFn: (row: OrganizationWithCounts) => row.contractNumber,
   },
   {
     id: "supportTime",
-    header: () => <div className="text-center uppercase text-sm">Время поддержки</div>,
+    header: () => (
+      <div className="text-center uppercase text-sm">Время поддержки</div>
+    ),
     cell: ({ row }) => {
-      const from = row.original.timeSupportFrom; 
-      const to = row.original.timeSupportTo;    
-      
-      const formatTime = (timeStr: string) => timeStr.split(":").slice(0, 2).join(":");
+      const from = row.original.timeSupportFrom;
+      const to = row.original.timeSupportTo;
+
+      const formatTime = (timeStr: string) =>
+        timeStr.split(":").slice(0, 2).join(":");
 
       return (
         <div className="text-center font-medium bg-muted/40 px-2 py-1 rounded-md inline-block mx-auto text-xs">
@@ -112,7 +131,11 @@ export const columns: ColumnDef<OrganizationWithCounts>[] = [
     id: "contractStart",
     maxSize: 200,
     header: ({ column }) => (
-      <DataTableColumnHeader className="justify-center" column={column} title="Начало договора" />
+      <DataTableColumnHeader
+        className="justify-center"
+        column={column}
+        title="Начало договора"
+      />
     ),
     cell: ({ row }) => {
       const value = row.getValue("contractStart");
@@ -130,7 +153,7 @@ export const columns: ColumnDef<OrganizationWithCounts>[] = [
 
       return <div>-</div>;
     },
-     filterFn: (row, columnId, filterValue) => {
+    filterFn: (row, columnId, filterValue) => {
       const date = row.getValue(columnId) as Date;
       const dateAtStartOfDay = startOfDay(date);
 
@@ -162,15 +185,19 @@ export const columns: ColumnDef<OrganizationWithCounts>[] = [
     id: "contractEnd",
     maxSize: 200,
     header: ({ column }) => (
-      <DataTableColumnHeader className="justify-center" column={column} title="Окончание договора" />
+      <DataTableColumnHeader
+        className="justify-center"
+        column={column}
+        title="Окончание договора"
+      />
     ),
     cell: ({ row }) => {
-    const value = row.getValue("contractEnd");
-    if (value instanceof Date) {
+      const value = row.getValue("contractEnd");
+      if (value instanceof Date) {
         return value.toLocaleDateString("ru-RU");
       }
 
-    if (typeof value === "string") {
+      if (typeof value === "string") {
         const date = new Date(value);
         if (!Number.isNaN(date.getTime())) {
           return <div>{date.toLocaleDateString("ru-RU")}</div>;
@@ -180,7 +207,7 @@ export const columns: ColumnDef<OrganizationWithCounts>[] = [
 
       return <div>-</div>;
     },
-     filterFn: (row, columnId, filterValue) => {
+    filterFn: (row, columnId, filterValue) => {
       const date = row.getValue(columnId) as Date;
       const dateAtStartOfDay = startOfDay(date);
 
@@ -214,8 +241,8 @@ export const columns: ColumnDef<OrganizationWithCounts>[] = [
     maxSize: 80,
 
     cell: ({ row }) => {
-      const organization = row.original
- 
+      const organization = row.original;
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -235,11 +262,17 @@ export const columns: ColumnDef<OrganizationWithCounts>[] = [
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-                 <Link href={`/organization/${organization.id}`} className="flex items-center justify-start gap-2"><Eye/>Посмотреть</Link>
+              <Link
+                href={`/organization/${organization.id}`}
+                className="flex items-center justify-start gap-2"
+              >
+                <Eye />
+                Посмотреть
+              </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      );
     },
   },
-]
+];

@@ -1,34 +1,33 @@
-'use client'
+"use client";
 
-import type { PropsWithChildren } from "react"
+import type { PropsWithChildren } from "react";
 import {
-  environmentManager, 
+  environmentManager,
   MutationCache,
   QueryCache,
   QueryClient,
   QueryClientProvider,
-} from "@tanstack/react-query"
-import { TOAST } from "@/shared/ui/Toast"
+} from "@tanstack/react-query";
+import { TOAST } from "@/shared/ui/Toast";
 
 function makeQueryClient() {
-
   const isServerSide = environmentManager.isServer();
 
   return new QueryClient({
     defaultOptions: {
       queries: {
         refetchOnWindowFocus: false,
-        retry: false, 
-        staleTime: 1000 * 5, 
+        retry: false,
+        staleTime: 1000 * 5,
       },
     },
-    
+
     queryCache: new QueryCache({
       onError: (error: any, query) => {
-        const isAuthError = 
-          error?.status === 401 || 
-          error?.status === 403 || 
-          error?.message?.includes("401") || 
+        const isAuthError =
+          error?.status === 401 ||
+          error?.status === 403 ||
+          error?.message?.includes("401") ||
           error?.message?.includes("Unauthorized") ||
           error?.message?.includes("Не авторизован");
 
@@ -38,16 +37,21 @@ function makeQueryClient() {
             const currentPath = window.location.pathname;
             window.location.href = `/auth/sign-in?redirect=${encodeURIComponent(currentPath)}`;
           }
-          return; 
+          return;
         }
 
         if (query.meta?.errorMessage) {
-          TOAST.ERROR(query.meta.errorMessage as string)
-          return
+          TOAST.ERROR(query.meta.errorMessage as string);
+          return;
         }
 
-        const message = error instanceof Error ? error.message : "Произошла ошибка"
-        TOAST.ERROR(message === "Failed to fetch" ? "Ошибка сети (Проверьте подключение)" : message)
+        const message =
+          error instanceof Error ? error.message : "Произошла ошибка";
+        TOAST.ERROR(
+          message === "Failed to fetch"
+            ? "Ошибка сети (Проверьте подключение)"
+            : message,
+        );
       },
     }),
 
@@ -56,33 +60,36 @@ function makeQueryClient() {
         // 🚀 Защита SSR контура через новое API
         if (isServerSide) return;
 
-        const isAuthError = error?.status === 401 || error?.message?.includes("401");
+        const isAuthError =
+          error?.status === 401 || error?.message?.includes("401");
         if (isAuthError) {
           window.location.href = "/auth/sign-in";
           return;
         }
 
-        TOAST.ERROR(error.message || "Ошибка при выполнении операции")
+        TOAST.ERROR(error.message || "Ошибка при выполнении операции");
       },
     }),
-  })
+  });
 }
 
-let browserQueryClient: QueryClient | undefined
+let browserQueryClient: QueryClient | undefined;
 
 export const getQueryClient = () => {
   if (environmentManager.isServer()) {
-    return makeQueryClient()
+    return makeQueryClient();
   } else {
-    if (!browserQueryClient) browserQueryClient = makeQueryClient()
-    return browserQueryClient
+    if (!browserQueryClient) browserQueryClient = makeQueryClient();
+    return browserQueryClient;
   }
-}
+};
 
 const QueryProvider = ({ children }: PropsWithChildren) => {
-  const queryClient = getQueryClient()
+  const queryClient = getQueryClient();
 
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-}
+  return (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+};
 
 export default QueryProvider;

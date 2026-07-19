@@ -19,16 +19,16 @@ import { cn } from "@/shared/lib/utils";
 
 interface DeleteOrgDialogProps {
   ids: string[] | string;
-  organizationName?: string; 
+  organizationName?: string;
   className?: string;
-  onAfterDelete?: () => void
+  onAfterDelete?: () => void;
 }
 
 export const DeleteOrganizationDialog = ({
   ids,
   organizationName,
   className,
-  onAfterDelete
+  onAfterDelete,
 }: DeleteOrgDialogProps) => {
   const [isPending, startDeleteTransition] = useTransition();
   const [open, setOpen] = useState(false);
@@ -38,7 +38,7 @@ export const DeleteOrganizationDialog = ({
 
   const title = isMultiple
     ? `Удалить ${idsArray.length} организаций?`
-    : organizationName 
+    : organizationName
       ? `Удалить организацию "${organizationName}"?`
       : "Удалить выбранную организацию?";
 
@@ -54,9 +54,9 @@ export const DeleteOrganizationDialog = ({
 
       if (res.success) {
         toast.success(
-          isMultiple 
-            ? `Успешно удалено организаций: ${res.deletedCount}` 
-            : "Организация успешно удалена из системы"
+          isMultiple
+            ? `Успешно удалено организаций: ${res.deletedCount}`
+            : "Организация успешно удалена из системы",
         );
         onAfterDelete && onAfterDelete();
         setOpen(false);
@@ -69,13 +69,13 @@ export const DeleteOrganizationDialog = ({
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-         <Button
-            variant="destructive"
-            size="sm"
-            className={cn("text-white", className)}
-          >
-            Удалить
-          </Button>
+        <Button
+          variant="destructive"
+          size="sm"
+          className={cn("text-white", className)}
+        >
+          Удалить
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent onClick={(e) => e.stopPropagation()}>
         <AlertDialogHeader>
@@ -83,9 +83,7 @@ export const DeleteOrganizationDialog = ({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>
-            Отмена
-          </AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>Отмена</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDelete}
             disabled={isPending}

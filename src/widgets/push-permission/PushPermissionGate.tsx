@@ -36,7 +36,8 @@ export const PushPermissionGate = () => {
   // ✅ Ключевое исправление: не рендерим ничего пока компонент не смонтирован в браузере
   const [isMounted, setIsMounted] = useState(false);
   const { data: session } = authClient.useSession();
-  const [permission, setPermission] = useState<NotificationPermission>("default");
+  const [permission, setPermission] =
+    useState<NotificationPermission>("default");
   const [isSubscribing, setIsSubscribing] = useState(false);
   const { data: isSupportEngineer } = useIsSupportEngineer();
 
@@ -76,7 +77,12 @@ export const PushPermissionGate = () => {
   };
 
   // ✅ На сервере и до монтирования возвращаем null — нет mismatch
-  if (!isMounted || !session?.user || permission === "granted" || !("Notification" in window)) {
+  if (
+    !isMounted ||
+    !session?.user ||
+    permission === "granted" ||
+    !("Notification" in window)
+  ) {
     return null;
   }
 
@@ -85,15 +91,21 @@ export const PushPermissionGate = () => {
       <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
         <div className="bg-card rounded-2xl p-6 max-w-sm w-full space-y-3 border border-destructive/30">
           <ShieldAlert className="h-10 w-10 text-destructive mx-auto" />
-          <h2 className="text-lg font-bold text-center">Уведомления заблокированы</h2>
+          <h2 className="text-lg font-bold text-center">
+            Уведомления заблокированы
+          </h2>
           <p className="text-sm text-muted-foreground text-center">
-            Инженеры обязаны получать push-уведомления. Разрешите уведомления в настройках браузера.
+            Инженеры обязаны получать push-уведомления. Разрешите уведомления в
+            настройках браузера.
           </p>
           <p className="text-xs text-muted-foreground text-center mt-2">
-            Настройки → Конфиденциальность → Уведомления → Разрешить для этого сайта
+            Настройки → Конфиденциальность → Уведомления → Разрешить для этого
+            сайта
           </p>
           <Button
-            onClick={() => window.open("chrome://settings/content/notifications", "_blank")}
+            onClick={() =>
+              window.open("chrome://settings/content/notifications", "_blank")
+            }
             className="w-full"
           >
             Открыть настройки браузера
@@ -114,7 +126,12 @@ export const PushPermissionGate = () => {
               ? "Инженеры получают обязательные оповещения о новых тикетах"
               : "Получайте оповещения о новых сообщениях"}
           </p>
-          <Button size="sm" onClick={handleSubscribe} disabled={isSubscribing} className="w-full">
+          <Button
+            size="sm"
+            onClick={handleSubscribe}
+            disabled={isSubscribing}
+            className="w-full"
+          >
             {isSubscribing ? "Подключение..." : "Разрешить"}
           </Button>
         </div>

@@ -11,7 +11,7 @@ export const getUserOrganizations = async (): Promise<Organization[]> => {
     select: {
       organizationMembers: {
         select: {
-          organization: true, 
+          organization: true,
         },
       },
     },
@@ -24,11 +24,12 @@ export const getUserOrganizations = async (): Promise<Organization[]> => {
   return profileWithOrgs.organizationMembers.map((m) => m.organization);
 };
 
-
-export const getOrganizationsByUserIdForAdmin = async (targetUserId: string): Promise<Organization[]> => {
+export const getOrganizationsByUserIdForAdmin = async (
+  targetUserId: string,
+): Promise<Organization[]> => {
   // 1. ЖЕСТКАЯ ПРОВЕРКА БЕЗОПАСНОСТИ: Убеждаемся, что зарос делает РЕАЛЬНО админ
   const session = await getSession();
-  
+
   if (!session?.user || session.user.role.toLowerCase() !== "admin") {
     throw new Error("Доступ запрещен. Требуются права администратора системы.");
   }

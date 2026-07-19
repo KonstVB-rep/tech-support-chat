@@ -5,9 +5,13 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 // Схему и типы импортируем из твоей сущности организации
-import { formSchemaOrganization, SingleOrganizationWithCounts, type FormSchemaOrganizationType } from "@/entities/organization";
+import {
+  formSchemaOrganization,
+  SingleOrganizationWithCounts,
+  type FormSchemaOrganizationType,
+} from "@/entities/organization";
 import { ActionState } from "@/shared/lib/types";
-import { updateOrganizationAction, } from "../actions/update";
+import { updateOrganizationAction } from "../actions/update";
 import { OrganizationForm } from "./OrganizationForm";
 import { startTransition, useActionState, useEffect } from "react";
 
@@ -16,10 +20,20 @@ interface UpdateOrgFormProps {
   onSuccess?: () => void;
 }
 
-const initialState: ActionState = { success: false, message: null, error: null };
+const initialState: ActionState = {
+  success: false,
+  message: null,
+  error: null,
+};
 
-export const UpdateOrganizationForm = ({ organization, onSuccess }: UpdateOrgFormProps) => {
-  const [state, formAction, isPending] = useActionState(updateOrganizationAction, initialState);
+export const UpdateOrganizationForm = ({
+  organization,
+  onSuccess,
+}: UpdateOrgFormProps) => {
+  const [state, formAction, isPending] = useActionState(
+    updateOrganizationAction,
+    initialState,
+  );
 
   const form = useForm<FormSchemaOrganizationType>({
     resolver: zodResolver(formSchemaOrganization),
@@ -29,17 +43,21 @@ export const UpdateOrganizationForm = ({ organization, onSuccess }: UpdateOrgFor
       actualAddress: organization.actualAddress ?? "",
       inn: organization.inn,
       contractNumber: organization.contractNumber,
-      timeSupportFrom: organization.timeSupportFrom, 
+      timeSupportFrom: organization.timeSupportFrom,
       timeSupportTo: organization.timeSupportTo,
-      contractStart: organization.contractStart ? new Date(organization.contractStart).toISOString().split("T")[0] : "",
-      contractEnd: organization.contractEnd ? new Date(organization.contractEnd).toISOString().split("T")[0] : "",
+      contractStart: organization.contractStart
+        ? new Date(organization.contractStart).toISOString().split("T")[0]
+        : "",
+      contractEnd: organization.contractEnd
+        ? new Date(organization.contractEnd).toISOString().split("T")[0]
+        : "",
     },
   });
 
   useEffect(() => {
     if (state.success && state.message) {
       toast.success(state.message);
-      onSuccess?.(); 
+      onSuccess?.();
     }
     if (state.error) {
       toast.error(state.error);
@@ -48,16 +66,14 @@ export const UpdateOrganizationForm = ({ organization, onSuccess }: UpdateOrgFor
 
   // Перехватываем FormData, чтобы привязать её к ID текущей компании
   const handleFormAction = async (formData: FormData) => {
-
     const isValid = await form.trigger();
     if (!isValid) return;
 
-    formData.append("id", organization.id); 
+    formData.append("id", organization.id);
 
     startTransition(() => {
       formAction(formData);
     });
-
   };
 
   return (

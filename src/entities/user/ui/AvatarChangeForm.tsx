@@ -21,7 +21,7 @@ export const AvatarChangeForm = ({
   );
 
   const { upload, remove } = useAvatarChange(profileId);
-const isPending = upload.isPending || remove.isPending;
+  const isPending = upload.isPending || remove.isPending;
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -34,12 +34,12 @@ const isPending = upload.isPending || remove.isPending;
     upload.mutate(compressed);
   };
 
-const handleRemove = (e: React.MouseEvent) => {
-  e.preventDefault();
-  setPreviewUrl(null);
-  if (fileInputRef.current) fileInputRef.current.value = "";
-  remove.mutate(); 
-};
+  const handleRemove = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setPreviewUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    remove.mutate();
+  };
 
   return (
     <div className="flex flex-col items-center gap-4 p-4">

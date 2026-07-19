@@ -13,7 +13,10 @@ import { changePassword } from "@/app/actions/auth";
 
 const PasswordChangeForm = () => {
   const queryClient = useQueryClient();
-  const [state, formAction, isPending] = useActionState(changePassword, undefined);
+  const [state, formAction, isPending] = useActionState(
+    changePassword,
+    undefined,
+  );
 
   useEffect(() => {
     if (state?.success) {

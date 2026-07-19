@@ -13,14 +13,22 @@ const OrganizationsTableLoader = async () => {
 const OrganizationsPage = () => {
   return (
     <div className="flex flex-col w-full h-full">
-      <WrapperHeaderScreen><h2 className="text-center font-semibold uppercase w-full">Клиенты</h2></WrapperHeaderScreen>
-      
+      <WrapperHeaderScreen>
+        <h2 className="text-center font-semibold uppercase w-full">Клиенты</h2>
+      </WrapperHeaderScreen>
+
       <div className="space-y-10 w-full h-full">
         <div className="flex justify-start w-full p-2 m-0">
           <AddOrganizationDialog />
         </div>
 
-        <Suspense fallback={<div className="text-sm text-muted-foreground p-4 animate-pulse">Загрузка списка клиентов...</div>}>
+        <Suspense
+          fallback={
+            <div className="text-sm text-muted-foreground p-4 animate-pulse">
+              Загрузка списка клиентов...
+            </div>
+          }
+        >
           <OrganizationsTableLoader />
         </Suspense>
       </div>

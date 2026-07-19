@@ -15,7 +15,6 @@ import { MoreHorizontal } from "lucide-react";
 import type { User } from "@prisma/client";
 import { DeleteSupportEngineerDialog } from "../ui";
 
-
 export const columns: ColumnDef<User>[] = [
   {
     accessorKey: "name",

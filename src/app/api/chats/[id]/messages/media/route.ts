@@ -1,3 +1,4 @@
+//api/chats/[id]/messages/media
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@/app/lib/auth";

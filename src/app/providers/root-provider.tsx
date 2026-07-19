@@ -22,7 +22,6 @@ const ReactQueryDevtools = dynamic(
 );
 
 const RootProvider = ({ children }: { children: React.ReactNode }) => {
-  
   return (
     <ThemeProvider
       attribute="class"

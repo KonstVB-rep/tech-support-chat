@@ -12,25 +12,33 @@ import { useRouter } from "next/navigation";
 
 type ChangeEmailResponse = { email: string };
 
-const ChangeEmailForm = ({ emailProfile, profileId }: { emailProfile: string, profileId: string }) => {
+const ChangeEmailForm = ({
+  emailProfile,
+  profileId,
+}: {
+  emailProfile: string;
+  profileId: string;
+}) => {
   const [email, setEmail] = useState(emailProfile);
   const queryClient = useQueryClient();
-    const router = useRouter();
+  const router = useRouter();
 
-  const { mutate, isPending } = useMutation<ChangeEmailResponse, Error, string>({
-    mutationFn: async (newEmail: string) => {
-      return await changeEmail(newEmail, profileId);
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["session"] });
-      toast.success("Email обновлён. Проверьте почту для подтверждения.");
+  const { mutate, isPending } = useMutation<ChangeEmailResponse, Error, string>(
+    {
+      mutationFn: async (newEmail: string) => {
+        return await changeEmail(newEmail, profileId);
+      },
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({ queryKey: ["session"] });
+        toast.success("Email обновлён. Проверьте почту для подтверждения.");
         setEmail(data.email);
-      router.refresh();
+        router.refresh();
+      },
+      onError: (error) => {
+        toast.error(error.message || "Ошибка при смене email");
+      },
     },
-    onError: (error) => {
-      toast.error(error.message || "Ошибка при смене email");
-    },
-  });
+  );
 
   const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -55,7 +63,11 @@ const ChangeEmailForm = ({ emailProfile, profileId }: { emailProfile: string, pr
         />
       </div>
 
-      <Button type="submit" disabled={isPending || !email.trim()} className="ml-auto w-fit">
+      <Button
+        type="submit"
+        disabled={isPending || !email.trim()}
+        className="ml-auto w-fit"
+      >
         {isPending ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

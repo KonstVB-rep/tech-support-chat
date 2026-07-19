@@ -1,10 +1,9 @@
 // src/app/(pages)/chats/page.tsx
-import { Sidebar } from '@/widgets/sidebar'
-import ScreenByType from '../ui/ScreenByType'
-import { Suspense } from 'react' // 🚀 Импортируем нативный React Suspense
-import { getSession } from '@/shared/lib/server-current-user'
-import { redirect } from 'next/navigation'
-
+import { Sidebar } from "@/widgets/sidebar";
+import ScreenByType from "../ui/ScreenByType";
+import { Suspense } from "react"; // 🚀 Импортируем нативный React Suspense
+import { getSession } from "@/shared/lib/server-current-user";
+import { redirect } from "next/navigation";
 
 async function AuthGuard() {
   const session = await getSession();
@@ -12,8 +11,8 @@ async function AuthGuard() {
   if (!session?.user) {
     redirect("/auth/sign-in?redirect=/chats");
   }
-  
-  return null
+
+  return null;
 }
 const Chats = () => {
   return (
@@ -27,7 +26,7 @@ const Chats = () => {
       </aside>
 
       <main className="flex-1 h-full hidden md:block">
-        <ScreenByType screenType={"chats"}/>
+        <ScreenByType screenType={"chats"} />
       </main>
     </>
   );

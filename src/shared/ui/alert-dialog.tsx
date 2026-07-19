@@ -1,22 +1,30 @@
-"use client"
+"use client";
 
 import { cn } from "@/shared/lib/utils";
 import { AlertDialog as AlertDialogPrimitive } from "radix-ui";
 import type * as React from "react";
 import { Button } from "./button";
 
-function AlertDialog({ ...props }: React.ComponentProps<typeof AlertDialogPrimitive.Root>) {
-  return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />
+function AlertDialog({
+  ...props
+}: React.ComponentProps<typeof AlertDialogPrimitive.Root>) {
+  return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />;
 }
 
 function AlertDialogTrigger({
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Trigger>) {
-  return <AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} />
+  return (
+    <AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} />
+  );
 }
 
-function AlertDialogPortal({ ...props }: React.ComponentProps<typeof AlertDialogPrimitive.Portal>) {
-  return <AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" {...props} />
+function AlertDialogPortal({
+  ...props
+}: React.ComponentProps<typeof AlertDialogPrimitive.Portal>) {
+  return (
+    <AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" {...props} />
+  );
 }
 
 function AlertDialogOverlay({
@@ -32,7 +40,7 @@ function AlertDialogOverlay({
       data-slot="alert-dialog-overlay"
       {...props}
     />
-  )
+  );
 }
 
 function AlertDialogContent({
@@ -40,7 +48,7 @@ function AlertDialogContent({
   size = "default",
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Content> & {
-  size?: "default" | "sm"
+  size?: "default" | "sm";
 }) {
   return (
     <AlertDialogPortal>
@@ -55,10 +63,13 @@ function AlertDialogContent({
         {...props}
       />
     </AlertDialogPortal>
-  )
+  );
 }
 
-function AlertDialogHeader({ className, ...props }: React.ComponentProps<"div">) {
+function AlertDialogHeader({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -68,10 +79,13 @@ function AlertDialogHeader({ className, ...props }: React.ComponentProps<"div">)
       data-slot="alert-dialog-header"
       {...props}
     />
-  )
+  );
 }
 
-function AlertDialogFooter({ className, ...props }: React.ComponentProps<"div">) {
+function AlertDialogFooter({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -81,10 +95,13 @@ function AlertDialogFooter({ className, ...props }: React.ComponentProps<"div">)
       data-slot="alert-dialog-footer"
       {...props}
     />
-  )
+  );
 }
 
-function AlertDialogMedia({ className, ...props }: React.ComponentProps<"div">) {
+function AlertDialogMedia({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -94,7 +111,7 @@ function AlertDialogMedia({ className, ...props }: React.ComponentProps<"div">) 
       data-slot="alert-dialog-media"
       {...props}
     />
-  )
+  );
 }
 
 function AlertDialogTitle({
@@ -110,7 +127,7 @@ function AlertDialogTitle({
       data-slot="alert-dialog-title"
       {...props}
     />
-  )
+  );
 }
 
 function AlertDialogDescription({
@@ -126,7 +143,7 @@ function AlertDialogDescription({
       data-slot="alert-dialog-description"
       {...props}
     />
-  )
+  );
 }
 
 function AlertDialogAction({
@@ -144,7 +161,7 @@ function AlertDialogAction({
         {...props}
       />
     </Button>
-  )
+  );
 }
 
 function AlertDialogCancel({
@@ -162,21 +179,20 @@ function AlertDialogCancel({
         {...props}
       />
     </Button>
-  )
+  );
 }
 
 export {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogMedia,
-    AlertDialogOverlay,
-    AlertDialogPortal,
-    AlertDialogTitle,
-    AlertDialogTrigger
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogOverlay,
+  AlertDialogPortal,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 };
-

@@ -2,7 +2,6 @@ import { getServerSession } from "@/app/lib/get-session";
 import { ButtonSendEmail } from "@/features/auth-send-verification";
 import { redirect } from "next/navigation";
 
-
 const EmailVerify = async () => {
   const session = await getServerSession();
   const user = session?.user;

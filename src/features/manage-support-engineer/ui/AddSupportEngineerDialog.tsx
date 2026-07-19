@@ -13,7 +13,6 @@ import { Plus } from "lucide-react";
 import { AddSupportEngineerForm } from "./AddSupportEngineerForm";
 
 export const AddSupportEngineerDialog = () => {
-
   return (
     <Dialog>
       <DialogTrigger asChild>

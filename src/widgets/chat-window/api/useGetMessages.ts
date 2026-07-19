@@ -15,7 +15,10 @@ export function useGetMessages(ticketId: string | null) {
 
   const query = useQuery<MessagesResponse>({
     queryKey: ["messages", ticketId],
-    queryFn: () => fetchMessages(ticketId!),
+    queryFn: async () => {
+      if (!ticketId) throw new Error("ticketId is required");
+      return fetchMessages(ticketId);
+    },
     enabled: !!ticketId,
     staleTime: 0,
   });

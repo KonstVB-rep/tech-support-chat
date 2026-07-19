@@ -2,7 +2,6 @@ import { ButtonEnable2FA } from "@/features/auth-2fa";
 import ButtonSignOut from "@/features/auth-signout/ui/ButtonSignOut";
 import { auth } from "../lib/auth";
 
-
 export type FullSession = typeof auth.$Infer.Session;
 
 export interface Enable2FAProps {

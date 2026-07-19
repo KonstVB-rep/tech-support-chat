@@ -15,12 +15,12 @@ interface ProtectProps {
   fallback?: React.ReactNode;
 }
 
-export const ProtectByRole = ({ 
-  requiredRole = USER_ROLE.ADMIN, 
+export const ProtectByRole = ({
+  requiredRole = USER_ROLE.ADMIN,
   currentMemberRole = null,
-  requiredOrgRole = OrgRole.RESPONSIBLE, 
-  children, 
-  fallback = null 
+  requiredOrgRole = OrgRole.RESPONSIBLE,
+  children,
+  fallback = null,
 }: ProtectProps) => {
   const { user, isLoading } = useCurrentUser();
 
@@ -39,9 +39,11 @@ export const ProtectByRole = ({
 
   // 3. 🚀 ТВОЯ ЧИСТАЯ ЛОГИКА: Если передан контекст компании — просто сравниваем OrgRole типы!
   if (currentMemberRole) {
-    const allowedOrgRoles = Array.isArray(requiredOrgRole) ? requiredOrgRole : [requiredOrgRole];
+    const allowedOrgRoles = Array.isArray(requiredOrgRole)
+      ? requiredOrgRole
+      : [requiredOrgRole];
     const hasLocalAccess = allowedOrgRoles.includes(currentMemberRole);
-    
+
     if (!hasLocalAccess) return fallback;
     return <>{children}</>;
   }

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { cn } from "@/shared/lib/utils";
 import { Separator as SeparatorPrimitive } from "radix-ui";
@@ -21,8 +21,7 @@ function Separator({
       orientation={orientation}
       {...props}
     />
-  )
+  );
 }
 
 export { Separator };
-

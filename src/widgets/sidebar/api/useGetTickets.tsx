@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 
 // Описываем тип тикета, который нам вернет бэкенд
 export interface SupportTicketData {
@@ -15,13 +15,12 @@ export interface SupportTicketData {
   }[];
 }
 
-
 export function useGetTickets() {
   return useQuery<SupportTicketData[]>({
-    queryKey: ['support-tickets'], // Уникальный ключ кэша
+    queryKey: ["support-tickets"], // Уникальный ключ кэша
     queryFn: async () => {
-      const res = await fetch('/api/support/tickets');
-      if (!res.ok) throw new Error('Не удалось загрузить тикеты');
+      const res = await fetch("/api/support/tickets");
+      if (!res.ok) throw new Error("Не удалось загрузить тикеты");
       return res.json();
     },
     // refetchInterval: 3000, // 👈 КРИТИЧНО ДЛЯ РЕАЛ-ТАЙМА: опрашиваем базу каждые 3 секунды

@@ -82,6 +82,26 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --bg-auth-layout:
+    radial-gradient(
+      circle at center center,
+      rgba(28, 28, 28, 0),
+      rgb(252, 252, 252)
+    ),
+    repeating-linear-gradient(
+      135deg,
+      rgb(252, 252, 252) 0px,
+      rgb(252, 252, 252) 1px,
+      transparent 1px,
+      transparent 4px
+    ),
+    repeating-linear-gradient(
+      45deg,
+      rgb(219, 219, 219) 0px,
+      rgb(219, 219, 219) 5px,
+      transparent 5px,
+      transparent 6px
+    ), linear-gradient(90deg, rgb(252, 252, 252), rgb(252, 252, 252));
 }
 
 .dark {
@@ -116,39 +136,69 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --bg-auth-layout:
+    radial-gradient(
+      circle at center center,
+      rgba(33, 33, 33, 0),
+      rgb(33, 33, 33)
+    ),
+    repeating-linear-gradient(
+      135deg,
+      rgb(33, 33, 33) 0px,
+      rgb(33, 33, 33) 1px,
+      transparent 1px,
+      transparent 4px
+    ),
+    repeating-linear-gradient(
+      45deg,
+      rgb(56, 56, 56) 0px,
+      rgb(56, 56, 56) 5px,
+      transparent 5px,
+      transparent 6px
+    ), linear-gradient(90deg, rgb(33, 33, 33), rgb(33, 33, 33));
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   html {
     @apply font-sans;
   }
 }
 
-.field-height{
-  height: 48px;
-}
+/* * {
+  scrollbar-width: none;
+} */
 
-body{
+body {
   overflow: hidden;
 }
 
-.dark body{
-  background: url('../../public/bg.webp') center center /contain repeat;
-}
-body{
-  background: url('../../public/bg-light.webp') center center /contain repeat;
+.dark .chat-field {
+  background: url("../../public/bg.webp") center center / contain repeat;
 }
 
+.chat-field {
+  background: url("../../public/bg-light.webp") center center / contain repeat;
+}
+
+.bg-auth_layout {
+  background-image: var(--bg-auth-layout);
+}
+
+.field-height {
+  height: 48px;
+}
 
 .loader {
   --color-1: #fff;
-  --color-2: #00A7FF;
+  --color-2: #00a7ff;
   --size: 1px;
 
   width: calc(48 * var(--size));
@@ -161,8 +211,9 @@ body{
   box-sizing: border-box;
   animation: rotation 2s linear infinite;
 }
+
 .loader::after {
-  content: '';
+  content: "";
   box-sizing: border-box;
   position: absolute;
   left: 0;
@@ -183,33 +234,37 @@ body{
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
 }
+
 @keyframes rotationBack {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(-360deg);
   }
 }
 
-
-button{
+button {
   cursor: pointer;
 }
-.bg-messege_incoming{
-  background: -webkit-linear-gradient(90deg,#ababab,#d0d0d0,#c6c6c6); /* Chrome 10-25, Safari 5.1-6 */ 
-  background: linear-gradient(90deg,#ababab,#d0d0d0,#c6c6c6); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+.bg-messege_incoming {
+  background: -webkit-linear-gradient(90deg, #ababab, #d0d0d0, #c6c6c6);
+  background: linear-gradient(90deg, #ababab, #d0d0d0, #c6c6c6);
 }
 
-.dark .bg-messege_incoming{
- background: -webkit-linear-gradient(90deg,#222120,#312e26,#45423a); /* Chrome 10-25, Safari 5.1-6 */ 
- background: linear-gradient(90deg,#222120,#312e26,#45423a); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+.dark .bg-messege_incoming {
+  background: -webkit-linear-gradient(90deg, #222120, #312e26, #45423a);
+  background: linear-gradient(90deg, #222120, #312e26, #45423a);
 }
 
-.bg-message_outcoming{
- background: -webkit-linear-gradient(90deg,#003366,#0079c2); /* Chrome 10-25, Safari 5.1-6 */ background: linear-gradient(90deg,#003366,#0079c2); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+.bg-message_outcoming {
+  background: -webkit-linear-gradient(90deg, #003366, #0079c2);
+  background: linear-gradient(90deg, #003366, #0079c2);
 }

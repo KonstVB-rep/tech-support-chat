@@ -1,10 +1,10 @@
-///ДЛЯ DEV режима
 // src/app/api/uploads/[...path]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { readFile } from "fs/promises";
 import path from "path";
 
-const UPLOAD_DIR = process.env.UPLOAD_DIR || "./uploads";
+// ✅ Fallback совпадает с media-upload/route.ts
+const UPLOAD_DIR = process.env.UPLOAD_DIR || "/opt/chat-app/uploads";
 
 export async function GET(
   req: NextRequest,
@@ -13,7 +13,7 @@ export async function GET(
   const { path: segments } = await params;
   const filePath = path.join(UPLOAD_DIR, ...segments);
 
-  // ✅ Защита от directory traversal (../../etc/passwd)
+  // Защита от directory traversal
   const resolved = path.resolve(filePath);
   const uploadRoot = path.resolve(UPLOAD_DIR);
   if (!resolved.startsWith(uploadRoot)) {

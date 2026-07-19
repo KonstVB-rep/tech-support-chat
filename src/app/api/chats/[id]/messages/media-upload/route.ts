@@ -1,5 +1,5 @@
 // src/app/api/chats/[id]/messages/media-upload/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@/app/lib/auth";
 import { prisma } from "@/prisma/prisma-client";
@@ -9,12 +9,10 @@ import path from "path";
 import { randomUUID } from "crypto";
 
 const UPLOAD_DIR = process.env.UPLOAD_DIR || "/opt/chat-app/uploads";
-
-// ✅ Чёткое разделение: медиа и документы в разных поддиректориях
 const MEDIA_DIR = path.join(UPLOAD_DIR, "media");
 const FILES_DIR = path.join(UPLOAD_DIR, "files");
-
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 МБ
+const MAX_FILE_SIZE = 50 * 1024 * 1024;
+const MAX_FILES_PER_REQUEST = 10;
 
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const VIDEO_TYPES = ["video/mp4", "video/webm"];
@@ -27,7 +25,6 @@ export async function POST(
   try {
     const { id: chatId } = await params;
 
-    // 1. Авторизация
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) {
       return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
@@ -40,7 +37,6 @@ export async function POST(
       return NextResponse.json({ error: "Профиль не найден" }, { status: 404 });
     }
 
-    // 2. Проверка доступа к чату
     const isMember = await prisma.chatMember.findUnique({
       where: { chatId_profileId: { chatId, profileId: userProfile.id } },
     });
@@ -53,93 +49,89 @@ export async function POST(
       return NextResponse.json({ error: "Нет доступа" }, { status: 403 });
     }
 
-    // 3. Парсинг FormData
     const formData = await req.formData();
-    const file = formData.get("file") as File | null;
+    const files = formData.getAll("files") as File[];
     const text = formData.get("text") as string | null;
 
-    if (!file) {
-      return NextResponse.json({ error: "Файл не найден" }, { status: 400 });
+    if (!files || files.length === 0) {
+      return NextResponse.json({ error: "Файлы не найдены" }, { status: 400 });
     }
 
-    if (file.size > MAX_FILE_SIZE) {
+    if (files.length > MAX_FILES_PER_REQUEST) {
       return NextResponse.json(
-        {
-          error: `Файл слишком большой (макс. ${MAX_FILE_SIZE / 1024 / 1024} МБ)`,
-        },
+        { error: `Максимум ${MAX_FILES_PER_REQUEST} файлов за раз` },
         { status: 400 },
       );
     }
 
-    // ✅ Определяем тип и целевую директорию
-    const isMedia = MEDIA_TYPES.includes(file.type);
-    const baseDir = isMedia ? MEDIA_DIR : FILES_DIR;
-    const fileType = isMedia
-      ? IMAGE_TYPES.includes(file.type)
-        ? "image"
-        : "video"
-      : "file";
-
-    // Разрешённые типы: медиа + любые файлы до 50МБ
-    if (!isMedia && file.size > MAX_FILE_SIZE) {
-      return NextResponse.json(
-        {
-          error: `Файл слишком большой (макс. ${MAX_FILE_SIZE / 1024 / 1024} МБ)`,
-        },
-        { status: 400 },
-      );
-    }
-
-    // 4. Сохранение на диск в правильную поддиректорию
-    const ext = file.name.split(".").pop() || "bin";
-    const fileName = `${randomUUID()}.${ext}`;
-    const targetDir = path.join(baseDir, "chats", chatId);
-
-    await mkdir(targetDir, { recursive: true });
-
-    const filePath = path.join(targetDir, fileName);
-    const buffer = Buffer.from(await file.arrayBuffer());
-    await writeFile(filePath, buffer);
-
-    // ✅ URL отражает структуру: /uploads/media/... или /uploads/files/...
-    const urlPrefix = isMedia ? "media" : "files";
-    const fileUrl = `/uploads/${urlPrefix}/chats/${chatId}/${fileName}`;
-
-    // 5. Запись в БД
-    const message = await prisma.message.create({
-      data: {
-        text: text?.trim() || "",
-        chatId,
-        profileId: userProfile.id,
-        fileUrl,
-        fileType,
-        fileName: file.name,
-        fileSize: file.size,
-      },
-      include: {
-        profile: {
-          select: { id: true, name: true, userId: true, imageUrl: true },
-        },
-      },
+    const chatInfo = await prisma.chat.findUnique({
+      where: { id: chatId },
+      select: { organizationId: true },
     });
+
+    const createdMessages = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+
+      if (file.size > MAX_FILE_SIZE) continue; // Пропускаем слишком большие
+
+      const isMedia = MEDIA_TYPES.includes(file.type);
+      const baseDir = isMedia ? MEDIA_DIR : FILES_DIR;
+      const fileType = isMedia
+        ? IMAGE_TYPES.includes(file.type)
+          ? "image"
+          : "video"
+        : "file";
+
+      const ext = file.name.split(".").pop() || "bin";
+      const fileName = `${randomUUID()}.${ext}`;
+      const targetDir = path.join(baseDir, "chats", chatId);
+
+      await mkdir(targetDir, { recursive: true });
+
+      const filePath = path.join(targetDir, fileName);
+      const buffer = Buffer.from(await file.arrayBuffer());
+      await writeFile(filePath, buffer);
+
+      const urlPrefix = isMedia ? "media" : "files";
+      const fileUrl = `/uploads/${urlPrefix}/chats/${chatId}/${fileName}`;
+
+      const messageText = i === 0 ? text?.trim() || "" : "";
+
+      const message = await prisma.message.create({
+        data: {
+          text: messageText,
+          chatId,
+          profileId: userProfile.id,
+          fileUrl,
+          fileType,
+          fileName: file.name,
+          fileSize: file.size,
+        },
+        include: {
+          profile: {
+            select: { id: true, name: true, userId: true, imageUrl: true },
+          },
+        },
+      });
+
+      createdMessages.push(message);
+    }
 
     await prisma.chat.update({
       where: { id: chatId },
       data: { updatedAt: new Date() },
     });
 
-    // 6. Real-time
-    const chatInfo = await prisma.chat.findUnique({
-      where: { id: chatId },
-      select: { organizationId: true },
-    });
+    for (const message of createdMessages) {
+      await triggerSocketEvent("srv:message:new", {
+        message,
+        organizationId: chatInfo?.organizationId || null,
+      });
+    }
 
-    await triggerSocketEvent("srv:message:new", {
-      message,
-      organizationId: chatInfo?.organizationId || null,
-    });
-
-    return NextResponse.json({ message });
+    return NextResponse.json({ messages: createdMessages });
   } catch (error) {
     console.error("Ошибка загрузки:", error);
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });

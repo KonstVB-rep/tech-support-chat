@@ -5,12 +5,22 @@ import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
 import { authClient } from "@/app/lib/auth-client";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/shared/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/shared/ui/card";
 import { Field, FieldLabel } from "@/shared/ui/field";
 import { Button } from "@/shared/ui/button";
-import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@/shared/ui/input-otp";
-
-
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+  InputOTPSeparator,
+} from "@/shared/ui/input-otp";
 
 const Steps = {
   idle: "idle",

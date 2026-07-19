@@ -1,38 +1,39 @@
-"use client"
+"use client";
 
-
-import { signUpAction } from "@/app/actions/auth"
-import ButtonSubmitForm from "@/shared/ui/custom/ButtonSubmitForm"
-import { Field, FieldError } from "@/shared/ui/field"
-import { Input } from "@/shared/ui/input"
-import { zodResolver } from "@hookform/resolvers/zod"
-import Link from "next/link"
-import { useActionState } from "react"
-import { Controller, useForm } from "react-hook-form"
-import { type SchemaPropsSignUp, validationSchemaSignUp } from "../model/schema"
-
+import { signUpAction } from "@/app/actions/auth";
+import ButtonSubmitForm from "@/shared/ui/custom/ButtonSubmitForm";
+import { Field, FieldError } from "@/shared/ui/field";
+import { Input } from "@/shared/ui/input";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { useActionState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import {
+  type SchemaPropsSignUp,
+  validationSchemaSignUp,
+} from "../model/schema";
 
 const initialState = {
   name: "",
   email: "",
   password: "",
-}
+};
 
 export default function SignUpPage() {
-  const [state, formAction] = useActionState(signUpAction, undefined)
+  const [state, formAction] = useActionState(signUpAction, undefined);
   const form = useForm<SchemaPropsSignUp>({
     resolver: zodResolver(validationSchemaSignUp),
     defaultValues: initialState,
     resetOptions: {
       keepDefaultValues: true,
     },
-  })
+  });
 
   const onSubmit = (formData: FormData) => {
-    formAction(formData)
-  }
+    formAction(formData);
+  };
 
-  const errorMessage = state?.error
+  const errorMessage = state?.error;
 
   return (
     <div className="flex flex-col items-center justify-center h-screen gap-4">
@@ -103,5 +104,5 @@ export default function SignUpPage() {
         {errorMessage && <p className="text-red-500">{errorMessage}</p>}
       </form>
     </div>
-  )
+  );
 }

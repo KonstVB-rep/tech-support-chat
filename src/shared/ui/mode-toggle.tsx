@@ -2,10 +2,13 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./dropdown-menu";
 import { Button } from "./button";
-
-
 
 export function ModeToggle() {
   const { setTheme, theme } = useTheme();
@@ -16,8 +19,11 @@ export function ModeToggle() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button className="cursor-pointer" size="icon" variant="outline">
-          {isDarkTheme ? <Moon className="h-[1.2rem] w-[1.2rem] scale-0 rotate-90 text-white transition-all dark:scale-100 dark:rotate-0 border-none bg-transparent" />
-           : <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90 border-none bg-transparent" />}
+          {isDarkTheme ? (
+            <Moon className="h-[1.2rem] w-[1.2rem] scale-0 rotate-90 text-white transition-all dark:scale-100 dark:rotate-0 border-none bg-transparent" />
+          ) : (
+            <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90 border-none bg-transparent" />
+          )}
           <span className="sr-only">Выбор темы</span>
         </Button>
       </DropdownMenuTrigger>
