@@ -30,18 +30,35 @@ export async function GET() {
     let chats = [];
 
     if (isGlobalAdmin || isSupportEngineer) {
-      // Суперадмин и вся техподдержка видят вообще ВСЕ существующие групповые чаты в системе!
       chats = await prisma.chat.findMany({
         orderBy: { updatedAt: "desc" },
         include: {
           creator: { select: { id: true, name: true, imageUrl: true } },
           organization: { select: { id: true, name: true } },
           _count: { select: { messages: true } },
+          messages: {
+            orderBy: { createdAt: "desc" },
+            take: 1,
+            select: {
+              text: true,
+              fileUrl: true,
+              fileType: true,
+              createdAt: true,
+              profile: {
+                select: {
+                  name: true,
+                  userId: true,
+                },
+              },
+            },
+          },
+          members: {
+            where: { profileId: userProfile.id },
+            select: { lastReadAt: true },
+          },
         },
       });
     } else {
-      // 🚀 ШАГ 2: Логика для КЛИЕНТОВ.
-      // Собираем ID всех организаций, где этот юзер является легальным RESPONSIBLE (директором)
       const managedOrgIds = userProfile.organizationMembers
         .filter((m) => m.role === "RESPONSIBLE")
         .map((m) => m.organizationId);
@@ -62,11 +79,50 @@ export async function GET() {
           creator: { select: { id: true, name: true, imageUrl: true } },
           organization: { select: { id: true, name: true } },
           _count: { select: { messages: true } },
+          messages: {
+            orderBy: { createdAt: "desc" },
+            take: 1,
+            select: {
+              text: true,
+              fileUrl: true,
+              fileType: true,
+              createdAt: true,
+              profile: {
+                select: {
+                  name: true,
+                  userId: true,
+                },
+              },
+            },
+          },
+          members: {
+            where: { profileId: userProfile.id },
+            select: { lastReadAt: true },
+          },
         },
       });
     }
 
-    return NextResponse.json({ chats });
+    const chatsWithUnread = chats.map((chat) => {
+      const member = chat.members?.[0];
+      const lastReadAt = member?.lastReadAt;
+
+      const lastMessage = chat.messages?.[0] || null;
+
+      const hasUnread = lastReadAt
+        ? new Date(chat.updatedAt) > new Date(lastReadAt)
+        : chat._count.messages > 0;
+
+      return {
+        ...chat,
+        lastMessage, // Переименовываем в lastMessage для клиента
+        messages: undefined,
+        members: undefined,
+        unreadCount: hasUnread ? chat._count.messages : 0,
+      };
+    });
+
+    return NextResponse.json({ chats: chatsWithUnread });
   } catch (error) {
     console.error("Ошибка загрузки чатов:", error);
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });

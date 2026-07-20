@@ -5,7 +5,6 @@ import { useMediaQuery } from "@/shared/lib/hooks/useMediaQuery";
 import { cn } from "@/shared/lib/utils";
 import { LinksListNav } from "@/shared/ui/custom/LinksListNav";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const MobileNav = ({ isAdmin }: { isAdmin: boolean }) => {
@@ -19,9 +18,9 @@ const MobileNav = ({ isAdmin }: { isAdmin: boolean }) => {
 
   const linkClass = (href: string) =>
     cn(
-      "flex flex-1 flex-col gap-1 items-center justify-center h-auto p-2 rounded-xl transition-colors select-none shrink-0",
+      "flex flex-1 flex-col gap-1 items-center justify-center h-auto p-2 rounded-full transition-colors select-none shrink-0",
       isActive(href)
-        ? "text-blue-500 font-medium"
+        ? "text-blue-500 font-medium hover:bg-muted/50"
         : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
     );
 

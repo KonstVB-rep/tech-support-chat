@@ -58,7 +58,7 @@ const SideBarChats = () => {
       </div>
 
       <div className="flex-1 py-2 flex flex-col min-h-0">
-        {isLoading ? (
+        {!chats.length && isLoading ? (
           <div className="px-4 py-6 text-center text-xs text-muted-foreground animate-pulse">
             Загрузка чатов...
           </div>

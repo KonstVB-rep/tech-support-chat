@@ -23,14 +23,14 @@ import {
 import { OrgRole } from "@prisma/client";
 import { useGetCurrentMemberRole } from "@/entities/employee/api/useGetCurrentMemberRole";
 import { getSocket } from "@/shared/lib/socket";
-import type { MessagesResponse, Message } from "@/entities/chat/api/chat-api";
+import type { MessagesResponse, Message, Chat } from "@/entities/chat/api/types";
 import { useSocketStatus } from "@/shared/lib/hooks/useSocketStatus";
 import { MessageItem } from "@/entities/message";
 
 export const ChatWindow = () => {
-  const activeTicketId = useActiveTicketId();
   const clearChat = useClearChat();
   const queryClient = useQueryClient();
+  const activeTicketId = useActiveTicketId();
 
   const { data: session } = authClient.useSession();
   const {
@@ -106,6 +106,19 @@ export const ChatWindow = () => {
   useEffect(() => {
     if (!activeTicketId) return;
 
+     fetch(`/api/chats/${activeTicketId}/read`, { method: "POST" })
+      .then(() => {
+        queryClient.setQueryData<Chat[]>(["chats"], (old) => {
+          if (!old) return old;
+          return old.map((chat) =>
+            chat.id === activeTicketId
+              ? { ...chat, unreadCount: 0, lastReadAt: new Date().toISOString() }
+              : chat,
+          );
+        });
+      })
+      .catch(() => {});
+
     const socket = getSocket();
 
     const handleChatRemoved = (data: { chatId: string }) => {
@@ -119,7 +132,7 @@ export const ChatWindow = () => {
     return () => {
       socket.off("chat:removed", handleChatRemoved);
     };
-  }, [activeTicketId, clearChat]);
+  }, [activeTicketId, clearChat, queryClient]);
 
   const handleRenameSubmit = () => {
     if (newTitle === chatDisplayTitle) return;
@@ -155,9 +168,12 @@ export const ChatWindow = () => {
   return (
     <WrapperScreen className="chat-field">
       <WrapperHeaderScreen>
-        <div className="ml-3 bg-primary-foreground flex items-center justify-between gap-2 w-full">
+        <div className="flex items-center justify-between gap-2 w-full">
           <div className="flex items-center gap-1">
-            <Button size="icon" onClick={() => clearChat()} variant="ghost">
+            <Button size="icon" onClick={() => {
+                          clearChat(); 
+                          window.history.replaceState(null, "", window.location.pathname); 
+                        }} variant="ghost">
               <ChevronLeft className="h-6 w-6" />
             </Button>
 
@@ -231,7 +247,7 @@ export const ChatWindow = () => {
       <div className="flex flex-col flex-1 min-h-0 w-full mx-auto">
         <ScrollArea ref={setScrollContainerRef} className="px-4 w-full h-full">
           <div className="w-full max-w-2xl mx-auto px-3 backdrop-blur-[1px]">
-            {isLoading && (
+            {!messagesData && isLoading && (
               <div className="text-center text-xs text-muted-foreground py-4 animate-pulse">
                 Загрузка переписки...
               </div>
@@ -255,8 +271,6 @@ export const ChatWindow = () => {
                 minute: "2-digit",
               });
               const isMe = msg.profile?.userId === currentUserId;
-
-              console.log(msg, "**********************************");
 
               return (
                 <div key={msg.id} className="pb-3">
@@ -288,7 +302,7 @@ export const ChatWindow = () => {
         </div>
       )}
       <div className="shrink-0 w-full">
-        <MessageInput />
+       <MessageInput overrideTicketId={activeTicketId} />
       </div>
     </WrapperScreen>
   );

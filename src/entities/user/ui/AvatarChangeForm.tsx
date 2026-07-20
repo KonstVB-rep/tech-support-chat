@@ -49,7 +49,7 @@ export const AvatarChangeForm = ({
             <Button
               size="icon"
               variant="destructive"
-              className="absolute -top-1 -right-1 rounded-full"
+              className="absolute -top-2 -right-1 rounded-full border-red-300 hover:border-red-500 focus-visible:border-red-500"
               onClick={handleRemove}
               disabled={isPending}
             >
@@ -94,6 +94,7 @@ export const AvatarChangeForm = ({
       <p className="text-xs text-muted-foreground">
         {isPending ? "Загрузка..." : "Нажмите на аватар чтобы изменить"}
       </p>
+      
     </div>
   );
 };

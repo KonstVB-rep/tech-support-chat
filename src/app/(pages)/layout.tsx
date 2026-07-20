@@ -11,7 +11,7 @@ const PageLayout = async ({ children }: PageLayoutProps) => {
   return (
     <div className="flex min-h-screen w-full">
       <div className="flex h-full">
-        <Suspense fallback={<Loader />}>
+        <Suspense fallback={<Loader.global />}>
           <SidebarNavWrapper />
         </Suspense>
       </div>
@@ -27,3 +27,5 @@ const PageLayout = async ({ children }: PageLayoutProps) => {
 };
 
 export default PageLayout;
+
+

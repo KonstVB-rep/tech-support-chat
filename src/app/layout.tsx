@@ -48,7 +48,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <RootProvider>
           <div className="flex w-full pb-[88px] md:pb-0">{children}</div>
-          <PwaInstallBanner />
+          {/* <PwaInstallBanner /> */}
         </RootProvider>
       </body>
     </html>

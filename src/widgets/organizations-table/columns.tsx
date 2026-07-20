@@ -25,7 +25,6 @@ const startOfDay = (date: Date): Date => {
   return result;
 };
 
-// Конец дня (23:59:59.999)
 const endOfDay = (date: Date): Date => {
   const result = new Date(date);
   result.setHours(23, 59, 59, 999);

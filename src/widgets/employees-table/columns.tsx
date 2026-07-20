@@ -97,15 +97,6 @@ export const columns: ColumnDef<EmployeeWithProfile, unknown>[] = [
     },
     accessorFn: (row: EmployeeWithProfile) => row.position,
   },
-  // {
-  //   id: "role",
-  //   header: () => <div className="text-center uppercase text-sm">Роль</div>,
-  //   cell: ({ row }) => {
-  //     const value = row.getValue("role") as OrgRole;
-  //     return <div className="text-center font-medium">{value}</div>
-  //   },
-  //   accessorFn: (row: EmployeeWithProfile) => row.role,
-  // },
   {
     id: "actions",
     maxSize: 80,
@@ -129,6 +120,8 @@ export const columns: ColumnDef<EmployeeWithProfile, unknown>[] = [
               isSupportEngineer={false}
               pushEnabled={employee.profile.pushEnabled}
               isViewedByAdmin={false}
+              source="organization"
+              organizationId={employee.organizationId}
             />
             <DeleteEmployeeDialog
               ids={employee.id}

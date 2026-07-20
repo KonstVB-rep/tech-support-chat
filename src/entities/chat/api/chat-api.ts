@@ -1,85 +1,16 @@
 // src/entities/chat/api/chat-api.ts
+
+"use client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
-// Типы
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-  profileId: string;
-}
-
-export interface ChatInfo {
-  id: string;
-  title: string | null;
-  imageUrl: string | null;
-}
-
-export interface Message {
-  id: string;
-  text: string;
-  chatId: string;
-  profileId: string;
-  createdAt: string;
-  fileUrl?: string | null;
-  fileType?: string | null;
-  fileName?: string | null;
-  fileSize?: number | null;
-  profile: {
-    id: string;
-    name: string;
-    userId: string;
-    imageUrl: string | null;
-    user?: { role: string };
-  };
-}
-
-export interface MessagesResponse {
-  messages: Message[];
-  chat: {
-    id: string;
-    title: string | null;
-    organizationId: string | null;
-    organization: {
-      name: string;
-    } | null;
-  } | null;
-}
+import {
+  fetchSession,
+  fetchActiveChat,
+  fetchChatInfo,
+  fetchMessages,
+} from "./fetchClient";
+import { Message, MessagesResponse } from "./types";
 
 // API функции
-export const fetchSession = async (): Promise<User> => {
-  const res = await fetch("/api/auth/get-session");
-  if (!res.ok) throw new Error("Не авторизован");
-  const data = await res.json();
-  if (!data.user) throw new Error("Нет пользователя");
-  return data.user;
-};
-
-export const fetchActiveChat = async (): Promise<string | null> => {
-  const res = await fetch("/api/chats/active");
-  if (!res.ok) throw new Error("Ошибка получения чата");
-  const data = await res.json();
-  return data.chatId;
-};
-
-export const fetchChatInfo = async (chatId: string): Promise<ChatInfo> => {
-  const res = await fetch(`/api/chats/${chatId}/info`);
-  if (!res.ok) throw new Error("Чат не найден");
-  const data = await res.json();
-  return data.chat;
-};
-
-export const fetchMessages = async (
-  chatId: string,
-): Promise<MessagesResponse> => {
-  const res = await fetch(`/api/chats/${chatId}/messages`);
-
-  if (!res.ok) throw new Error("Ошибка загрузки сообщений");
-
-  return await res.json();
-};
-
 export const sendMessage = async (
   chatId: string,
   text: string,

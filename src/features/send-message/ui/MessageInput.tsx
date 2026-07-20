@@ -19,12 +19,13 @@ type PendingFile = {
   isCompressing: boolean;
 };
 
-export const MessageInput = () => {
+export const MessageInput = ({overrideTicketId}:{overrideTicketId?: string | null}) => {
   const [text, setText] = useState("");
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
 
-  const activeTicketId = useActiveTicketId();
+  const globalTicketId = useActiveTicketId();
+  const activeTicketId = overrideTicketId ?? globalTicketId;
 
   const { mutate: uploadMutate, isPending: isUploading } =
     useUploadMutation(activeTicketId);

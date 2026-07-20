@@ -53,20 +53,31 @@ const httpServer = createServer((req, res) => {
             );
 
             // Обновление сайдбара
-            io.emit("chat:updated", {
+            const chatUpdatedPayload = {
               chatId: payload.message.chatId,
-              text: payload.message.text,
-              senderName: payload.message.profile?.name || null,
-              createdAt: payload.message.createdAt,
-            });
-
-            if (payload.organizationId) {
-              io.to(`org:${payload.organizationId}`).emit("chat:updated", {
-                chatId: payload.message.chatId,
+              updatedAt: payload.message.createdAt,
+              senderId: payload.message.profile?.userId,
+              lastMessage: {
                 text: payload.message.text,
-                senderName: payload.message.profile?.name || null,
+                fileUrl: payload.message.fileUrl || null,
+                fileType: payload.message.fileType || null,
                 createdAt: payload.message.createdAt,
-              });
+                profile: {
+                  name: payload.message.profile?.name || "Неизвестно",
+                  userId: payload.message.profile?.userId,
+                },
+              },
+            };
+
+            // Глобальная рассылка (для админов/саппортов)
+            io.emit("chat:updated", chatUpdatedPayload);
+
+            // Рассылка по организации (если есть)
+            if (payload.organizationId) {
+              io.to(`org:${payload.organizationId}`).emit(
+                "chat:updated",
+                chatUpdatedPayload,
+              );
             }
 
             const chatMembers = await prisma.chatMember.findMany({

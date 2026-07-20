@@ -5,8 +5,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import { getSocket } from "@/shared/lib/socket";
 import { authClient } from "@/app/lib/auth-client";
-import type { Message, MessagesResponse } from "@/entities/chat/api/chat-api";
-import { fetchMessages } from "@/entities/chat/api/chat-api";
+import type { Message, MessagesResponse } from "@/entities/chat/api/types";
+import { fetchMessages } from "@/entities/chat/api/fetchClient";
 
 export function useGetMessages(ticketId: string | null) {
   const queryClient = useQueryClient();

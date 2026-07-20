@@ -210,6 +210,7 @@ model ChatMember {
   chatId    String
   profileId String
   role      ChatRole @default(MEMBER)
+  lastReadAt DateTime? //  Когда пользователь последний раз читал этот чат
   joinedAt  DateTime @default(now())
 
   chat    Chat    @relation(fields: [chatId], references: [id], onDelete: Cascade)

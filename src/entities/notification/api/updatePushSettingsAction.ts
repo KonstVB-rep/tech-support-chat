@@ -5,14 +5,20 @@ import { USER_ROLE } from "@/shared/constants";
 import { getSession } from "@/shared/lib/server-current-user";
 import { revalidatePath } from "next/cache";
 
+export type PushSettingsSource = "organization" | "account" | "admin-staff";
+
 type Payload = {
   targetProfileId: string;
   pushEnabled: boolean;
+  source: PushSettingsSource;
+  organizationId?: string;
 };
 
 export const updatePushSettingsAction = async ({
   targetProfileId,
   pushEnabled,
+  source,
+  organizationId,
 }: Payload) => {
   try {
     const session = await getSession();
@@ -48,7 +54,19 @@ export const updatePushSettingsAction = async ({
       data: { pushEnabled },
     });
 
-    revalidatePath("/settings/notifications");
+    switch (source) {
+      case "organization":
+        if (organizationId) {
+          revalidatePath(`/organization/${organizationId}`);
+        }
+        break;
+      case "account":
+        revalidatePath("/account");
+        break;
+      case "admin-staff":
+        revalidatePath("/admin/staff");
+        break;
+    }
 
     return { success: true, error: null };
   } catch (e) {

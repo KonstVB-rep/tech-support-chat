@@ -33,11 +33,6 @@ export const LINKS_NAV: NavigationLink[] = [
     icon: <MessagesSquare className="size-5" />,
   },
   {
-    href: "/account",
-    title: "Настройки",
-    icon: <Settings className="size-5" />,
-  },
-  {
     href: "/admin/organizations",
     title: "Клиенты",
     icon: <Users className="size-5" />,
@@ -48,5 +43,10 @@ export const LINKS_NAV: NavigationLink[] = [
     title: "Инженеры",
     icon: <UserRoundCog className="size-5" />,
     isAdminOnly: true,
+  },
+    {
+    href: "/account",
+    title: "Настройки",
+    icon: <Settings className="size-5" />,
   },
 ];

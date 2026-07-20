@@ -1,3 +1,4 @@
+//src/app/organization/[id]/page.tsx
 import { getEmployeesByOrgId } from "@/entities/employee/api";
 import { getOrganization } from "@/entities/organization/api/getOrganization";
 import { AddEmployeeDialog } from "@/features/manage-employee";
@@ -53,7 +54,7 @@ const OrganizationPage = async ({
 }) => {
   return (
     <div className="flex flex-col items-center w-full h-full">
-      <Suspense fallback={<Loader />}>
+      <Suspense fallback={<Loader.global />}>
         <OrganizationContent params={params} />
       </Suspense>
     </div>

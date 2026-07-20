@@ -32,6 +32,7 @@ interface DataTableProps<TData, TValue> {
     resetSelection: () => void,
   ) => React.ReactNode;
   className?: string;
+  colsHidden?:string[]
 }
 
 export function DataTable<TData extends { id: string }, TValue>({

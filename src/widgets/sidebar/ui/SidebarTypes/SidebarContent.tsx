@@ -6,7 +6,6 @@ import type { Chat } from "../../api/useGetChats";
 import { SidebarChatList } from "./SidebarContentByType/SidebarChatList";
 
 interface SidebarContentComponent extends FC {
-  // Settings: FC;
   Chats: FC<ChatListProps>;
 }
 
@@ -16,7 +15,6 @@ interface ChatListProps {
   chats: Chat[];
 }
 
-// SidebarContent.Settings = SidebarSettingsList;
 SidebarContent.Chats = SidebarChatList;
 
 export default SidebarContent;

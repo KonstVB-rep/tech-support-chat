@@ -76,7 +76,6 @@ export const PushPermissionGate = () => {
     }
   };
 
-  // ✅ На сервере и до монтирования возвращаем null — нет mismatch
   if (
     !isMounted ||
     !session?.user ||

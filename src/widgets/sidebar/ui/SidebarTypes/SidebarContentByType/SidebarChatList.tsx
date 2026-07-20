@@ -1,14 +1,17 @@
 // src/entities/chat/ui/SidebarChatList.tsx
 "use client";
 
-import { useEffect, useState, useCallback, Fragment } from "react";
+import { fetchMessages } from "@/entities/chat/api/fetchClient";
+import type { Chat } from "@/entities/chat/api/types";
 import { cn } from "@/shared/lib/utils";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
-import { useActiveTicketId, useSetActiveTicketId } from "@/store/useChatStore";
-import type { Chat } from "../../../api/useGetChats";
 import { Button } from "@/shared/ui/button";
 import { DrawerComponent } from "@/shared/ui/custom/DrawerComponent";
+import { useActiveTicketId, useSetActiveTicketId } from "@/store/useChatStore";
 import { ChatWindow } from "@/widgets/chat-window";
+import { useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
 interface ChatListProps {
   chats: Chat[];
@@ -21,39 +24,45 @@ const formatTime = (dateStr: string) => {
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
   if (days === 0) {
-    return date.toLocaleTimeString("ru-RU", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
   } else if (days === 1) {
     return "Вчера";
   } else {
-    return date.toLocaleDateString("ru-RU", {
-      day: "numeric",
-      month: "short",
-    });
+    return date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
   }
 };
 
 export const SidebarChatList = ({ chats }: ChatListProps) => {
-  const setActiveTicketId = useSetActiveTicketId();
+  const searchParams = useSearchParams();
   const activeTicketId = useActiveTicketId();
+  const setActiveTicketId = useSetActiveTicketId();
+  const queryClient = useQueryClient();
 
-  // 🎯 Добавляем контролируемое состояние для единственного мобильного дровера
   const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
 
-  // 🎯 Добавляем локальный стейт для моментального переключения чата в шторке
-  const [localMobileChatId, setLocalMobileChatId] = useState<string | null>(
-    activeTicketId,
-  );
-
-  // Синхронизируем локальный стейт при внешних изменениях (например, очистке чата через Zustand)
   useEffect(() => {
-    setLocalMobileChatId(activeTicketId);
+    const chatFromUrl = searchParams.get("chat");
+    if (chatFromUrl && chatFromUrl !== activeTicketId) {
+      setActiveTicketId(chatFromUrl);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
     if (!activeTicketId) {
       setIsMobileChatOpen(false);
     }
   }, [activeTicketId]);
+
+  const handlePrefetch = useCallback(
+    (chatId: string) => {
+      queryClient.prefetchQuery({
+        queryKey: ["messages", chatId],
+        queryFn: () => fetchMessages(chatId),
+        staleTime: 60_000,
+      });
+    },
+    [queryClient],
+  );
 
   if (chats.length === 0) {
     return (
@@ -64,22 +73,24 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
     );
   }
 
-  // 🎯 Оптимизированный атомарный метод выбора чата (Google Style)
   const handleChatSelect = (chatId: string) => {
-    // 1. Мгновенно переключаем локальный стейт для мобильной версии (0 мс ожидания)
-    // Благодаря этому ChatWindow внутри шторки ПЕРЕРИСУЕТСЯ ДО начала анимации выезда!
-    setLocalMobileChatId(chatId);
+  setActiveTicketId(chatId);
 
-    // 2. В фоне асинхронно обновляем глобальный Zustand-стор проекта
-    if (chatId !== activeTicketId) {
-      setActiveTicketId(chatId);
-    }
+  queryClient.setQueryData<Chat[]>(["chats"], (old) => {
+    if (!old) return old;
+    return old.map((chat) =>
+      chat.id === chatId ? { ...chat, unreadCount: 0 } : chat,
+    );
+  });
 
-    // 3. Если мы на мобильном устройстве, плавно открываем шторку
-    if (typeof window !== "undefined" && window.innerWidth < 768) {
-      setIsMobileChatOpen(true);
-    }
-  };
+  const params = new URLSearchParams(window.location.search);
+  params.set("chat", chatId);
+  window.history.replaceState(null, "", `?${params.toString()}`);
+
+  if (typeof window !== "undefined" && window.innerWidth < 768) {
+    setIsMobileChatOpen(true);
+  }
+};
 
   return (
     <div className="flex-1 overflow-y-auto px-3 select-none flex flex-col gap-1.5">
@@ -88,15 +99,27 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
         const displayTitle =
           chat.title || chat.organization?.name || "Обращение в поддержку";
 
+        // ✅ Безопасное извлечение последнего сообщения (API может вернуть массив или объект)
+        const lastMsg = Array.isArray(chat.lastMessage)
+          ? chat.lastMessage[0]
+          : chat.lastMessage;
+
+        const lastMsgText = lastMsg?.fileUrl && !lastMsg?.text
+          ? lastMsg?.fileType?.startsWith("image/")
+            ? "📷 Фото"
+            : lastMsg?.fileType?.startsWith("video/")
+              ? "🎥 Видео"
+              : "📎 Файл"
+          : lastMsg?.text || "Нет сообщений";
+
         return (
           <Button
             key={chat.id}
+            data-chat-id={chat.id}
             onClick={() => handleChatSelect(chat.id)}
-            variant="ghost"
+            onMouseEnter={() => handlePrefetch(chat.id)}
             className={cn(
-              "w-full items-center gap-3 px-3 py-2.5 hover:bg-muted/50 transition-colors text-left h-auto rounded-md flex",
-              // 🎯 ИСПРАВЛЕНО: На десктопе (md и выше) подсвечиваем активный чат,
-              // а на мобилках кнопка всегда остается чистой и однородной без заливки
+              "w-full items-center gap-3 px-3 py-2.5 hover:bg-muted/50 bg-transparent transition-colors text-left h-auto rounded-md flex",
               isActiveDesktop && "md:bg-primary/10 md:hover:bg-primary/15",
             )}
           >
@@ -107,30 +130,35 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
             </Avatar>
 
             <div className="flex-1 min-w-0">
+              {/* Строка 1: Заголовок + время */}
               <div className="flex items-center justify-between mb-0.5">
                 <h3 className="font-semibold text-sm truncate text-primary">
                   {displayTitle}
                 </h3>
                 <span className="text-[10px] text-muted-foreground flex-shrink-0 ml-2">
-                  {formatTime(chat.updatedAt)}
+                  {lastMsg
+                    ? formatTime(lastMsg.createdAt)
+                    : formatTime(chat.updatedAt)}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between gap-2 mt-1">
-                <p className="text-xs text-muted-foreground truncate max-w-[130px]">
-                  {chat.organization?.name || "Платформа"}
+              {/* ✅ Строка 2: Превью сообщения + бейдж (ИСПРАВЛЕННАЯ ВЁРСТКА) */}
+              <div className="flex items-end justify-between gap-2 mt-1">
+                <p className="text-xs text-muted-foreground line-clamp-2 leading-tight min-w-0 flex-1">
+                  {lastMsgText}
                 </p>
 
-                <p className="text-xs text-muted-foreground shrink-0 ml-auto font-medium">
-                  {chat._count.messages} сообщ.
-                </p>
+                {(chat.unreadCount ?? 0) > 0 && (
+                  <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center leading-none flex-shrink-0">
+                    {chat.unreadCount! > 99 ? "99+" : chat.unreadCount}
+                  </span>
+                )}
               </div>
             </div>
           </Button>
         );
       })}
 
-      {/* 🎯 ЕДИНЫЙ КОНТРОЛИРУЕМЫЙ ДРОВЕР НА ВЕСЬ КОМПОНЕНТ (Вынесен за пределы цикла) */}
       <DrawerComponent
         open={isMobileChatOpen}
         onOpenChange={setIsMobileChatOpen}
@@ -139,8 +167,6 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
       >
         <div className="md:px-4 flex flex-col gap-3 relative h-full">
           <div className="absolute right-0 h-3/12 bg-chart-2 rounded-s-md top-1/2 -translate-y-1/2 w-2" />
-          {/* Передаем принудительно localMobileChatId вместо глобального activeTicketId */}
-          {/* Благодаря этому в шторке никогда не моргнет предыдущая переписка */}
           <ChatWindow />
         </div>
       </DrawerComponent>

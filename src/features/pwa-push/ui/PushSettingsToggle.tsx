@@ -2,17 +2,18 @@
 
 import { useTransition } from "react";
 
-import { updatePushSettingsAction } from "@/entities/notification/api/updatePushSettingsAction";
+import { PushSettingsSource, updatePushSettingsAction } from "@/entities/notification/api/updatePushSettingsAction";
 import { toast } from "sonner";
 import { ShieldAlert, Loader2 } from "lucide-react";
 import { Switch } from "@/shared/ui/switch";
-import { Button } from "@/shared/ui/button";
 
 interface Props {
   profileId: string;
   isSupportEngineer: boolean;
   pushEnabled: boolean;
   isViewedByAdmin: boolean;
+  source: PushSettingsSource;
+  organizationId?: string;
 }
 
 export const PushSettingsToggle = ({
@@ -20,6 +21,8 @@ export const PushSettingsToggle = ({
   isSupportEngineer,
   pushEnabled,
   isViewedByAdmin,
+  source,
+  organizationId,
 }: Props) => {
   const [isPending, startTransition] = useTransition();
 
@@ -31,6 +34,8 @@ export const PushSettingsToggle = ({
       const res = await updatePushSettingsAction({
         targetProfileId: profileId,
         pushEnabled: !pushEnabled,
+        source,
+        organizationId,
       });
 
       if (res.success) {
@@ -60,15 +65,16 @@ export const PushSettingsToggle = ({
             Оповещения на экране блокировки
           </p>
         </div>
-        {isPending ? (
-          <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-        ) : (
+   
           <Switch
+            className="data-[size=sm]:h-8 data-[size=sm]:w-16"
+            classNameSwitch="dark:data-checked:bg-[linear-gradient(137deg,#156f51,#489d7d,#005232)] data-checked:bg-[linear-gradient(137deg,#156f51,#489d7d,#005232)] group-data-[size=sm]/switch:size-6 group-data-[size=sm]/switch:data-checked:translate-x-[calc(150%)] grid place-items-center"
+            iconSwitch={isPending ? <Loader2 className="h-4 w-4 animate-spin text-blue-600" /> : ""}
+            size={"sm"}
             checked={pushEnabled}
             disabled={!isEditable}
             onCheckedChange={handleToggle}
           />
-        )}
       </div>
     </div>
   );

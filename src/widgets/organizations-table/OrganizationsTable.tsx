@@ -15,8 +15,9 @@ export const OrganizationsTable = ({ data }: OrganizationsTableProps) => {
   return (
     <div className="w-full h-full border border-border/40 rounded-xl bg-background/50 pb-20">
       <DataTable
-        className="max-h-[77dvh] overflow-auto"
+        className="max-h-[72dvh] md:max-h-[77dvh] overflow-auto"
         columns={columns}
+        colsHidden={['']}
         data={data}
         actionsButtonsFixed={(
           dataIds: string[],

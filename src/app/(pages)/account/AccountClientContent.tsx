@@ -9,6 +9,7 @@ import {
 import { checkIsSupportActionNyProfileId } from "@/entities/user/api/checkIsSupportAction";
 import ButtonSignOut from "@/features/auth-signout/ui/ButtonSignOut";
 import { PushSettingsToggle } from "@/features/pwa-push/ui/PushSettingsToggle";
+import { useMediaQuery } from "@/shared/lib/hooks/useMediaQuery";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { DrawerComponent } from "@/shared/ui/custom/DrawerComponent";
@@ -109,7 +110,7 @@ const ACTIVE_SCREEN_DATA: ActiveScreenDataItem[] = [
   {
     key: "accountDel",
     title: "Удаление аккаунта",
-    icon: <Trash className="h-4 w-4 text-muted-foreground" />,
+    icon: <Trash className="h-4 w-4 text-primary" />,
     variant: "destructive",
   },
 ];
@@ -121,17 +122,23 @@ const AccountClientContent = ({ profile }: { profile: ProfileData }) => {
   const router = useRouter();
 
   const screenParam = searchParams.get("screen") as ActiveScreenKeys;
-  const activeScreen: ActiveScreenKeys = ACTIVE_SCREEN[screenParam]
-    ? screenParam
-    : "profile";
 
-  const [localMobileScreen, setLocalMobileScreen] =
-    useState<ActiveScreenKeys>(activeScreen);
+  const isDesktop = useMediaQuery("min-width:768px");
+
+  const activeScreen: ActiveScreenKeys | null = isDesktop 
+  ? (ACTIVE_SCREEN[screenParam] ? screenParam : "profile")
+  : (ACTIVE_SCREEN[screenParam] ? screenParam : null);
+
+  const [localMobileScreen, setLocalMobileScreen] = useState<ActiveScreenKeys | null>(null);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   useEffect(() => {
-    setLocalMobileScreen(activeScreen);
-  }, [activeScreen]);
+    if (!isDesktop) {
+      setLocalMobileScreen(activeScreen);
+    }
+    handleScreenSelect(activeScreen)
+  }, [activeScreen, isDesktop]);
+
 
   const { data: isSupport = false } = useQuery({
     queryKey: ["current-user-is-support"],
@@ -139,9 +146,12 @@ const AccountClientContent = ({ profile }: { profile: ProfileData }) => {
     staleTime: 10 * 60 * 1000,
   });
 
-  const handleScreenSelect = (screen: ActiveScreenKeys) => {
+  const handleScreenSelect = (screen: ActiveScreenKeys | null) => {
     console.log(`⌨️ Переключение экрана настроек PWA на: ${screen}`);
-
+    if(!screen) {
+      router.push("/account", { scroll: false });
+      return;
+    }
     setLocalMobileScreen(screen);
 
     router.push(`/account?screen=${screen}`, { scroll: false });
@@ -151,39 +161,41 @@ const AccountClientContent = ({ profile }: { profile: ProfileData }) => {
     }
   };
 
+    const handleDrawerClose = (isOpen: boolean) => {
+    setIsMobileDrawerOpen(isOpen);
+
+    if (!isOpen) {
+      router.push("/account", { scroll: false });
+    }
+  };
+
   return (
     <>
       <aside className="w-full flex flex-col justify-between md:justify-start md:w-80 h-dvh shrink-0 bg-sidebar">
-        <h1 className="text-xl flex items-center font-semibold p-2 text-start h-14 shrink-0">
+        <h1 className="text-xl flex items-center font-semibold p-2 justify-center md:justify-start h-14 shrink-0">
           Настройки
         </h1>
 
         <div className="flex-1 min-h-0 overflow-y-auto w-full space-y-2 select-none p-3">
-          <SharedLayoutBg inset={0}>
+          <SharedLayoutBg inset={0} className="gap-2">
             {ACTIVE_SCREEN_DATA.map((screen: ActiveScreenDataItem) => {
               const isActiveDesktop = screen.key === activeScreen;
-              console.log(
-                isActiveDesktop,
-                screen.key,
-                "**********************",
-              );
-
               return (
                 <div key={screen.key} className="w-full relative">
                   <Button
                     variant={screen.variant}
                     className={cn(
                       "shadow-none flex items-center justify-start w-full h-12 p-3",
-                      isActiveDesktop
-                        ? "md:border-solid md:border-blue-500 md:border"
-                        : "bg-transparent border-none",
+                      isActiveDesktop 
+                        ? "md:dark:bg-[linear-gradient(90deg,transparent,#000)] md:bg-linear-to-r md:from-[#eae9f6] md:to-[#ebebeb]"
+                        : screen.variant !== "destructive" ? "bg-transparent border-none" : "",
                     )}
                     onClick={() => handleScreenSelect(screen.key)}
                   >
                     <span
                       className={cn(
                         "w-full text-sm font-semibold flex items-center justify-start gap-2",
-                        screen.variant === "destructive" && "text-white",
+                        screen.variant === "destructive" && "text-primary",
                       )}
                     >
                       {screen.icon} {screen.title}
@@ -206,7 +218,7 @@ const AccountClientContent = ({ profile }: { profile: ProfileData }) => {
 
       <DrawerComponent
         open={isMobileDrawerOpen}
-        onOpenChange={setIsMobileDrawerOpen}
+        onOpenChange={handleDrawerClose}
         className="data-[vaul-drawer-direction=left]:max-h-[100vh] data-[vaul-drawer-direction=left]:h-[100dvh] md:hidden data-[vaul-drawer-direction=left]:max-w-full! data-[vaul-drawer-direction=left]:w-full h-full"
         side={"left"}
       >
@@ -232,7 +244,7 @@ const ScreenSettings = ({
   isSupport,
   className,
 }: {
-  activeScreen: ActiveScreenKeys;
+  activeScreen: ActiveScreenKeys | null;
   profile: ProfileData;
   isSupport: boolean;
   className?: string;
@@ -246,7 +258,7 @@ const ScreenSettings = ({
     >
       <WrapperHeaderScreen>
         <h2 className="text-center font-semibold uppercase w-full">
-          {ACTIVE_SCREEN[activeScreen]}
+          {activeScreen && ACTIVE_SCREEN[activeScreen]}
         </h2>
       </WrapperHeaderScreen>
       <div className="overflow-y-auto space-y-10 flex-1 h-full bg-background">
@@ -264,12 +276,13 @@ const ScreenSettings = ({
               <PasswordChangeForm />
               <PushSettingsToggle
                 profileId={profile.id}
-                isSupportEngineer={!isSupport}
+                isSupportEngineer={isSupport}  
                 pushEnabled={profile.pushEnabled}
-                isViewedByAdmin={false}
+                isViewedByAdmin={!isSupport} 
+                source="account"
               />
               <ButtonSignOut
-                className="flex w-full h-10 var gap-1 items-center justify-center p-2 rounded-xl select-none transition-colors mx-auto hover:bg-muted/50 hover:text-foreground"
+                className="flex w-full field-height var gap-1 items-center justify-center p-2 rounded-xl select-none transition-colors mx-auto hover:bg-muted/50 hover:text-foreground"
                 withIcon={true}
                 withText={true}
               />

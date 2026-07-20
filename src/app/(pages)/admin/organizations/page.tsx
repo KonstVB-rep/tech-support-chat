@@ -4,10 +4,16 @@ import { getOrganizations } from "@/entities/organization";
 import { OrganizationsTable } from "@/widgets/organizations-table";
 import WrapperHeaderScreen from "@/shared/ui/custom/WrapperHeaderScreen";
 import { AddOrganizationDialog } from "@/features/manage-organization";
+import OrganizationListMobile from "@/widgets/organizations-table/OrganizationListMobile";
 
 const OrganizationsTableLoader = async () => {
   const organizations = await getOrganizations();
-  return <OrganizationsTable data={organizations} />;
+  return (
+        <>
+        {/* <OrganizationsTable data={organizations} /> */}
+        <OrganizationListMobile organizations={organizations}/>
+      </>
+  )
 };
 
 const OrganizationsPage = () => {
