@@ -63,7 +63,7 @@ export const DeleteSupportEngineerDialog = ({
       <DialogTrigger asChild>
         <Button
           variant="destructive"
-          className="text-white disabled:opacity-50 shrink-0 w-full flex justify-start items-center gap-2 field-height"
+          className="disabled:opacity-50 shrink-0 w-full flex justify-start items-center gap-2 field-height"
           title="Деактивировать инженера"
         >
           <Trash2 className="h-4 w-4" /> Удалить

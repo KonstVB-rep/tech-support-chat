@@ -3,9 +3,11 @@ import { getEmployeesByOrgId } from "@/entities/employee/api";
 import { getOrganization } from "@/entities/organization/api/getOrganization";
 import { AddEmployeeDialog } from "@/features/manage-employee";
 import { OrganizationDetails } from "@/features/manage-organization";
+import ButtonBack from "@/shared/ui/custom/ButtonBack";
 import Loader from "@/shared/ui/custom/Loader";
 import WrapperHeaderScreen from "@/shared/ui/custom/WrapperHeaderScreen";
 import EmployessTable from "@/widgets/employees-table/EmployeesTable";
+
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
@@ -25,7 +27,13 @@ const OrganizationContent = async ({
   return (
     <div className="flex flex-col items-center w-full h-screen overflow-hidden">
       <WrapperHeaderScreen>
-        <h2 className="text-center font-semibold uppercase w-full">Компания</h2>
+        <div className="flex items-center justify-between w-full px-2">
+          <ButtonBack />
+          <h2 className="text-center font-semibold uppercase flex-1">
+            Компания
+          </h2>
+          <div className="w-8 shrink-0" />
+        </div>
       </WrapperHeaderScreen>
 
       <div className="p-4 flex items-start justify-between w-full">
@@ -54,7 +62,7 @@ const OrganizationPage = async ({
 }) => {
   return (
     <div className="flex flex-col items-center w-full h-full">
-      <Suspense fallback={<Loader.global />}>
+      <Suspense fallback={<Loader />}>
         <OrganizationContent params={params} />
       </Suspense>
     </div>

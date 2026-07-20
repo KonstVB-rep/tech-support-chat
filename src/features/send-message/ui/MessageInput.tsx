@@ -19,7 +19,11 @@ type PendingFile = {
   isCompressing: boolean;
 };
 
-export const MessageInput = ({overrideTicketId}:{overrideTicketId?: string | null}) => {
+export const MessageInput = ({
+  overrideTicketId,
+}: {
+  overrideTicketId?: string | null;
+}) => {
   const [text, setText] = useState("");
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const [showAttachMenu, setShowAttachMenu] = useState(false);

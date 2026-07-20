@@ -39,8 +39,15 @@ import { Sidebar } from "@/widgets/sidebar";
 import ScreenByType from "../ui/ScreenByType";
 import { getSession } from "@/shared/lib/server-current-user";
 import { redirect } from "next/navigation";
-import { HydrationBoundary, dehydrate, QueryClient } from "@tanstack/react-query";
-import { fetchChatsServer, fetchMessagesServer } from "@/entities/chat/api/fetchServer";
+import {
+  HydrationBoundary,
+  dehydrate,
+  QueryClient,
+} from "@tanstack/react-query";
+import {
+  fetchChatsServer,
+  fetchMessagesServer,
+} from "@/entities/chat/api/fetchServer";
 
 async function AuthGuard() {
   const session = await getSession();
@@ -68,8 +75,7 @@ const Chats = async ({ searchParams }: ChatsPageProps) => {
       queryFn: fetchChatsServer,
       staleTime: 60_000,
     });
-  } catch {
-  }
+  } catch {}
 
   if (chatIdFromUrl) {
     try {
@@ -78,8 +84,7 @@ const Chats = async ({ searchParams }: ChatsPageProps) => {
         queryFn: () => fetchMessagesServer(chatIdFromUrl),
         staleTime: 60_000,
       });
-    } catch {
-    }
+    } catch {}
   }
 
   return (

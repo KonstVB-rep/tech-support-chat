@@ -1,5 +1,5 @@
-// Твой файл прокси-слоя
-import { auth } from "@/app/lib/auth"; // 🚀 Импортируем НАПРЯМУЮ объект auth из Better Auth
+
+import { auth } from "@/app/lib/auth";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function proxy(request: NextRequest) {
@@ -14,8 +14,6 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 🎯 ИСПРАВЛЕНО: Достаем сессию напрямую из request.headers входящего запроса!
-  // Это нативное API Better Auth для прокси, оно никогда не упадёт в краш и работает со скоростью света!
   const session = await auth.api.getSession({
     headers: request.headers,
   });
@@ -27,13 +25,12 @@ export async function proxy(request: NextRequest) {
       return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
     }
 
-    // Если это переход по ссылке в браузере — жестко выкидываем на авторизацию
     const signInUrl = new URL("/auth/sign-in", request.url);
     signInUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(signInUrl);
   }
 
-  // Если учетка забанена софт-блоком увольнения
+
   if (session.user.isActive === false) {
     if (pathname.startsWith("/api/")) {
       return NextResponse.json(

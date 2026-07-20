@@ -125,20 +125,24 @@ const AccountClientContent = ({ profile }: { profile: ProfileData }) => {
 
   const isDesktop = useMediaQuery("min-width:768px");
 
-  const activeScreen: ActiveScreenKeys | null = isDesktop 
-  ? (ACTIVE_SCREEN[screenParam] ? screenParam : "profile")
-  : (ACTIVE_SCREEN[screenParam] ? screenParam : null);
+  const activeScreen: ActiveScreenKeys | null = isDesktop
+    ? ACTIVE_SCREEN[screenParam]
+      ? screenParam
+      : "profile"
+    : ACTIVE_SCREEN[screenParam]
+      ? screenParam
+      : null;
 
-  const [localMobileScreen, setLocalMobileScreen] = useState<ActiveScreenKeys | null>(null);
+  const [localMobileScreen, setLocalMobileScreen] =
+    useState<ActiveScreenKeys | null>(null);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   useEffect(() => {
     if (!isDesktop) {
       setLocalMobileScreen(activeScreen);
     }
-    handleScreenSelect(activeScreen)
+    handleScreenSelect(activeScreen);
   }, [activeScreen, isDesktop]);
-
 
   const { data: isSupport = false } = useQuery({
     queryKey: ["current-user-is-support"],
@@ -148,7 +152,7 @@ const AccountClientContent = ({ profile }: { profile: ProfileData }) => {
 
   const handleScreenSelect = (screen: ActiveScreenKeys | null) => {
     console.log(`⌨️ Переключение экрана настроек PWA на: ${screen}`);
-    if(!screen) {
+    if (!screen) {
       router.push("/account", { scroll: false });
       return;
     }
@@ -161,7 +165,7 @@ const AccountClientContent = ({ profile }: { profile: ProfileData }) => {
     }
   };
 
-    const handleDrawerClose = (isOpen: boolean) => {
+  const handleDrawerClose = (isOpen: boolean) => {
     setIsMobileDrawerOpen(isOpen);
 
     if (!isOpen) {
@@ -186,9 +190,11 @@ const AccountClientContent = ({ profile }: { profile: ProfileData }) => {
                     variant={screen.variant}
                     className={cn(
                       "shadow-none flex items-center justify-start w-full h-12 p-3",
-                      isActiveDesktop 
+                      isActiveDesktop
                         ? "md:dark:bg-[linear-gradient(90deg,transparent,#000)] md:bg-linear-to-r md:from-[#eae9f6] md:to-[#ebebeb]"
-                        : screen.variant !== "destructive" ? "bg-transparent border-none" : "",
+                        : screen.variant !== "destructive"
+                          ? "bg-transparent border-none"
+                          : "",
                     )}
                     onClick={() => handleScreenSelect(screen.key)}
                   >
@@ -276,9 +282,9 @@ const ScreenSettings = ({
               <PasswordChangeForm />
               <PushSettingsToggle
                 profileId={profile.id}
-                isSupportEngineer={isSupport}  
+                isSupportEngineer={isSupport}
                 pushEnabled={profile.pushEnabled}
-                isViewedByAdmin={!isSupport} 
+                isViewedByAdmin={!isSupport}
                 source="account"
               />
               <ButtonSignOut

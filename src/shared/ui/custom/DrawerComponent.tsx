@@ -42,12 +42,11 @@ export const DrawerComponent = ({
   className,
 }: DrawerComponentProps) => {
   return (
-    // 🎯 Передаем open и onOpenChange в корневой Drawer
     <Drawer direction={side} open={open} onOpenChange={onOpenChange}>
       {trigger && <DrawerTrigger asChild>{trigger}</DrawerTrigger>}
       <DrawerContent
         className={cn(
-          "data-[vaul-drawer-direction=bottom]:max-h-[50vh] data-[vaul-drawer-direction=top]:max-h-[50vh]",
+          "data-[vaul-drawer-direction=bottom]:max-h-[80vh] data-[vaul-drawer-direction=top]:max-h-[80vh]",
           className,
         )}
       >

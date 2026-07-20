@@ -27,7 +27,7 @@ export const SupportEngineerForm = <T extends FieldValues>({
   submitText = "Сохранить",
 }: SupportEngineerFormProps<T>) => {
   return (
-    <Card className="w-full max-w-lg min-w-2xs h-fit bg-transparent shadow-none ring-0">
+    <Card className="w-full min-w-2xs h-fit bg-transparent shadow-none ring-0">
       <form id="support-engineer-form" action={formAction}>
         <CardContent>
           <FieldGroup>

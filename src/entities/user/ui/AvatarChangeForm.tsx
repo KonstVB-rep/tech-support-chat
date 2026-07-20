@@ -94,7 +94,6 @@ export const AvatarChangeForm = ({
       <p className="text-xs text-muted-foreground">
         {isPending ? "Загрузка..." : "Нажмите на аватар чтобы изменить"}
       </p>
-      
     </div>
   );
 };

@@ -44,7 +44,7 @@ export const LINKS_NAV: NavigationLink[] = [
     icon: <UserRoundCog className="size-5" />,
     isAdminOnly: true,
   },
-    {
+  {
     href: "/account",
     title: "Настройки",
     icon: <Settings className="size-5" />,

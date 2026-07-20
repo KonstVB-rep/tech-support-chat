@@ -23,7 +23,11 @@ import {
 import { OrgRole } from "@prisma/client";
 import { useGetCurrentMemberRole } from "@/entities/employee/api/useGetCurrentMemberRole";
 import { getSocket } from "@/shared/lib/socket";
-import type { MessagesResponse, Message, Chat } from "@/entities/chat/api/types";
+import type {
+  MessagesResponse,
+  Message,
+  Chat,
+} from "@/entities/chat/api/types";
 import { useSocketStatus } from "@/shared/lib/hooks/useSocketStatus";
 import { MessageItem } from "@/entities/message";
 
@@ -106,13 +110,17 @@ export const ChatWindow = () => {
   useEffect(() => {
     if (!activeTicketId) return;
 
-     fetch(`/api/chats/${activeTicketId}/read`, { method: "POST" })
+    fetch(`/api/chats/${activeTicketId}/read`, { method: "POST" })
       .then(() => {
         queryClient.setQueryData<Chat[]>(["chats"], (old) => {
           if (!old) return old;
           return old.map((chat) =>
             chat.id === activeTicketId
-              ? { ...chat, unreadCount: 0, lastReadAt: new Date().toISOString() }
+              ? {
+                  ...chat,
+                  unreadCount: 0,
+                  lastReadAt: new Date().toISOString(),
+                }
               : chat,
           );
         });
@@ -170,10 +178,14 @@ export const ChatWindow = () => {
       <WrapperHeaderScreen>
         <div className="flex items-center justify-between gap-2 w-full">
           <div className="flex items-center gap-1">
-            <Button size="icon" onClick={() => {
-                          clearChat(); 
-                          window.history.replaceState(null, "", window.location.pathname); 
-                        }} variant="ghost">
+            <Button
+              size="icon"
+              onClick={() => {
+                clearChat();
+                window.history.replaceState(null, "", window.location.pathname);
+              }}
+              variant="ghost"
+            >
               <ChevronLeft className="h-6 w-6" />
             </Button>
 
@@ -302,7 +314,7 @@ export const ChatWindow = () => {
         </div>
       )}
       <div className="shrink-0 w-full">
-       <MessageInput overrideTicketId={activeTicketId} />
+        <MessageInput overrideTicketId={activeTicketId} />
       </div>
     </WrapperScreen>
   );

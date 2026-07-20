@@ -66,6 +66,7 @@ export const columns: ColumnDef<SupportEngineerWithProfile>[] = [
             </Button>
           }
           side="right"
+          className="px-3"
         >
           <UpdateSupportEngineerForm engineer={engineer} />
           <PushSettingsToggle

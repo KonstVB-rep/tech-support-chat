@@ -24,7 +24,10 @@ const formatTime = (dateStr: string) => {
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
   if (days === 0) {
-    return date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+    return date.toLocaleTimeString("ru-RU", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   } else if (days === 1) {
     return "Вчера";
   } else {
@@ -74,23 +77,23 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
   }
 
   const handleChatSelect = (chatId: string) => {
-  setActiveTicketId(chatId);
+    setActiveTicketId(chatId);
 
-  queryClient.setQueryData<Chat[]>(["chats"], (old) => {
-    if (!old) return old;
-    return old.map((chat) =>
-      chat.id === chatId ? { ...chat, unreadCount: 0 } : chat,
-    );
-  });
+    queryClient.setQueryData<Chat[]>(["chats"], (old) => {
+      if (!old) return old;
+      return old.map((chat) =>
+        chat.id === chatId ? { ...chat, unreadCount: 0 } : chat,
+      );
+    });
 
-  const params = new URLSearchParams(window.location.search);
-  params.set("chat", chatId);
-  window.history.replaceState(null, "", `?${params.toString()}`);
+    const params = new URLSearchParams(window.location.search);
+    params.set("chat", chatId);
+    window.history.replaceState(null, "", `?${params.toString()}`);
 
-  if (typeof window !== "undefined" && window.innerWidth < 768) {
-    setIsMobileChatOpen(true);
-  }
-};
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setIsMobileChatOpen(true);
+    }
+  };
 
   return (
     <div className="flex-1 overflow-y-auto px-3 select-none flex flex-col gap-1.5">
@@ -104,13 +107,14 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
           ? chat.lastMessage[0]
           : chat.lastMessage;
 
-        const lastMsgText = lastMsg?.fileUrl && !lastMsg?.text
-          ? lastMsg?.fileType?.startsWith("image/")
-            ? "📷 Фото"
-            : lastMsg?.fileType?.startsWith("video/")
-              ? "🎥 Видео"
-              : "📎 Файл"
-          : lastMsg?.text || "Нет сообщений";
+        const lastMsgText =
+          lastMsg?.fileUrl && !lastMsg?.text
+            ? lastMsg?.fileType?.startsWith("image/")
+              ? "📷 Фото"
+              : lastMsg?.fileType?.startsWith("video/")
+                ? "🎥 Видео"
+                : "📎 Файл"
+            : lastMsg?.text || "Нет сообщений";
 
         return (
           <Button

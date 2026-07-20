@@ -9,11 +9,11 @@ import OrganizationListMobile from "@/widgets/organizations-table/OrganizationLi
 const OrganizationsTableLoader = async () => {
   const organizations = await getOrganizations();
   return (
-        <>
-        {/* <OrganizationsTable data={organizations} /> */}
-        <OrganizationListMobile organizations={organizations}/>
-      </>
-  )
+    <div className="wrapper">
+      <OrganizationsTable data={organizations} />
+      <OrganizationListMobile organizations={organizations} />
+    </div>
+  );
 };
 
 const OrganizationsPage = () => {

@@ -2,7 +2,10 @@
 
 import { useTransition } from "react";
 
-import { PushSettingsSource, updatePushSettingsAction } from "@/entities/notification/api/updatePushSettingsAction";
+import {
+  PushSettingsSource,
+  updatePushSettingsAction,
+} from "@/entities/notification/api/updatePushSettingsAction";
 import { toast } from "sonner";
 import { ShieldAlert, Loader2 } from "lucide-react";
 import { Switch } from "@/shared/ui/switch";
@@ -65,16 +68,22 @@ export const PushSettingsToggle = ({
             Оповещения на экране блокировки
           </p>
         </div>
-   
-          <Switch
-            className="data-[size=sm]:h-8 data-[size=sm]:w-16"
-            classNameSwitch="dark:data-checked:bg-[linear-gradient(137deg,#156f51,#489d7d,#005232)] data-checked:bg-[linear-gradient(137deg,#156f51,#489d7d,#005232)] group-data-[size=sm]/switch:size-6 group-data-[size=sm]/switch:data-checked:translate-x-[calc(150%)] grid place-items-center"
-            iconSwitch={isPending ? <Loader2 className="h-4 w-4 animate-spin text-blue-600" /> : ""}
-            size={"sm"}
-            checked={pushEnabled}
-            disabled={!isEditable}
-            onCheckedChange={handleToggle}
-          />
+
+        <Switch
+          className="data-[size=sm]:h-8 data-[size=sm]:w-16"
+          classNameSwitch="dark:data-checked:bg-[linear-gradient(137deg,#156f51,#489d7d,#005232)] data-checked:bg-[linear-gradient(137deg,#156f51,#489d7d,#005232)] group-data-[size=sm]/switch:size-6 group-data-[size=sm]/switch:data-checked:translate-x-[calc(150%)] grid place-items-center"
+          iconSwitch={
+            isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+            ) : (
+              ""
+            )
+          }
+          size={"sm"}
+          checked={pushEnabled}
+          disabled={!isEditable}
+          onCheckedChange={handleToggle}
+        />
       </div>
     </div>
   );

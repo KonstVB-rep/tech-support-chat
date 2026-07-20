@@ -32,7 +32,7 @@ interface DataTableProps<TData, TValue> {
     resetSelection: () => void,
   ) => React.ReactNode;
   className?: string;
-  colsHidden?:string[]
+  colsHidden?: string[];
 }
 
 export function DataTable<TData extends { id: string }, TValue>({
@@ -106,7 +106,10 @@ export function DataTable<TData extends { id: string }, TValue>({
           <Table>
             <TableHeader className="sticky top-0 z-10 bg-zinc-300 dark:bg-zinc-800 border-b border-border/60 shadow-xl">
               {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
+                <TableRow
+                  key={headerGroup.id}
+                  className="bg-zinc-300 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-800"
+                >
                   {headerGroup.headers.map((header) => {
                     return (
                       <TableHead
