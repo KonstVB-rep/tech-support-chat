@@ -1,9 +1,11 @@
 "use client";
 
+import { SupportEngineerFormValues } from "@/entities/support-engineer";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardFooter } from "@/shared/ui/card";
 import ButtonSubmitForm from "@/shared/ui/custom/ButtonSubmitForm";
 import InputPassword from "@/shared/ui/custom/InputPassword";
+import InputPhoneForm from "@/shared/ui/custom/InputPhoneForm";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import {
@@ -13,26 +15,26 @@ import {
   UseFormReturn,
 } from "react-hook-form";
 
-type SupportEngineerFormProps<T extends FieldValues> = {
-  form: UseFormReturn<T>;
+type SupportEngineerFormProps = {
+  form: UseFormReturn<SupportEngineerFormValues>;
   formAction: (data: FormData) => void;
   isPending?: boolean;
   submitText?: string;
 };
 
-export const SupportEngineerForm = <T extends FieldValues>({
+export const SupportEngineerForm = ({
   form,
   formAction,
   isPending = false,
   submitText = "Сохранить",
-}: SupportEngineerFormProps<T>) => {
+}: SupportEngineerFormProps) => {
   return (
     <Card className="w-full min-w-2xs h-fit bg-transparent shadow-none ring-0">
       <form id="support-engineer-form" action={formAction}>
         <CardContent>
           <FieldGroup>
             <Controller
-              name={"email" as Path<T>}
+              name={"email"}
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
@@ -55,7 +57,7 @@ export const SupportEngineerForm = <T extends FieldValues>({
             />
 
             <Controller
-              name={"name" as Path<T>}
+              name={"name"}
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
@@ -76,7 +78,7 @@ export const SupportEngineerForm = <T extends FieldValues>({
             />
 
             <Controller
-              name={"password" as Path<T>}
+              name={"password"}
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
@@ -97,7 +99,19 @@ export const SupportEngineerForm = <T extends FieldValues>({
               )}
             />
 
-            <Controller
+            <InputPhoneForm<SupportEngineerFormValues> // 1. Явно передаем тип формы в дженерик инпута
+              name="phone"
+              label="Telephone"
+              control={form.control}
+              // 2. Оборачиваем в String(), чтобы гарантировать тип string для TS
+              errorMessage={
+                form.formState.errors.phone?.message
+                  ? String(form.formState.errors.phone.message)
+                  : undefined
+              }
+            />
+
+            {/* <Controller
               name={"phone" as Path<T>}
               control={form.control}
               render={({ field, fieldState }) => (
@@ -118,7 +132,7 @@ export const SupportEngineerForm = <T extends FieldValues>({
                   )}
                 </Field>
               )}
-            />
+            /> */}
           </FieldGroup>
         </CardContent>
 

@@ -12,6 +12,7 @@ import { ChatWindow } from "@/widgets/chat-window";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { set } from "zod";
 
 interface ChatListProps {
   chats: Chat[];
@@ -47,8 +48,10 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
     const chatFromUrl = searchParams.get("chat");
     if (chatFromUrl && chatFromUrl !== activeTicketId) {
       setActiveTicketId(chatFromUrl);
+    } else {
+      setActiveTicketId(null);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!activeTicketId) {
@@ -102,7 +105,6 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
         const displayTitle =
           chat.title || chat.organization?.name || "Обращение в поддержку";
 
-        // ✅ Безопасное извлечение последнего сообщения (API может вернуть массив или объект)
         const lastMsg = Array.isArray(chat.lastMessage)
           ? chat.lastMessage[0]
           : chat.lastMessage;
@@ -134,7 +136,6 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
             </Avatar>
 
             <div className="flex-1 min-w-0">
-              {/* Строка 1: Заголовок + время */}
               <div className="flex items-center justify-between mb-0.5">
                 <h3 className="font-semibold text-sm truncate text-primary">
                   {displayTitle}
@@ -146,7 +147,6 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
                 </span>
               </div>
 
-              {/* ✅ Строка 2: Превью сообщения + бейдж (ИСПРАВЛЕННАЯ ВЁРСТКА) */}
               <div className="flex items-end justify-between gap-2 mt-1">
                 <p className="text-xs text-muted-foreground line-clamp-2 leading-tight min-w-0 flex-1">
                   {lastMsgText}
@@ -166,7 +166,7 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
       <DrawerComponent
         open={isMobileChatOpen}
         onOpenChange={setIsMobileChatOpen}
-        className="data-[vaul-drawer-direction=left]:max-h-[100vh] data-[vaul-drawer-direction=left]:h-[100dvh] md:hidden max-w-full data-[vaul-drawer-direction=left]:w-full h-full"
+        className="data-[vaul-drawer-direction=left]:sm:max-w-full data-[vaul-drawer-direction=right]:sm:max-w-full data-[vaul-drawer-direction=left]:max-h-[100vh] data-[vaul-drawer-direction=left]:h-[100dvh] md:hidden w-full max-w-full data-[vaul-drawer-direction=left]:w-full h-full"
         side={"left"}
       >
         <div className="md:px-4 flex flex-col gap-3 relative h-full">

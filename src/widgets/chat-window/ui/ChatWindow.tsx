@@ -190,21 +190,23 @@ export const ChatWindow = () => {
             </Button>
 
             {isEditing ? (
-              <div className="flex items-center gap-1">
-                <Input
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  className="h-7 text-xs rounded-lg"
-                  disabled={isRenaming}
-                />
-                <Button
-                  size="sm"
-                  onClick={handleRenameSubmit}
-                  disabled={isRenaming}
-                >
-                  ОК
-                </Button>
-              </div>
+              <ProtectByRole requiredRole={USER_ROLE.ADMIN}>
+                <div className="flex items-center gap-1">
+                  <Input
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    className="h-7 text-xs rounded-lg"
+                    disabled={isRenaming}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleRenameSubmit}
+                    disabled={isRenaming}
+                  >
+                    ОК
+                  </Button>
+                </div>
+              </ProtectByRole>
             ) : (
               <h2 className="font-semibold text-sm text-primary">
                 {chatDisplayTitle?.toUpperCase()}

@@ -1,4 +1,3 @@
-
 import { auth } from "@/app/lib/auth";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -29,7 +28,6 @@ export async function proxy(request: NextRequest) {
     signInUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(signInUrl);
   }
-
 
   if (session.user.isActive === false) {
     if (pathname.startsWith("/api/")) {

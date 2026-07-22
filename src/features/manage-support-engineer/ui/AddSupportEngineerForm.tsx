@@ -51,7 +51,7 @@ export const AddSupportEngineerForm = ({
   }, [state, form]);
 
   return (
-    <SupportEngineerForm<SupportEngineerFormValues>
+    <SupportEngineerForm
       form={form}
       formAction={formAction}
       isPending={isPending}

@@ -1,17 +1,10 @@
 "use client";
 
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/shared/ui/motion/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/motion/tabs";
 import { useTheme } from "next-themes";
 
-export const Decorations = () => {
+export const ToggleTheme = () => {
   const { setTheme, theme } = useTheme();
-
-  console.log(theme, "theme");
 
   return (
     <div className="flex w-full max-w-md flex-col gap-8">
@@ -37,9 +30,6 @@ export const Decorations = () => {
               Темная
             </TabsTrigger>
           </TabsList>
-          {/* <TabsContent value="overview" className="text-sm text-muted-foreground">High-level summary.</TabsContent>
-          <TabsContent value="activity" className="text-sm text-muted-foreground">Recent events.</TabsContent>
-          <TabsContent value="settings" className="text-sm text-muted-foreground">Preferences.</TabsContent> */}
         </Tabs>
       </Section>
     </div>

@@ -1,7 +1,7 @@
 import { getCurrentUser } from "@/shared/lib/server-current-user";
 import { redirect } from "next/navigation";
-import { getProfile } from "@/entities/profile/api/getProfile"; // Т
-import AccountClientContent from "./AccountClientContent";
+import { getProfile } from "@/entities/profile/api/getProfile";
+import { AccountClientContent } from "@/widgets/account-setting-card";
 
 export const AccountClient = async () => {
   const user = await getCurrentUser();

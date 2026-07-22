@@ -6,6 +6,12 @@ export type ActionState = {
   error: string | null;
 };
 
+export type ActionStateWithData<T> = {
+  success: boolean;
+  data: T | null;
+  error: string | null;
+};
+
 export type DeleteActionState = {
   success: boolean;
   deletedCount?: number;

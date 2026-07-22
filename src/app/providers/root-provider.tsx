@@ -36,11 +36,11 @@ const RootProvider = ({ children }: { children: React.ReactNode }) => {
             <ReactQueryDevtools initialIsOpen={false} />
           )} */}
           <Toaster position="top-center" richColors closeButton />
-          {/* <SocketInitializer />
+          <SocketInitializer />
           <Suspense>
             <PushPermissionGate />
           </Suspense>
-          <UserUpdatesListener /> */}
+          <UserUpdatesListener />
           {children}
         </QueryProvider>
       </BetterUiProviders>

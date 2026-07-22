@@ -24,15 +24,17 @@ interface OrganizationViewProps {
   data: OrganizationData;
   title?: string;
   description?: string;
+  className?: string;
 }
 
 export const OrganizationViewCard = ({
   data,
   title = "Данные организации",
   description = "Режим просмотра информации о контрагенте",
+  className,
 }: OrganizationViewProps) => {
   return (
-    <div className="flex items-start justify-center w-full h-full select-none">
+    <div className={cn("flex items-start h-full select-none", className)}>
       <Card className="w-full max-w-lg min-w-2xs h-fit bg-transparent shadow-none ring-0">
         <CardHeader>
           <CardTitle>{title}</CardTitle>

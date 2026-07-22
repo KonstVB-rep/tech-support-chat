@@ -101,9 +101,6 @@ export const addEmployeeAction = async (
       };
     }
 
-    // 🚀 ИСПРАВЛЕНО БЕЗ КРАШЕЙ MYSQL (Ошибка P2002 уничтожена):
-    // Поскольку Better Auth сам создал Profile, мы обновляем (update) его по userId,
-    // дописывая переданный телефон, и забираем чистый готовый объект!
     const createdProfile = await prisma.profile.update({
       where: { userId: newUser.user.id },
       data: {

@@ -1,40 +1,5 @@
-// // src/app/(pages)/chats/page.tsx
-// import { Sidebar } from "@/widgets/sidebar";
-// import ScreenByType from "../ui/ScreenByType";
-// import { Suspense } from "react"; // 🚀 Импортируем нативный React Suspense
-// import { getSession } from "@/shared/lib/server-current-user";
-// import { redirect } from "next/navigation";
-
-// async function AuthGuard() {
-//   const session = await getSession();
-
-//   if (!session?.user) {
-//     redirect("/auth/sign-in?redirect=/chats");
-//   }
-
-//   return null;
-// }
-// const Chats = () => {
-//   return (
-//     <>
-//       <Suspense fallback={null}>
-//         <AuthGuard />
-//       </Suspense>
-
-//       <aside className="w-full md:w-80 h-full shrink-0 ">
-//         <Sidebar sidebarType={"chats"} />
-//       </aside>
-
-//       <main className="flex-1 h-full hidden md:block">
-//         <ScreenByType screenType={"chats"} />
-//       </main>
-//     </>
-//   );
-// };
-
-// export default Chats;
-
 // src/app/(pages)/chats/page.tsx
+import { Suspense } from "react"; // ✅ Добавляем импорт
 import { Sidebar } from "@/widgets/sidebar";
 import ScreenByType from "../ui/ScreenByType";
 import { getSession } from "@/shared/lib/server-current-user";
@@ -64,8 +29,15 @@ interface ChatsPageProps {
 }
 
 const Chats = async ({ searchParams }: ChatsPageProps) => {
-  await AuthGuard();
+  return (
+    <Suspense fallback={<ChatsSkeleton />}>
+      <AuthGuard />
+      <ChatsContent searchParams={searchParams} />
+    </Suspense>
+  );
+};
 
+async function ChatsContent({ searchParams }: ChatsPageProps) {
   const { chat: chatIdFromUrl } = await searchParams;
   const queryClient = new QueryClient();
 
@@ -98,6 +70,22 @@ const Chats = async ({ searchParams }: ChatsPageProps) => {
       </main>
     </HydrationBoundary>
   );
-};
+}
+
+function ChatsSkeleton() {
+  return (
+    <div className="flex w-full h-dvh animate-pulse">
+      <div className="w-full md:w-80 shrink-0 border-r p-4 space-y-3 hidden md:block">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="h-12 rounded-lg bg-muted" />
+        ))}
+      </div>
+      <div className="flex-1 p-4 space-y-3 hidden md:block">
+        <div className="h-14 rounded-lg bg-muted" />
+        <div className="h-full rounded-lg bg-muted" />
+      </div>
+    </div>
+  );
+}
 
 export default Chats;

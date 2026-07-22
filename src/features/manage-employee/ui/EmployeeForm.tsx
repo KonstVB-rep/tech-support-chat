@@ -4,6 +4,7 @@ import { EmployeeFormValues } from "@/entities/employee";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardFooter } from "@/shared/ui/card";
 import InputPassword from "@/shared/ui/custom/InputPassword";
+import InputPhoneForm from "@/shared/ui/custom/InputPhoneForm";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
 import {
@@ -15,12 +16,12 @@ import {
 } from "@/shared/ui/select";
 import { Controller, UseFormReturn } from "react-hook-form";
 
-interface EmployeeFormProps {
+type EmployeeFormProps = {
   form: UseFormReturn<EmployeeFormValues>;
   formAction: (formData: FormData) => void;
   isPending?: boolean;
   submitText?: string;
-}
+};
 
 export const EmployeeForm = ({
   form,
@@ -99,7 +100,14 @@ export const EmployeeForm = ({
                 )}
               />
 
-              <Controller
+              <InputPhoneForm
+                name="phone"
+                label="Телефон"
+                control={form.control}
+                errorMessage={form.formState.errors.phone?.message}
+              />
+
+              {/* <Controller
                 name="phone"
                 control={form.control}
                 render={({ field, fieldState }) => (
@@ -120,7 +128,7 @@ export const EmployeeForm = ({
                     )}
                   </Field>
                 )}
-              />
+              /> */}
 
               <Controller
                 name="password"

@@ -1,3 +1,4 @@
+import { NavigationLink } from "@/shared/constants";
 import Link from "next/link";
 import React from "react";
 
@@ -7,14 +8,7 @@ type LinksListNavProps<T> = {
   linkClass: (href: string) => string;
 };
 
-export const LinksListNav = <
-  T extends {
-    href: string;
-    title: string;
-    icon: React.ReactNode;
-    isAdminOnly?: boolean;
-  },
->({
+export const LinksListNav = <T extends NavigationLink>({
   isAdmin,
   data,
   linkClass,

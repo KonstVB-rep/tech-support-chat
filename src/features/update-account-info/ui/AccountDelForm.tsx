@@ -1,13 +1,13 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { deleteAccountFormAction } from "@/features/update-account-info/api/deleteAccountAction";
+import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
-import { deleteAccountFormAction } from "@/entities/user/api/deleteAccountAction";
-import { Button } from "@/shared/ui/button";
+import { useRouter } from "next/navigation";
+import { useActionState, useEffect } from "react";
 
-const AccountDelForm = () => {
+export const AccountDelForm = () => {
   const [state, formAction, isPending] = useActionState(
     deleteAccountFormAction,
     {
@@ -55,5 +55,3 @@ const AccountDelForm = () => {
     </form>
   );
 };
-
-export default AccountDelForm;

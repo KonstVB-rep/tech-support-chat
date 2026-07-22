@@ -31,7 +31,7 @@ export const OrganizationDetails = ({
           <UpdateOrganizationForm organization={data} />
         </ProtectByRole>
       ) : (
-        <OrganizationViewCard data={data} />
+        <OrganizationViewCard data={data} className="w-full justify-center" />
       )}
     </div>
   );

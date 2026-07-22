@@ -1,5 +1,5 @@
 // src/app/(pages)/account/Profile.tsx
-import { getProfile } from "@/entities/profile/api/getProfile"; // Твой серверный геттер
+import { getProfile } from "@/entities/profile/api/getProfile";
 import { getCurrentUser } from "@/shared/lib/server-current-user";
 import ProfileCard from "./ProfileCard";
 

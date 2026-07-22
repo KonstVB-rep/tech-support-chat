@@ -36,9 +36,11 @@ export const fetchEmployeesByOrgId = async (orgId: string) => {
   });
 };
 
-export const getEmployeesByOrgId = async (orgId: string): Promise<any[]> => {
+export const getEmployeesByOrgId = async (
+  orgId: string,
+): Promise<EmployeeWithProfile[]> => {
   const session = await getSession();
-  if (!session?.user) throw new Error("Unauthorized");
+  if (!session?.user) throw new Error("Не авторизован");
 
   const organization = await prisma.organization.findUnique({
     where: { id: orgId },
@@ -48,14 +50,13 @@ export const getEmployeesByOrgId = async (orgId: string): Promise<any[]> => {
     throw new Error("Организация не найдена");
   }
 
-  // 🚀 ИСПРАВЛЕНО: Железная логика без Альцгеймера
   // 1. Сначала проверяем, является ли текущий юзер ответственным (RESPONSIBLE) в ЭТОЙ компании
   const isResponsible = await prisma.organizationMember.findFirst({
     where: {
       organizationId: orgId,
-      role: OrgRole.RESPONSIBLE, // Только ответственный
+      role: OrgRole.RESPONSIBLE,
       profile: {
-        userId: session.user.id, // Связываем с текущим юзером сессии
+        userId: session.user.id,
       },
     },
   });

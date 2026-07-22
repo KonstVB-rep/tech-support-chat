@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Label } from "@/shared/ui/label";
-import { Loader2, Camera, X } from "lucide-react";
-import AvatarUser from "./AvatarUser";
 import { compressImage } from "@/shared/lib/image-compressor";
 import { Button } from "@/shared/ui/button";
+import { Label } from "@/shared/ui/label";
+import { Camera, Loader2, X } from "lucide-react";
+import { useRef, useState } from "react";
+import AvatarUser from "../../../entities/user/ui/AvatarUser";
 import { useAvatarChange } from "../api/useAvatarChange";
 
 export const AvatarChangeForm = ({

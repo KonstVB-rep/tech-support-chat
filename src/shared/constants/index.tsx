@@ -1,5 +1,11 @@
 import { OrgRole, ChatRole } from "@prisma/client";
-import { MessagesSquare, Settings, Users, UserRoundCog } from "lucide-react";
+import {
+  MessagesSquare,
+  Settings,
+  Users,
+  UserRoundCog,
+  Building2,
+} from "lucide-react";
 
 export const ORG_ROLE_LABELS: Record<OrgRole, string> = {
   [OrgRole.RESPONSIBLE]: "Ответственное лицо",
@@ -33,10 +39,15 @@ export const LINKS_NAV: NavigationLink[] = [
     icon: <MessagesSquare className="size-5" />,
   },
   {
+    href: "/user-organizations",
+    title: "Мои организации",
+    icon: <Building2 className="size-5" />,
+  },
+  {
     href: "/admin/organizations",
     title: "Клиенты",
     icon: <Users className="size-5" />,
-    isAdminOnly: true, // Только для админов
+    isAdminOnly: true,
   },
   {
     href: "/admin/staff",

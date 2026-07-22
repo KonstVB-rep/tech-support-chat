@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
-import {
-  getActiveSessions,
-  revokeSessionAction,
-} from "@/entities/user/api/activeSessions";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
 import { Loader2, Monitor, Smartphone, Trash2 } from "lucide-react";
+import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
+
+import { Card, CardHeader, CardTitle, CardContent } from "@/shared/ui/card";
+import { Button } from "@/shared/ui/button";
+import { getActiveSessions, revokeSessionAction } from "../api/activeSessions";
 
 type Session = {
   id: string;

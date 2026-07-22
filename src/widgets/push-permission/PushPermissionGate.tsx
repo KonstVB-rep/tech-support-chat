@@ -4,10 +4,12 @@ import { authClient } from "@/app/lib/auth-client";
 import { getIsSupportEngineerAction } from "@/entities/profile/api/getIsSupportEngineerAction";
 import { Button } from "@/shared/ui/button";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, ShieldAlert } from "lucide-react";
+import { Bell, BellOff, ShieldAlert } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useMyProfile } from "@/entities/profile/api/useMyProfile";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
+const PUSH_DISMISSED_KEY = "push-notification-dismissed";
 
 function urlBase64ToUint8Array(base64String: string): BufferSource {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -22,7 +24,6 @@ function urlBase64ToUint8Array(base64String: string): BufferSource {
 
 const useIsSupportEngineer = () => {
   const { data: session } = authClient.useSession();
-
   return useQuery({
     queryKey: ["is-support-engineer", session?.user?.id],
     queryFn: () => getIsSupportEngineerAction(),
@@ -33,26 +34,51 @@ const useIsSupportEngineer = () => {
 };
 
 export const PushPermissionGate = () => {
-  // ✅ Ключевое исправление: не рендерим ничего пока компонент не смонтирован в браузере
   const [isMounted, setIsMounted] = useState(false);
-  const { data: session } = authClient.useSession();
-  const [permission, setPermission] =
-    useState<NotificationPermission>("default");
   const [isSubscribing, setIsSubscribing] = useState(false);
+  const [isResolved, setIsResolved] = useState(false);
+
+  const { data: session } = authClient.useSession();
+  const { data: profile } = useMyProfile();
   const { data: isSupportEngineer } = useIsSupportEngineer();
 
   useEffect(() => {
     setIsMounted(true);
+
     if ("Notification" in window) {
-      setPermission(Notification.permission);
+      // Если разрешение изменилось на не-denied → сбрасываем localStorage
+      if (Notification.permission !== "denied") {
+        localStorage.removeItem(PUSH_DISMISSED_KEY);
+      }
+
+      // Проверяем оба источника: localStorage И реальную подписку
+      const dismissed = localStorage.getItem(PUSH_DISMISSED_KEY) === "true";
+      const hasSubscription = Notification.permission === "granted";
+      setIsResolved(dismissed || hasSubscription);
     }
   }, []);
 
+  const resolvePermanently = () => {
+    localStorage.setItem(PUSH_DISMISSED_KEY, "true");
+    setIsResolved(true);
+  };
+
+  // Синхронизация отказа с сервером
+  useEffect(() => {
+    if (isMounted && Notification.permission === "denied" && profile?.id) {
+      fetch("/api/push/unsubscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profileId: profile.id }),
+      }).catch(console.error);
+    }
+  }, [isMounted, profile?.id]);
+
   const handleSubscribe = async () => {
+    if (!("Notification" in window)) return;
     try {
       setIsSubscribing(true);
       const perm = await Notification.requestPermission();
-      setPermission(perm);
       if (perm !== "granted") return;
 
       const registration = await navigator.serviceWorker.ready;
@@ -66,9 +92,9 @@ export const PushPermissionGate = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(subscription.toJSON()),
       });
-
       if (!res.ok) throw new Error("Ошибка сохранения подписки");
-      console.log("✅ Push-подписка сохранена");
+
+      setIsResolved(true);
     } catch (error) {
       console.error("❌ Ошибка подписки на push:", error);
     } finally {
@@ -76,15 +102,20 @@ export const PushPermissionGate = () => {
     }
   };
 
+  // Читаем permission напрямую — не храним в state
+  const permission: NotificationPermission =
+    isMounted && "Notification" in window ? Notification.permission : "default";
+
   if (
     !isMounted ||
     !session?.user ||
-    permission === "granted" ||
+    isResolved ||
     !("Notification" in window)
   ) {
     return null;
   }
 
+  // Инженер + denied → обязательная модалка (НЕ скрывается через dismiss)
   if (isSupportEngineer && permission === "denied") {
     return (
       <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
@@ -97,13 +128,9 @@ export const PushPermissionGate = () => {
             Инженеры обязаны получать push-уведомления. Разрешите уведомления в
             настройках браузера.
           </p>
-          <p className="text-xs text-muted-foreground text-center mt-2">
-            Настройки → Конфиденциальность → Уведомления → Разрешить для этого
-            сайта
-          </p>
           <Button
             onClick={() =>
-              window.open("chrome://settings/content/notifications", "_blank")
+              window.open("edge://settings/content/notifications", "_blank")
             }
             className="w-full"
           >
@@ -114,25 +141,65 @@ export const PushPermissionGate = () => {
     );
   }
 
+  // Обычный сотрудник + denied → баннер с кнопкой закрытия
+  if (!isSupportEngineer && permission === "denied") {
+    return (
+      <div className="fixed bottom-4 right-4 z-50 bg-card border border-border rounded-2xl p-4 shadow-xl max-w-xs animate-in slide-in-from-bottom-4">
+        <div className="flex items-start gap-3">
+          <BellOff className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+          <div className="space-y-2 flex-1">
+            <p className="text-sm font-medium">Уведомления недоступны</p>
+            <p className="text-xs text-muted-foreground">
+              Браузер заблокировал уведомления. Проверьте настройки в параметрах
+              Windows.
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full text-xs"
+              onClick={resolvePermanently} // ← Сохраняем в localStorage
+            >
+              Понятно
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // permission === "default" → баннер с двумя кнопками
   return (
-    <div className="fixed bottom-4 right-4 z-50 bg-card border border-border rounded-2xl p-4 shadow-xl max-w-xs animate-in slide-in-from-bottom-4">
+    <div className="fixed bottom-4 right-4 z-50 bg-card border border-border rounded-2xl p-4 shadow-xl max-w-xs animate-in slide-in-from-bottom-4 z-[999]">
       <div className="flex items-start gap-3">
         <Bell className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-        <div className="space-y-2">
+        <div className="space-y-2 flex-1">
           <p className="text-sm font-medium">Включить уведомления?</p>
           <p className="text-xs text-muted-foreground">
             {isSupportEngineer
               ? "Инженеры получают обязательные оповещения о новых тикетах"
               : "Получайте оповещения о новых сообщениях"}
           </p>
-          <Button
-            size="sm"
-            onClick={handleSubscribe}
-            disabled={isSubscribing}
-            className="w-full"
-          >
-            {isSubscribing ? "Подключение..." : "Разрешить"}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              onClick={handleSubscribe}
+              disabled={isSubscribing}
+              className="flex-1"
+            >
+              {isSubscribing ? "Подключение..." : "Разрешить"}
+            </Button>
+            {!isSupportEngineer && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={resolvePermanently} // ← Сохраняем в localStorage
+                disabled={isSubscribing}
+                className="flex-1"
+              >
+                Нет, спасибо
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>

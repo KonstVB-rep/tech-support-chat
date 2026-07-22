@@ -11,7 +11,6 @@ export const SocketInitializer = () => {
 
   useEffect(() => {
     if (!session?.user?.id || !profile?.id) return;
-
     connectSocket(session.user.id, profile.id);
   }, [session?.user?.id, profile?.id]);
 

@@ -13,7 +13,7 @@ const OrganizationCardMobile = ({ data }: OrganizationCardProps) => {
       <div className="relative">
         <Link
           href={`/organization/${data.id}`}
-          className="absolute inset-0 active:bg-white/20 active:bg-white/20"
+          className="absolute inset-0 active:bg-white/20"
         />
 
         <div className="p-4 text-center grid gap-1 border-b dark:bg-zinc-800 bg-zinc-300">
