@@ -34,7 +34,6 @@ export const OrganizationList = ({ organizations }: OrganizationListProps) => {
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
             )}
           >
-            {/* Шапка */}
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
@@ -55,7 +54,6 @@ export const OrganizationList = ({ organizations }: OrganizationListProps) => {
 
             <div className="h-px w-full bg-border/60" />
 
-            {/* Детали */}
             <div className="flex flex-col gap-2.5 text-sm text-muted-foreground">
               <div className="flex items-center gap-2.5">
                 <FileText className="size-4 shrink-0 opacity-60" />
@@ -90,7 +88,6 @@ export const OrganizationList = ({ organizations }: OrganizationListProps) => {
               </div>
             </div>
 
-            {/* ✅ Футер: должность + кнопка участников */}
             <div className="mt-auto flex items-center justify-between pt-3 border-t border-border/40">
               {org.position ? (
                 <span className="text-xs text-muted-foreground/70">
@@ -103,7 +100,7 @@ export const OrganizationList = ({ organizations }: OrganizationListProps) => {
                 <span />
               )}
 
-              <OrganizationMembersDrawer organizationId={organization.id}>
+              <OrganizationMembersDrawer>
                 <Suspense fallback={<EmployeesSkeleton />}>
                   <OrganizationMembersContent
                     organizationId={organization.id}

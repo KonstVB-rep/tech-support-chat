@@ -35,13 +35,13 @@ interface DataTableProps<TData, TValue> {
   colsHidden?: string[];
 }
 
-export function DataTable<TData extends { id: string }, TValue>({
+export const DataTable = <TData extends { id: string }, TValue>({
   columns,
   data,
   getRowClassName,
   actionsButtonsFixed,
   className,
-}: DataTableProps<TData, TValue>) {
+}: DataTableProps<TData, TValue>) => {
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const [rowSelection, setRowSelection] = useState({});
@@ -82,8 +82,8 @@ export function DataTable<TData extends { id: string }, TValue>({
 
   return (
     <>
-      <div className="space-y-2 w-full p-2">
-        <div className="flex items-center justify-between gap-2 flex-wrap w-full px-2">
+      <div className="flex flex-col w-full h-full p-2 gap-2">
+        <div className="flex items-center justify-between gap-2 flex-wrap w-full px-2 shrink-0">
           <div className="flex items-center py-2">
             <Input
               placeholder="Поиск..."
@@ -99,7 +99,7 @@ export function DataTable<TData extends { id: string }, TValue>({
         </div>
         <div
           className={cn(
-            "overflow-y-auto rounded-md border w-full h-full relative",
+            "flex-1 min-h-0 overflow-auto rounded-md border w-full relative",
             className,
           )}
         >
@@ -176,4 +176,4 @@ export function DataTable<TData extends { id: string }, TValue>({
       {hasSelection && actionsButtonsFixed?.(selectedIds, resetSelection)}
     </>
   );
-}
+};

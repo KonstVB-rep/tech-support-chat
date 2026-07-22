@@ -7,5 +7,10 @@ export const OrganizationMembersContent = async ({
   organizationId: string;
 }) => {
   const employees = await getEmployeesByOrgId(organizationId);
-  return <EmployeesTable data={employees} />;
+  return (
+    <EmployeesTable
+      data={employees}
+      className="max-h-[calc(100vh-25vh)] md:max-h-[calc(100%-90px)]"
+    />
+  );
 };

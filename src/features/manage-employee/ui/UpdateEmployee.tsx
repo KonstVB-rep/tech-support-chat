@@ -125,21 +125,21 @@ export const UpdateEmployeeForm = ({
             <FieldGroup>
               <div className="grid gap-1">
                 <span>Email:</span>
-                <span className="field-height flex items-center bg-muted rounded-lg p-2">
+                <span className="field-height flex items-center dark:bg-muted rounded-lg p-2 bg-ring/20">
                   {form.getValues("email")}
                 </span>
               </div>
 
               <div className="grid gap-1">
                 <span>Имя:</span>
-                <span className="field-height flex items-center bg-muted rounded-lg p-2">
+                <span className="field-height flex items-center bg-muted rounded-lg p-2 bg-ring/20">
                   {form.getValues("name")}
                 </span>
               </div>
 
               <div className="grid gap-1">
                 <span>Телефон:</span>
-                <span className="field-height flex items-center bg-muted rounded-lg p-2">
+                <span className="field-height flex items-center bg-muted rounded-lg p-2 bg-ring/20">
                   {form.getValues("phone")}
                 </span>
               </div>

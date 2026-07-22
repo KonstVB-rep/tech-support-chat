@@ -1,3 +1,51 @@
 {
-  "WillLuke.nextjs.hasPrompted": true
+  "WillLuke.nextjs.hasPrompted": true,
+  "files.watcherExclude": {
+    /* ... как есть ... */
+  },
+  "search.exclude": {
+    /* ... как есть ... */
+  },
+  "files.exclude": {
+    /* ... как есть ... */
+  },
+  "unwantedRecommendations": [
+    /* ... как есть ... */
+  ],
+
+  // ✅ НОВОЕ: Ограничиваем нагрузку TypeScript
+  "js/ts.tsserver.experimental.enableProjectDiagnostics ": false,
+  "js/ts.validate.enabled": true,
+  "js/ts.preferences.importModuleSpecifier": "relative",
+  "js/ts.validate.enable": true,
+
+  "js/ts.suggest.autoImports": false,
+
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.run": "onSave",
+
+  // ✅ Tailwind
+  "tailwindCSS.emmetCompletions": false,
+  "tailwindCSS.classAttributes": ["class", "className", "tw", "class:list"],
+
+  // ✅ Редактор
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": false
+  },
+  "editor.suggestOnTriggerCharacters": true,
+  "editor.acceptSuggestionOnCommitCharacter": false,
+  "editor.minimap.enabled": false,
+  "editor.renderWhitespace": "selection",
+
+  // ✅ Git
+  "git.autorefresh": false,
+  "git.detectSubmodules": false,
+  "scm.diffDecorations": "none"
 }

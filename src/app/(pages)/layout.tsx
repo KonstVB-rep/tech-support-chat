@@ -16,7 +16,7 @@ const PageLayout = async ({ children }: PageLayoutProps) => {
         </Suspense>
       </div>
 
-      <div className="flex flex-col md:flex-row w-full overflow-hidden">
+      <div className="flex flex-col md:flex-row w-full overflow-hidden max-h-[calc(100dvh-80px)] md:max-h-none">
         {children}
         <Suspense>
           <MobileNavWrapper />

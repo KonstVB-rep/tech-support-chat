@@ -1,17 +1,12 @@
 "use client";
 
 import { EmployeeWithProfile } from "@/entities/employee";
-
-import {
-  DeleteEmployeeDialog,
-  UpdateEmployee,
-} from "@/features/manage-employee";
-import { PushSettingsToggle } from "@/features/pwa-push/ui/PushSettingsToggle";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
-import { DrawerComponent } from "@/shared/ui/custom/DrawerComponent";
+
 import { DataTableColumnHeader } from "@/shared/ui/data-table-column-header";
+import EmployeeActionsMenu from "@/widgets/employee/ui/EmployeeActionsMenu";
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Eye } from "lucide-react";
@@ -104,7 +99,7 @@ export const columns: ColumnDef<EmployeeWithProfile, unknown>[] = [
       const employee = row.original;
 
       return (
-        <DrawerComponent
+        <EmployeeActionsMenu
           trigger={
             <Button variant="ghost" size="icon">
               <span className="sr-only">Открыть меню</span>
@@ -112,24 +107,8 @@ export const columns: ColumnDef<EmployeeWithProfile, unknown>[] = [
             </Button>
           }
           side="right"
-        >
-          <div className="no-scrollbar overflow-y-auto p-4 flex flex-col gap-3 h-full overflow-hidden">
-            <UpdateEmployee employee={employee} />
-            <PushSettingsToggle
-              profileId={employee.profileId}
-              isSupportEngineer={false}
-              pushEnabled={employee.profile.pushEnabled}
-              isViewedByAdmin={false}
-              source="organization"
-              organizationId={employee.organizationId}
-            />
-            <DeleteEmployeeDialog
-              ids={employee.id}
-              employeeName={employee.profile.name}
-              organizationId={employee.organizationId}
-            />
-          </div>
-        </DrawerComponent>
+          data={employee}
+        />
       );
     },
   },

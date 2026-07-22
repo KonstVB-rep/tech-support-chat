@@ -77,7 +77,7 @@ export default function SignInPage() {
                 id="form-email"
                 placeholder="example@email.ru"
                 required
-                className="field-height dark:bg-card"
+                className="field-height !bg-card"
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
@@ -97,7 +97,7 @@ export default function SignInPage() {
                 aria-invalid={fieldState.invalid}
                 autoComplete="current-password"
                 placeholder="••••••••"
-                className="field-height dark:bg-card"
+                className="field-height !bg-card"
               />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>

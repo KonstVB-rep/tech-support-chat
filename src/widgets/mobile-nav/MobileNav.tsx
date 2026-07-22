@@ -25,9 +25,9 @@ const MobileNav = ({ isAdmin }: { isAdmin: boolean }) => {
     );
 
   return (
-    <div className="fixed bottom-0 w-full z-50 flex bg-background gap-2 justify-center py-4 px-1 border-none dark:shadow-[0_0_20px_0_#000000] shadow-[0_0_20px_0_#00000030]">
+    <nav className="fixed bottom-0 w-full z-50 flex bg-background gap-2 justify-center py-3 px-1 border-none dark:shadow-[0_0_20px_0_#000000] shadow-[0_0_20px_0_#00000030]">
       <LinksListNav isAdmin={isAdmin} data={LINKS_NAV} linkClass={linkClass} />
-    </div>
+    </nav>
   );
 };
 

@@ -9,14 +9,10 @@ import { cn } from "@/shared/lib/utils";
 import type { ReactNode } from "react";
 
 interface Props {
-  organizationId: string;
   children: ReactNode;
 }
 
-export const OrganizationMembersDrawer = ({
-  organizationId,
-  children,
-}: Props) => {
+export const OrganizationMembersDrawer = ({ children }: Props) => {
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
   return (
@@ -32,7 +28,7 @@ export const OrganizationMembersDrawer = ({
         "px-3",
         isDesktop
           ? "data-[vaul-drawer-direction=right]:sm:!max-w-3xl"
-          : "data-[vaul-drawer-direction=bottom]:max-h-[80vh]",
+          : "data-[vaul-drawer-direction=bottom]:max-h-[90vh]",
       )}
     >
       <div className="p-4 space-y-4">{children}</div>

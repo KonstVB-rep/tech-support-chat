@@ -71,7 +71,7 @@ export const DeleteEmployeeDialog = ({
         <Button
           variant="destructive"
           className={cn(
-            "w-full text-white py-3 flex items-center gap-2 field-height",
+            "w-full text-primary py-3 flex items-center gap-2 field-height",
             justify,
           )}
         >
