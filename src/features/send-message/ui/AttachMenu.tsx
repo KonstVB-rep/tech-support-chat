@@ -1,13 +1,12 @@
-// src/features/send-message/ui/AttachMenu.tsx
 "use client";
 
 import { useRef } from "react";
-import { Camera, Image, Video, File, X } from "lucide-react";
+import { Camera, Image as ImageIcon, Video, File, X } from "lucide-react";
 
 interface AttachMenuProps {
   isOpen: boolean;
   onClose: () => void;
-  onFileSelect: (file: File) => void;
+  onFileSelect: (files: File[]) => void;
 }
 
 const AttachMenu = ({ isOpen, onClose, onFileSelect }: AttachMenuProps) => {
@@ -19,16 +18,16 @@ const AttachMenu = ({ isOpen, onClose, onFileSelect }: AttachMenuProps) => {
   if (!isOpen) return null;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      onFileSelect(file);
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      onFileSelect(files);
       onClose();
     }
+    e.target.value = "";
   };
 
   return (
     <>
-      {/* Затемнение фона */}
       <div
         className="fixed inset-0 bg-black/50 z-40 md:hidden"
         onClick={onClose}
@@ -44,7 +43,7 @@ const AttachMenu = ({ isOpen, onClose, onFileSelect }: AttachMenuProps) => {
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          {/* 📷 Камера */}
+          {/* 📷 Камера — БЕЗ multiple (камера всегда снимает один кадр) */}
           <button
             onClick={() => cameraInputRef.current?.click()}
             className="flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-muted transition-colors"
@@ -55,18 +54,18 @@ const AttachMenu = ({ isOpen, onClose, onFileSelect }: AttachMenuProps) => {
             <span className="text-xs font-medium">Камера</span>
           </button>
 
-          {/* 🖼️ Галерея */}
+          {/* 🖼️ Галерея — С multiple */}
           <button
             onClick={() => galleryInputRef.current?.click()}
             className="flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-muted transition-colors"
           >
             <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center">
-              <Image className="w-6 h-6 text-purple-500" />
+              <ImageIcon className="w-6 h-6 text-purple-500" />
             </div>
             <span className="text-xs font-medium">Галерея</span>
           </button>
 
-          {/* 📹 Видео */}
+          {/* 📹 Видео — С multiple */}
           <button
             onClick={() => videoInputRef.current?.click()}
             className="flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-muted transition-colors"
@@ -77,7 +76,7 @@ const AttachMenu = ({ isOpen, onClose, onFileSelect }: AttachMenuProps) => {
             <span className="text-xs font-medium">Видео</span>
           </button>
 
-          {/* 📎 Файл */}
+          {/* 📎 Файл — С multiple */}
           <button
             onClick={() => fileInputRef.current?.click()}
             className="flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-muted transition-colors"
@@ -89,7 +88,6 @@ const AttachMenu = ({ isOpen, onClose, onFileSelect }: AttachMenuProps) => {
           </button>
         </div>
 
-        {/* Скрытые input'ы */}
         <input
           ref={cameraInputRef}
           type="file"
@@ -98,24 +96,29 @@ const AttachMenu = ({ isOpen, onClose, onFileSelect }: AttachMenuProps) => {
           onChange={handleChange}
           className="hidden"
         />
+        {/* ✅ Галерея: multiple */}
         <input
           ref={galleryInputRef}
           type="file"
           accept="image/*"
+          multiple
           onChange={handleChange}
           className="hidden"
         />
+        {/* ✅ Видео: multiple, без capture (capture заставляет сразу снимать, а не выбирать из галереи) */}
         <input
           ref={videoInputRef}
           type="file"
           accept="video/*"
-          capture="environment"
+          multiple
           onChange={handleChange}
           className="hidden"
         />
+        {/* ✅ Файл: multiple */}
         <input
           ref={fileInputRef}
           type="file"
+          multiple
           onChange={handleChange}
           className="hidden"
         />

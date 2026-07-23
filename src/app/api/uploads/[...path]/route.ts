@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { readFile } from "fs/promises";
 import path from "path";
 
-// ✅ Fallback совпадает с media-upload/route.ts
 const UPLOAD_DIR = process.env.UPLOAD_DIR || "/opt/chat-app/uploads";
 
 export async function GET(

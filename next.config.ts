@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   experimental: {
     serverActions: {
-      bodySizeLimit: "5mb",
+      bodySizeLimit: "50mb",
     },
   },
   images: {
@@ -22,6 +22,14 @@ const nextConfig: NextConfig = {
         hostname: "**",
       },
     ],
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/uploads/:path*",
+        destination: "/api/uploads/:path*",
+      },
+    ];
   },
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {

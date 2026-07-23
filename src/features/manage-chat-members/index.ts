@@ -1,4 +1,4 @@
-export { ChatMembersDialog } from "./ui/ChatMembersDialog";
+// export { ChatMembersDialog } from "./ui/ChatMembersDialog";
 export { ChatMembersSheet } from "./ui/ChatMembersSheet";
 
 export {

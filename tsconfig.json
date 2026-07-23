@@ -1,7 +1,12 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext", "webworker"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext",
+      "webworker"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -19,8 +24,12 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@/prisma/*": ["./prisma/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@/prisma/*": [
+        "./prisma/*"
+      ]
     }
   },
   "include": [
@@ -28,7 +37,8 @@
     "src/**/*.ts", // ← Только src/ папка
     "src/**/*.tsx", // ← Только src/ папка
     "src/**/*.mts",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

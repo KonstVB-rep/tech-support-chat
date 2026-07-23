@@ -11,6 +11,7 @@ import { compressImage } from "@/shared/lib/image-compressor";
 import AttachMenu from "@/features/send-message/ui/AttachMenu";
 import { useUploadMutation } from "@/features/send-message";
 import { useSendMessage } from "@/features/send-message";
+import { toast } from "sonner";
 
 type PendingFile = {
   id: string;
@@ -18,6 +19,8 @@ type PendingFile = {
   preview: string | null;
   isCompressing: boolean;
 };
+
+const MAX_FILE_SIZE = 50 * 1024 * 1024; 
 
 export const MessageInput = ({
   overrideTicketId,
@@ -42,7 +45,18 @@ export const MessageInput = ({
   const processFiles = async (fileList: FileList | File[]) => {
     const newFiles: PendingFile[] = [];
 
-    for (const file of Array.from(fileList)) {
+    const files = Array.from(fileList).filter(
+      (f): f is File => f instanceof File
+    );
+
+    for (const file of files) {
+      if (file.size > MAX_FILE_SIZE) {
+        toast.error(
+          `Файл "${file.name}" слишком большой (${(file.size / 1024 / 1024).toFixed(1)}MB). Максимум ${MAX_FILE_SIZE / 1024 / 1024}MB.`
+        );
+        continue;
+      }
+
       const tempId = crypto.randomUUID();
       let processedFile = file;
       let preview: string | null = null;
@@ -128,7 +142,7 @@ export const MessageInput = ({
       <AttachMenu
         isOpen={showAttachMenu}
         onClose={() => setShowAttachMenu(false)}
-        onFileSelect={(file) => processFiles([file])}
+         onFileSelect={(files) => processFiles(files)}
       />
 
       {/* Сетка превью прикреплённых файлов */}

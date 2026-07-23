@@ -10,7 +10,7 @@ const UserOrganizationsPage = () => {
     <div className="w-full">
       <WrapperHeaderScreen>
         <h2 className="text-center font-semibold uppercase flex-1">
-          Мои организации
+          Карточка организации
         </h2>
       </WrapperHeaderScreen>
 
