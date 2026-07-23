@@ -2,8 +2,8 @@
 "use client";
 
 import { FC } from "react";
-import type { Chat } from "../../api/useGetChats";
 import { SidebarChatList } from "./SidebarContentByType/SidebarChatList";
+import { Chat } from "@/entities/chat/api/types";
 
 interface SidebarContentComponent extends FC {
   Chats: FC<ChatListProps>;

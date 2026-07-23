@@ -4,8 +4,45 @@ import { prisma } from "@/prisma/prisma-client";
 import { headers } from "next/headers";
 import { auth } from "@/app/lib/auth";
 import { triggerSocketEvent } from "@/shared/lib/socket-trigger";
+import path from "path";
+import fs from "fs/promises";
+import crypto from "crypto";
+import type { Prisma } from "@prisma/client";
 
-// Служебная функция валидации доступа к чату (без any в типах)
+const UPLOAD_DIR = process.env.UPLOAD_DIR || "/opt/chat-app/uploads";
+
+function guessMimeType(name: string): string {
+  const ext = name.split(".").pop()?.toLowerCase();
+  const map: Record<string, string> = {
+    png: "image/png",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    gif: "image/gif",
+    webp: "image/webp",
+    svg: "image/svg+xml",
+    avif: "image/avif",
+    mp4: "video/mp4",
+    webm: "video/webm",
+    mov: "video/quicktime",
+    pdf: "application/pdf",
+    zip: "application/zip",
+    doc: "application/msword",
+    docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    xls: "application/vnd.ms-excel",
+    xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    txt: "text/plain",
+    csv: "text/csv",
+  };
+  return map[ext || ""] || "application/octet-stream";
+}
+
+interface AttachmentMeta {
+  url: string;
+  name: string;
+  type: string;
+  size: number;
+}
+
 async function checkChatAccess(
   chatId: string,
   session: { user: { role: string; id: string } },
@@ -14,7 +51,6 @@ async function checkChatAccess(
   const isGlobalAdmin = session.user.role.toLowerCase() === "admin";
   if (isGlobalAdmin) return { allowed: true };
 
-  // 1. Проверяем, является ли пользователь инженером поддержки (им можно всё)
   const isSupportEngineer = await prisma.supportEngineer.findUnique({
     where: { profileId: userProfileId },
   });
@@ -58,7 +94,6 @@ async function checkChatAccess(
   };
 }
 
-// GET - загрузка истории сообщений + данных чата для шапки окна переписки
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -79,7 +114,6 @@ export async function GET(
       return NextResponse.json({ error: "Профиль не найден" }, { status: 404 });
     }
 
-    // Проверяем права доступа
     const access = await checkChatAccess(chatId, session, userProfile.id);
     if (!access.allowed) {
       return NextResponse.json(
@@ -88,7 +122,6 @@ export async function GET(
       );
     }
 
-    // 1. Качаем сообщения из базы Beget
     const messages = await prisma.message.findMany({
       where: { chatId },
       orderBy: { createdAt: "asc" },
@@ -104,22 +137,16 @@ export async function GET(
       },
     });
 
-    // 🚀 2. ДОБАВЛЕНО: Докачиваем актуальную информацию о самом чате и его организации для шапки UI!
     const chatInfo = await prisma.chat.findUnique({
       where: { id: chatId },
       select: {
         id: true,
         title: true,
         organizationId: true,
-        organization: {
-          select: {
-            name: true,
-          },
-        },
+        organization: { select: { name: true } },
       },
     });
 
-    // 🎯 Возвращаем монолитный JSON: и сообщения, и мета-данные чата
     return NextResponse.json({
       messages: messages || [],
       chat: chatInfo,
@@ -133,7 +160,6 @@ export async function GET(
   }
 }
 
-// POST - отправка сообщения
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -154,7 +180,6 @@ export async function POST(
       return NextResponse.json({ error: "Профиль не найден" }, { status: 404 });
     }
 
-    // Проверяем права доступа перед записью сообщения
     const access = await checkChatAccess(chatId, session, userProfile.id);
     if (!access.allowed) {
       return NextResponse.json(
@@ -163,8 +188,11 @@ export async function POST(
       );
     }
 
-    const { text } = await req.json();
-    if (!text || !text.trim()) {
+    const formData = await req.formData();
+    const text = formData.get("text") as string | null;
+    const files = formData.getAll("files") as File[];
+
+    if ((!text || !text.trim()) && files.length === 0) {
       return NextResponse.json({ error: "Сообщение пустое" }, { status: 400 });
     }
 
@@ -173,11 +201,32 @@ export async function POST(
       select: { organizationId: true },
     });
 
+    const attachments: AttachmentMeta[] = [];
+
+    for (const file of files) {
+      const ext = path.extname(file.name);
+      const fileName = `${crypto.randomUUID()}${ext}`;
+      const relativePath = path.join("media", "chats", chatId, fileName);
+      const fullPath = path.join(UPLOAD_DIR, relativePath);
+
+      await fs.mkdir(path.dirname(fullPath), { recursive: true });
+      const buffer = Buffer.from(await file.arrayBuffer());
+      await fs.writeFile(fullPath, buffer);
+
+      attachments.push({
+        url: `/uploads/${relativePath}`,
+        name: file.name,
+        type: file.type || guessMimeType(file.name),
+        size: file.size,
+      });
+    }
+
     const message = await prisma.message.create({
       data: {
-        text: text.trim(),
+        text: text?.trim() || "",
         chatId,
         profileId: userProfile.id,
+        attachments: attachments as unknown as Prisma.InputJsonValue,
       },
       include: {
         profile: {

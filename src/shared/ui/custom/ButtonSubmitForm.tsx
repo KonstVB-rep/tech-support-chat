@@ -16,7 +16,6 @@ const ButtonSubmitForm = ({
 }: SubmitButtonProps) => {
   const { pending } = useFormStatus();
 
-  console.log(pending, "pending");
   return (
     <Button
       aria-label="Отправить форму"

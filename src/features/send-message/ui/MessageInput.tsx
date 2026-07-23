@@ -20,7 +20,7 @@ type PendingFile = {
   isCompressing: boolean;
 };
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024; 
+const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
 export const MessageInput = ({
   overrideTicketId,
@@ -46,13 +46,13 @@ export const MessageInput = ({
     const newFiles: PendingFile[] = [];
 
     const files = Array.from(fileList).filter(
-      (f): f is File => f instanceof File
+      (f): f is File => f instanceof File,
     );
 
     for (const file of files) {
       if (file.size > MAX_FILE_SIZE) {
         toast.error(
-          `Файл "${file.name}" слишком большой (${(file.size / 1024 / 1024).toFixed(1)}MB). Максимум ${MAX_FILE_SIZE / 1024 / 1024}MB.`
+          `Файл "${file.name}" слишком большой (${(file.size / 1024 / 1024).toFixed(1)}MB). Максимум ${MAX_FILE_SIZE / 1024 / 1024}MB.`,
         );
         continue;
       }
@@ -114,14 +114,13 @@ export const MessageInput = ({
     setPendingFiles([]);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (!activeTicketId) return;
 
     if (hasFiles) {
       uploadMutate(
         {
-          chatId: activeTicketId,
           files: pendingFiles.map((pf) => pf.file),
           text: text.trim() || undefined,
         },
@@ -134,7 +133,6 @@ export const MessageInput = ({
       );
     }
   };
-
   if (!activeTicketId) return null;
 
   return (
@@ -142,7 +140,7 @@ export const MessageInput = ({
       <AttachMenu
         isOpen={showAttachMenu}
         onClose={() => setShowAttachMenu(false)}
-         onFileSelect={(files) => processFiles(files)}
+        onFileSelect={(files) => processFiles(files)}
       />
 
       {/* Сетка превью прикреплённых файлов */}

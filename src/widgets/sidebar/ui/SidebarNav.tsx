@@ -15,6 +15,8 @@ import { Button } from "@/shared/ui/button";
 import { TextAlignJustify } from "lucide-react";
 import { SharedLayoutBg } from "@/shared/ui/motion/shared-layout-bg";
 import Link from "next/link";
+import { useGetCurrentMemberRole } from "@/entities/employee/api/useGetCurrentMemberRole";
+import { OrgRole } from "@prisma/client";
 
 interface SidebarNavProps {
   isAdmin: boolean;
@@ -24,6 +26,8 @@ export const SidebarNav = ({ isAdmin }: SidebarNavProps) => {
   const pathname = usePathname();
 
   const isDekstop = useMediaQuery("(min-width: 768px)");
+
+  const currentMemberRole = useGetCurrentMemberRole();
 
   const isActive = (href: string) => pathname.startsWith(href);
 
@@ -36,6 +40,16 @@ export const SidebarNav = ({ isAdmin }: SidebarNavProps) => {
     );
 
   if (!isDekstop) return null;
+
+  const visibleLinks = LINKS_NAV.filter((link) => {
+    if (link.isAdminOnly && !isAdmin) return null;
+
+    if (link.isResponsibleOnly) {
+      return currentMemberRole === OrgRole.RESPONSIBLE;
+    }
+
+    return true;
+  });
 
   return (
     <div className="flex flex-col bg-primary-foreground gap-2 h-full justify-between py-3 px-1 border-none">
@@ -56,7 +70,7 @@ export const SidebarNav = ({ isAdmin }: SidebarNavProps) => {
               classNameChild="flex gap-2 items-center justify-start"
               className="gap-2"
             >
-              {LINKS_NAV.map((link) => {
+              {visibleLinks.map((link) => {
                 if (link.isAdminOnly && !isAdmin) return null;
 
                 return (

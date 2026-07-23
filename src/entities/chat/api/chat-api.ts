@@ -1,6 +1,6 @@
 // src/entities/chat/api/chat-api.ts
-
 "use client";
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchSession,
@@ -8,24 +8,29 @@ import {
   fetchChatInfo,
   fetchMessages,
 } from "./fetchClient";
-import { Message, MessagesResponse } from "./types";
+import type { Message, MessagesResponse } from "./types";
 
-// API функции
 export const sendMessage = async (
   chatId: string,
   text: string,
 ): Promise<Message> => {
+  const formData = new FormData();
+  formData.append("text", text);
+
   const res = await fetch(`/api/chats/${chatId}/messages`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text }),
+    body: formData,
   });
-  if (!res.ok) throw new Error("Ошибка отправки");
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || "Ошибка отправки");
+  }
+
   const data = await res.json();
   return data.message;
 };
-
-// Хуки
+// Хуки без изменений...
 export function useSession() {
   return useQuery({
     queryKey: ["session"],
@@ -68,7 +73,6 @@ export function useSendMessage() {
     mutationFn: ({ chatId, text }: { chatId: string; text: string }) =>
       sendMessage(chatId, text),
 
-    // ✅ ИСПРАВЛЕНИЕ #2 и #3: Оптимистичное обновление + правильная инвалидация
     onMutate: async ({ chatId, text }) => {
       await queryClient.cancelQueries({ queryKey: ["messages", chatId] });
 
@@ -83,6 +87,7 @@ export function useSendMessage() {
         chatId,
         profileId: "me",
         createdAt: new Date().toISOString(),
+        attachments: [],
         profile: { id: "me", name: "Вы", imageUrl: "", userId: "" },
       };
 
@@ -97,7 +102,7 @@ export function useSendMessage() {
       return { previousData };
     },
 
-    onError: (err, variables, context) => {
+    onError: (_err, variables, context) => {
       if (context?.previousData) {
         queryClient.setQueryData(
           ["messages", variables.chatId],

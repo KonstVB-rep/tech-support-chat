@@ -3,7 +3,7 @@ import { OrgRole } from "@prisma/client";
 import { useGetUserMembership } from "./useGetUserMembership";
 
 export function useGetCurrentMemberRole(
-  organizationId: string | undefined | null,
+  organizationId?: string | null,
 ): OrgRole | null {
   const { data: memberships = [] } = useGetUserMembership();
 

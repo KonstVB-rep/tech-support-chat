@@ -1,14 +1,15 @@
 "use client";
 
+import { ActiveScreenKeys } from "@/features/update-account-info/model/constants";
+import { Button } from "@/shared/ui/button";
 import {
   ChevronRight,
   LaptopMinimalCheck,
   PaintbrushVertical,
   User,
 } from "lucide-react";
-import { Button } from "@/shared/ui/button";
-import { useSearchParams, useRouter } from "next/navigation";
-import { ActiveScreenKeys } from "@/app/(pages)/account/AccountClientContent";
+import { useRouter, useSearchParams } from "next/navigation";
+import ButtonSignOut from "@/features/auth-signout/ui/ButtonSignOut";
 
 interface SidebarProfileListProps {
   setActiveScreen: (screen: ActiveScreenKeys) => void;
@@ -87,6 +88,12 @@ export const SidebarProfileList = ({
         </span>
         <ChevronRight className="h-4 w-4" />
       </Button>
+
+      <ButtonSignOut
+        className="flex w-full field-height var gap-1 items-center justify-center p-2 rounded-xl select-none transition-colors mx-auto hover:bg-muted/50 hover:text-foreground"
+        withIcon={true}
+        withText={true}
+      />
     </div>
   );
 };

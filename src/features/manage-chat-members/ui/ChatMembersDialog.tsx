@@ -11,7 +11,7 @@
 // interface EmployeeInChat {
 //   profileId: string;
 //   name: string;
-//   isInChat: boolean; 
+//   isInChat: boolean;
 // }
 
 // interface ChatMembersDialogProps {

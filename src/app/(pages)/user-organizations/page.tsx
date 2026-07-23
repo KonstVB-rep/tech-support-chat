@@ -1,11 +1,19 @@
 // src/app/(pages)/user-organizations/page.tsx
 import { Suspense } from "react";
+import { notFound } from "next/navigation";
 import { getProfile } from "@/entities/profile/api/getProfile";
 import { getCurrentUser } from "@/shared/lib/server-current-user";
 import { OrganizationList } from "./ui/OrganizationList";
 import WrapperHeaderScreen from "@/shared/ui/custom/WrapperHeaderScreen";
+import { prisma } from "@/prisma/prisma-client";
 
-const UserOrganizationsPage = () => {
+const UserOrganizationsPage = async () => {
+  const user = await getCurrentUser();
+  if (!user) return notFound();
+
+  const hasAccess = await checkOrganizationAccess(user.id);
+  if (!hasAccess) return notFound();
+
   return (
     <div className="w-full">
       <WrapperHeaderScreen>
@@ -15,17 +23,31 @@ const UserOrganizationsPage = () => {
       </WrapperHeaderScreen>
 
       <Suspense fallback={<OrganizationListSkeleton />}>
-        <UserOrganizationsContent />
+        <UserOrganizationsContent userId={user.id} />
       </Suspense>
     </div>
   );
 };
 
-async function UserOrganizationsContent() {
-  const user = await getCurrentUser();
-  if (!user) return null;
+async function checkOrganizationAccess(userId: string): Promise<boolean> {
+  if (userId) {
+    const session = await getCurrentUser();
+    if (session?.role?.toLowerCase() === "admin") return true;
+  }
 
-  const profile = await getProfile(user.id);
+  const membership = await prisma.organizationMember.findFirst({
+    where: {
+      profile: { userId },
+      role: "RESPONSIBLE",
+    },
+    select: { id: true },
+  });
+
+  return !!membership;
+}
+
+async function UserOrganizationsContent({ userId }: { userId: string }) {
+  const profile = await getProfile(userId);
 
   return (
     <OrganizationList organizations={profile?.organizationMembers ?? []} />

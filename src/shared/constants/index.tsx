@@ -29,7 +29,8 @@ export type NavigationLink = {
   href: string;
   title: string;
   icon: React.ReactNode;
-  isAdminOnly?: boolean; // Флаг для админских ссылок
+  isAdminOnly?: boolean;
+  isResponsibleOnly?: boolean;
 };
 
 export const LINKS_NAV: NavigationLink[] = [
@@ -42,6 +43,7 @@ export const LINKS_NAV: NavigationLink[] = [
     href: "/user-organizations",
     title: "Карточка организации",
     icon: <Building2 className="size-5" />,
+    isResponsibleOnly: true,
   },
   {
     href: "/admin/organizations",

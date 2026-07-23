@@ -38,8 +38,6 @@ export const ActiveSessions = () => {
     fetchSessions();
   }, []);
 
-  console.log("sessions", sessions);
-
   const handleRevoke = (sessionId: string) => {
     startTransition(async () => {
       try {

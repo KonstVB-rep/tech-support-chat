@@ -27,6 +27,7 @@ import type {
   MessagesResponse,
   Message,
   Chat,
+  AttachmentMeta,
 } from "@/entities/chat/api/types";
 import { useSocketStatus } from "@/shared/lib/hooks/useSocketStatus";
 import { MessageItem } from "@/entities/message";
@@ -297,9 +298,7 @@ export const ChatWindow = () => {
                     text={msg.text}
                     sender={isMe ? "user" : "support"}
                     timestamp={time}
-                    fileUrl={msg.fileUrl}
-                    fileType={msg.fileType}
-                    fileName={msg.fileName}
+                    attachments={(msg.attachments as AttachmentMeta[]) ?? []}
                   />
                 </div>
               );

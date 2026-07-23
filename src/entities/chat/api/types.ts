@@ -1,21 +1,27 @@
 // src/entities/chat/api/types.ts
-// ✅ НЕТ директивы "use client" — безопасен для импорта и на сервере, и на клиенте
 
-export interface User {
+export type AttachmentMeta = {
+  url: string;
+  name: string;
+  type: string;
+  size: number;
+};
+
+export type User = {
   id: string;
   email: string;
   name: string;
   role: string;
   profileId: string;
-}
+};
 
-export interface ChatInfo {
+export type ChatInfo = {
   id: string;
   title: string | null;
   imageUrl: string | null;
-}
+};
 
-export interface Chat {
+export type Chat = {
   id: string;
   title: string | null;
   imageUrl: string | null;
@@ -34,8 +40,7 @@ export interface Chat {
   };
   lastMessage?: {
     text: string | null;
-    fileUrl: string | null;
-    fileType: string | null;
+    attachments: AttachmentMeta[];
     createdAt: string;
     profile: {
       name: string;
@@ -43,18 +48,15 @@ export interface Chat {
     };
   } | null;
   unreadCount?: number;
-}
+};
 
-export interface Message {
+export type Message = {
   id: string;
-  text: string;
+  text: string | null;
   chatId: string;
   profileId: string;
   createdAt: string;
-  fileUrl?: string | null;
-  fileType?: string | null;
-  fileName?: string | null;
-  fileSize?: number | null;
+  attachments: AttachmentMeta[];
   profile: {
     id: string;
     name: string;
@@ -62,9 +64,9 @@ export interface Message {
     imageUrl: string | null;
     user?: { role: string };
   };
-}
+};
 
-export interface MessagesResponse {
+export type MessagesResponse = {
   messages: Message[];
   chat: {
     id: string;
@@ -74,4 +76,4 @@ export interface MessagesResponse {
       name: string;
     } | null;
   } | null;
-}
+};

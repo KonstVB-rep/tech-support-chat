@@ -13,9 +13,7 @@ export async function GET() {
 
     const userProfile = await prisma.profile.findUnique({
       where: { userId: session.user.id },
-      include: {
-        organizationMembers: true,
-      },
+      include: { organizationMembers: true },
     });
 
     if (!userProfile) {
@@ -27,36 +25,33 @@ export async function GET() {
     });
     const isGlobalAdmin = session.user.role.toLowerCase() === "admin";
 
+    // ✅ УБРАН нерабочий unreadMessages — подсчёт делается ниже через message.count
+    const chatInclude = {
+      creator: { select: { id: true, name: true, imageUrl: true } },
+      organization: { select: { id: true, name: true } },
+      _count: { select: { messages: true } },
+      messages: {
+        orderBy: { createdAt: "desc" as const },
+        take: 1,
+        select: {
+          text: true,
+          attachments: true,
+          createdAt: true,
+          profile: { select: { name: true, userId: true } },
+        },
+      },
+      members: {
+        where: { profileId: userProfile.id },
+        select: { lastReadAt: true },
+      },
+    };
+
     let chats = [];
 
     if (isGlobalAdmin || isSupportEngineer) {
       chats = await prisma.chat.findMany({
         orderBy: { updatedAt: "desc" },
-        include: {
-          creator: { select: { id: true, name: true, imageUrl: true } },
-          organization: { select: { id: true, name: true } },
-          _count: { select: { messages: true } },
-          messages: {
-            orderBy: { createdAt: "desc" },
-            take: 1,
-            select: {
-              text: true,
-              fileUrl: true,
-              fileType: true,
-              createdAt: true,
-              profile: {
-                select: {
-                  name: true,
-                  userId: true,
-                },
-              },
-            },
-          },
-          members: {
-            where: { profileId: userProfile.id },
-            select: { lastReadAt: true },
-          },
-        },
+        include: chatInclude,
       });
     } else {
       const managedOrgIds = userProfile.organizationMembers
@@ -67,60 +62,49 @@ export async function GET() {
         where: {
           OR: [
             { organizationId: { in: managedOrgIds } },
-            {
-              members: {
-                some: { profileId: userProfile.id },
-              },
-            },
+            { members: { some: { profileId: userProfile.id } } },
           ],
         },
         orderBy: { updatedAt: "desc" },
-        include: {
-          creator: { select: { id: true, name: true, imageUrl: true } },
-          organization: { select: { id: true, name: true } },
-          _count: { select: { messages: true } },
-          messages: {
-            orderBy: { createdAt: "desc" },
-            take: 1,
-            select: {
-              text: true,
-              fileUrl: true,
-              fileType: true,
-              createdAt: true,
-              profile: {
-                select: {
-                  name: true,
-                  userId: true,
-                },
-              },
-            },
-          },
-          members: {
-            where: { profileId: userProfile.id },
-            select: { lastReadAt: true },
-          },
-        },
+        include: chatInclude,
       });
     }
 
-    const chatsWithUnread = chats.map((chat) => {
-      const member = chat.members?.[0];
-      const lastReadAt = member?.lastReadAt;
+    // ✅ Точный подсчёт непрочитанных через отдельные запросы
+    const chatsWithUnread = await Promise.all(
+      chats.map(async (chat) => {
+        const member = chat.members?.[0];
+        const lastReadAt = member?.lastReadAt;
+        const lastMessage = chat.messages?.[0] || null;
 
-      const lastMessage = chat.messages?.[0] || null;
+        let unreadCount = 0;
 
-      const hasUnread = lastReadAt
-        ? new Date(chat.updatedAt) > new Date(lastReadAt)
-        : chat._count.messages > 0;
+        if (lastReadAt) {
+          unreadCount = await prisma.message.count({
+            where: {
+              chatId: chat.id,
+              createdAt: { gt: lastReadAt },
+              profileId: { not: userProfile.id },
+            },
+          });
+        } else {
+          unreadCount = await prisma.message.count({
+            where: {
+              chatId: chat.id,
+              profileId: { not: userProfile.id },
+            },
+          });
+        }
 
-      return {
-        ...chat,
-        lastMessage, // Переименовываем в lastMessage для клиента
-        messages: undefined,
-        members: undefined,
-        unreadCount: hasUnread ? chat._count.messages : 0,
-      };
-    });
+        return {
+          ...chat,
+          lastMessage,
+          messages: undefined,
+          members: undefined,
+          unreadCount,
+        };
+      }),
+    );
 
     return NextResponse.json({ chats: chatsWithUnread });
   } catch (error) {

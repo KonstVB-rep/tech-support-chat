@@ -16,7 +16,6 @@ export const updateSupportEngineerAction = async (
   try {
     const session = await getSession();
 
-    console.log(session, "session");
     if (!session?.user || session.user.role !== USER_ROLE.ADMIN) {
       return {
         success: false,

@@ -50,10 +50,20 @@ export const useGetChats = () => {
               newUnread += 1;
             }
 
+            const mergedLastMessage = data.lastMessage
+              ? {
+                  ...data.lastMessage,
+                  attachments:
+                    data.lastMessage.attachments ??
+                    chat.lastMessage?.attachments ??
+                    [],
+                }
+              : chat.lastMessage;
+
             return {
               ...chat,
               updatedAt: data.updatedAt,
-              lastMessage: data.lastMessage ?? chat.lastMessage,
+              lastMessage: mergedLastMessage,
               unreadCount: newUnread,
               _count: {
                 ...chat._count,

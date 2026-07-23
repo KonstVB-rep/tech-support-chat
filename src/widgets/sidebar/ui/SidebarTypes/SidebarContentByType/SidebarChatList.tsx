@@ -1,6 +1,7 @@
 // src/entities/chat/ui/SidebarChatList.tsx
 "use client";
 
+import Image from "next/image";
 import { fetchMessages } from "@/entities/chat/api/fetchClient";
 import type { Chat } from "@/entities/chat/api/types";
 import { cn } from "@/shared/lib/utils";
@@ -12,11 +13,10 @@ import { ChatWindow } from "@/widgets/chat-window";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { set } from "zod";
 
-interface ChatListProps {
+type ChatListProps = {
   chats: Chat[];
-}
+};
 
 const formatTime = (dateStr: string) => {
   const date = new Date(dateStr);
@@ -29,11 +29,9 @@ const formatTime = (dateStr: string) => {
       hour: "2-digit",
       minute: "2-digit",
     });
-  } else if (days === 1) {
-    return "Вчера";
-  } else {
-    return date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
   }
+  if (days === 1) return "Вчера";
+  return date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
 };
 
 export const SidebarChatList = ({ chats }: ChatListProps) => {
@@ -70,15 +68,6 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
     [queryClient],
   );
 
-  if (chats.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center flex-1 p-6 text-center">
-        <div className="text-3xl mb-2">💬</div>
-        <p className="text-xs text-muted-foreground">Нет диалогов</p>
-      </div>
-    );
-  }
-
   const handleChatSelect = (chatId: string) => {
     setActiveTicketId(chatId);
 
@@ -98,6 +87,15 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
     }
   };
 
+  if (chats.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center flex-1 p-6 text-center">
+        <div className="text-3xl mb-2">💬</div>
+        <p className="text-xs text-muted-foreground">Нет диалогов</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 overflow-y-auto px-3 select-none flex flex-col gap-1.5">
       {chats.map((chat) => {
@@ -105,18 +103,14 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
         const displayTitle =
           chat.title || chat.organization?.name || "Обращение в поддержку";
 
-        const lastMsg = Array.isArray(chat.lastMessage)
-          ? chat.lastMessage[0]
-          : chat.lastMessage;
+        const lastMsg = chat.lastMessage ?? null;
+        const attachments = lastMsg?.attachments ?? [];
 
-        const lastMsgText =
-          lastMsg?.fileUrl && !lastMsg?.text
-            ? lastMsg?.fileType?.startsWith("image/")
-              ? "📷 Фото"
-              : lastMsg?.fileType?.startsWith("video/")
-                ? "🎥 Видео"
-                : "📎 Файл"
-            : lastMsg?.text || "Нет сообщений";
+        const firstImage = attachments.find((a) => a.type.startsWith("image"));
+        const firstVideo = attachments.find((a) => a.type.startsWith("video"));
+        const firstDoc = attachments.find(
+          (a) => !a.type.startsWith("image") && !a.type.startsWith("video"),
+        );
 
         return (
           <Button
@@ -147,10 +141,45 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
                 </span>
               </div>
 
+              {/* Превью в стиле Telegram: миниатюра + текст */}
               <div className="flex items-end justify-between gap-2 mt-1">
-                <p className="text-xs text-muted-foreground line-clamp-2 leading-tight min-w-0 flex-1">
-                  {lastMsgText}
-                </p>
+                <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                  {firstImage && (
+                    <div className="relative w-8 h-8 rounded overflow-hidden flex-shrink-0 border border-border/30">
+                      <Image
+                        src={firstImage.url}
+                        alt=""
+                        fill
+                        className="object-cover"
+                        unoptimized
+                        sizes="32px"
+                      />
+                    </div>
+                  )}
+
+                  {!firstImage && firstVideo && (
+                    <div className="relative w-8 h-8 rounded overflow-hidden flex-shrink-0 border border-border/30 bg-black/5 flex items-center justify-center">
+                      <span className="text-xs">🎥</span>
+                    </div>
+                  )}
+
+                  {!firstImage && !firstVideo && firstDoc && (
+                    <div className="w-8 h-8 rounded flex-shrink-0 border border-border/30 bg-muted/50 flex items-center justify-center">
+                      <span className="text-xs">📎</span>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-muted-foreground line-clamp-1 leading-tight min-w-0">
+                    {lastMsg?.text ||
+                      (firstImage
+                        ? "Фото"
+                        : firstVideo
+                          ? "Видео"
+                          : firstDoc
+                            ? firstDoc.name
+                            : "Нет сообщений")}
+                  </p>
+                </div>
 
                 {(chat.unreadCount ?? 0) > 0 && (
                   <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center leading-none flex-shrink-0">
@@ -167,7 +196,7 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
         open={isMobileChatOpen}
         onOpenChange={setIsMobileChatOpen}
         className="data-[vaul-drawer-direction=left]:sm:max-w-full data-[vaul-drawer-direction=right]:sm:max-w-full data-[vaul-drawer-direction=left]:max-h-[100vh] data-[vaul-drawer-direction=left]:h-[100dvh] md:hidden w-full max-w-full data-[vaul-drawer-direction=left]:w-full h-full"
-        side={"left"}
+        side="left"
       >
         <div className="md:px-4 flex flex-col gap-3 relative h-full">
           <div className="absolute right-0 h-3/12 bg-chart-2 rounded-s-md top-1/2 -translate-y-1/2 w-2" />

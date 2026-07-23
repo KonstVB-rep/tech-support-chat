@@ -1,7 +1,6 @@
 // src/features/send-message/api/useSendMessage.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Message, MessagesResponse } from "@/entities/chat/api/chat-api";
-import { apiConfig } from "@/shared/api/config";
+import type { Message, MessagesResponse } from "@/entities/chat/api/types";
 
 type SendMessageParams = {
   chatId: string;
@@ -13,10 +12,13 @@ export const useSendMessage = (activeTicketId: string | null) => {
 
   return useMutation({
     mutationFn: async ({ chatId, text }: SendMessageParams) => {
-      const res = await fetch(
-        `/api/chats/${chatId}/messages`,
-        apiConfig.post({ text }),
-      );
+      const formData = new FormData();
+      formData.append("text", text);
+
+      const res = await fetch(`/api/chats/${chatId}/messages`, {
+        method: "POST",
+        body: formData,
+      });
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));

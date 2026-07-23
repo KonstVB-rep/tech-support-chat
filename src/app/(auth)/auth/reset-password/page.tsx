@@ -57,13 +57,10 @@ export default function ResetPasswordConfirmPage() {
       return;
     }
     formData.append("token", token);
-    console.log(Object.fromEntries(formData), "formData");
     formAction(formData);
   };
 
   const errorMessage = state?.error;
-
-  console.log(token, "token");
 
   return (
     <div className="flex flex-col items-center justify-center h-screen gap-4">
