@@ -10,6 +10,7 @@ const withPWA = withPWAInit({
 const nextConfig: NextConfig = {
   reactCompiler: true,
   cacheComponents: true,
+  output: "standalone",
   experimental: {
     serverActions: {
       bodySizeLimit: "50mb",
