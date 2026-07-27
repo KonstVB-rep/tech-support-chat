@@ -72,7 +72,7 @@ export const DeleteOrganizationDialog = ({
         <Button
           variant="destructive"
           size="sm"
-          className={cn("text-white", className)}
+          className={cn("text-white bg-red-500", className)}
         >
           Удалить
         </Button>

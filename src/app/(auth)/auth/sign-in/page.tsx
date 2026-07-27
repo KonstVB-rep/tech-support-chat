@@ -36,7 +36,7 @@ export default function SignInPage() {
   const { isSubmitting } = form.formState;
 
   const onSubmit = async (values: SchemaPropsSignIn) => {
-    return await authClient.signIn.email(
+    await authClient.signIn.email(
       {
         email: values.email,
         password: values.password,
@@ -61,10 +61,10 @@ export default function SignInPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-4 w-full">
       <form
+        method="POST"
         className="flex flex-col gap-3 w-64 p-4"
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        {/* Email */}
         <Controller
           control={form.control}
           name="email"

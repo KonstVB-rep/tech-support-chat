@@ -25,10 +25,10 @@ export const SidebarNav = ({ isAdmin }: SidebarNavProps) => {
 
   const linkClass = (href: string) =>
     cn(
-      "flex flex-col gap-1 items-center justify-start h-auto p-2 rounded-xl transition-colors select-none",
+      "flex flex-col w-full gap-1 items-center justify-start h-auto p-2 rounded-xl transition-colors select-none",
       isActive(href)
         ? "bg-primary/10 text-primary font-medium"
-        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+        : "text-muted-foreground hover:bg-muted/50 dark:hover:text-foreground :hover:text-blue-700",
     );
 
   if (!isDekstop) return null;
@@ -50,7 +50,7 @@ export const SidebarNav = ({ isAdmin }: SidebarNavProps) => {
           <SharedLayoutBg
             inset={0}
             classNameChild="flex flex-col gap-2 items-center justify-bettwen"
-            className="gap-2 h-full justify-between"
+            className="gap-2 h-full justify-between p-1"
           >
             <div>
               {visibleLinks.map((link) => {
