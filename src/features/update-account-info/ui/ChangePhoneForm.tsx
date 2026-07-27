@@ -63,7 +63,7 @@ const ChangePhoneForm = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-6 w-full max-w-2xl"
+      className="flex flex-col gap-3 w-full max-w-2xl"
     >
       <div className="grid gap-2">
         <Label htmlFor="phone">Телефон</Label>

@@ -82,7 +82,6 @@ export const UpdateOrganizationForm = ({
       formAction={handleFormAction}
       isPending={isPending}
       title="Редактирование организации"
-      submitText="Сохранить изменения"
     />
   );
 };

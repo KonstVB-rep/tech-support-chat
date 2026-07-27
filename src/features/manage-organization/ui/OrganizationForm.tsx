@@ -17,8 +17,6 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/shared/ui/input-group";
-import { Label } from "@/shared/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
 import { Clock2Icon } from "lucide-react";
 import { Controller, UseFormReturn } from "react-hook-form";
 
@@ -27,7 +25,6 @@ type OrganizationFormProps = {
   formAction: (formData: FormData) => void;
   isPending: boolean;
   title: string;
-  submitText: string;
 };
 
 export const OrganizationForm = ({
@@ -35,7 +32,6 @@ export const OrganizationForm = ({
   formAction,
   isPending,
   title,
-  submitText,
 }: OrganizationFormProps) => {
   return (
     <div className="flex items-start justify-center w-full h-full select-none">

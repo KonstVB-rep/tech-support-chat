@@ -10,10 +10,7 @@ import {
   EMPLOYEE_MANAGE_ACTIONS,
   hasEmployeeManagePermission,
 } from "../lib/checkPermission";
-import {
-  employeeFormSchema,
-  updateEmployeeFormSchema,
-} from "@/entities/employee";
+import { updateEmployeeFormSchema } from "@/entities/employee";
 
 export const updateEmployeeAction = async (
   _prevState: ActionState,

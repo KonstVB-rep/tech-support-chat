@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { ThemeProvider } from "next-themes";
+
 import { Toaster } from "sonner";
 import { BetterUiProviders } from "./betterui-provider";
 import QueryProvider from "./query-provider";
@@ -10,6 +10,7 @@ import { SocketInitializer } from "./socket-Initializer";
 import { PushPermissionGate } from "@/widgets/push-permission/PushPermissionGate";
 import { Suspense } from "react";
 import { UserUpdatesListener } from "@/shared/lib/UserUpdatesListener";
+import { ThemeProvider } from "@/app/providers/theme-provider";
 
 const ReactQueryDevtools = dynamic(
   () =>

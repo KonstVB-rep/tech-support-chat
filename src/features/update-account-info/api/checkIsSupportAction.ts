@@ -27,11 +27,11 @@ export const checkIsSupportAction = async (): Promise<boolean> => {
       "❌ [checkIsSupportAction] Ошибка проверки роли инженера:",
       error,
     );
-    return false; // При любом сбое БД закрываем доступ ради безопасности контура
+    return false;
   }
 };
 
-export const checkIsSupportActionNyProfileId = async (
+export const checkIsSupportActionMyProfileId = async (
   profileId: string,
 ): Promise<boolean> => {
   try {
@@ -46,9 +46,9 @@ export const checkIsSupportActionNyProfileId = async (
     return !!isSupportEngineer;
   } catch (error) {
     console.error(
-      "❌ [checkIsSupportAction] Ошибка проверки роли инженера:",
+      "❌ [checkIsSupportActionMyProfileId] Ошибка проверки роли инженера:",
       error,
     );
-    return false; // При любом сбое БД закрываем доступ ради безопасности контура
+    return false;
   }
 };

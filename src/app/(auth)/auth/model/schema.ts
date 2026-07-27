@@ -35,9 +35,8 @@ export const passwordSchema = z.object({
   newPassword: z.string().min(8, "Пароль должен быть не менее 8 символов"),
 });
 
-// 3. Типы
 export type SchemaPropsSignIn = z.infer<typeof validationSchemaSignIn>;
-export type SchemaPropsSignUp = z.infer<typeof validationSchemaSignUp>;
+// export type SchemaPropsSignUp = z.infer<typeof validationSchemaSignUp>;
 export type SchemaPropsResetPassword = z.infer<
   typeof validationSchemaResetPassword
 >;
@@ -46,4 +45,4 @@ export type SchemaPropsResetPasswordConfirm = z.infer<
   typeof validationSchemaResetPasswordConfirm
 >;
 
-export type SchemaChangePassword = z.infer<typeof passwordSchema>;
+// export type SchemaChangePassword = z.infer<typeof passwordSchema>;

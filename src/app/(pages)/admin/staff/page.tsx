@@ -1,6 +1,6 @@
 import { getSupportEngineers } from "@/entities/support-engineer";
 import EngineerListMobile from "@/entities/support-engineer/ui/EngineerListMobile";
-import { AddSupportEngineerDialog } from "@/features/manage-support-engineer/ui/AddSupportEngineerDialog";
+import { AddSupportEngineerDialog } from "@/features/manage-support-engineer";
 import ButtonBack from "@/shared/ui/custom/ButtonBack";
 import WrapperHeaderScreen from "@/shared/ui/custom/WrapperHeaderScreen";
 import { SupportEngineersTable } from "@/widgets/support-engineers-table";
@@ -16,7 +16,6 @@ export default function SupportEngineersPage() {
             Инженеры техподдержки
           </h2>
           <div className="w-8 shrink-0" />{" "}
-          {/* Балансир для центрирования заголовка */}
         </div>
       </WrapperHeaderScreen>
 
@@ -35,8 +34,13 @@ const SupportEngineersList = async () => {
   const engineers = await getSupportEngineers();
   return (
     <>
-      <SupportEngineersTable data={engineers} />
-      <EngineerListMobile data={engineers} />
+      <div className="hidden md:block w-full h-full">
+        <SupportEngineersTable data={engineers} />
+      </div>
+
+      <div className="block md:hidden w-full">
+        <EngineerListMobile data={engineers} />
+      </div>
     </>
   );
 };

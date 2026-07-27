@@ -1,18 +1,23 @@
 // src/features/manage-support-engineer/actions/update.ts
 "use server";
+
 import { prisma } from "@/prisma/prisma-client";
 import { auth } from "@/app/lib/auth";
 import { headers } from "next/headers";
 import { updateTag } from "next/cache";
 import { getSession } from "@/shared/lib/server-current-user";
-import { updateSupportEngineerSchema } from "@/entities/support-engineer";
+import {
+  SupportEngineerWithProfile,
+  updateSupportEngineerSchema,
+} from "@/entities/support-engineer";
 import { ActionState } from "@/shared/lib/types";
 import { USER_ROLE } from "@/shared/constants";
+import { Profile } from "@prisma/client";
 
 export const updateSupportEngineerAction = async (
   _prevState: ActionState,
   formData: FormData,
-): Promise<ActionState> => {
+): Promise<ActionState & { data?: Profile }> => {
   try {
     const session = await getSession();
 
@@ -46,55 +51,91 @@ export const updateSupportEngineerAction = async (
 
     const { email, name, password, phone } = validated.data;
 
-    // Сборка объекта изменений строго для вложенного свойства 'data'
-    const updatePayload: { email: string; name: string; password?: string } = {
-      email,
-      name,
-    };
+    const engineer = await prisma.supportEngineer.findUnique({
+      where: { id: engineerId },
+      include: {
+        profile: {
+          include: { user: true },
+        },
+      },
+    });
+
+    if (!engineer) {
+      return {
+        success: false,
+        message: null,
+        error: "Сотрудник не найден",
+      };
+    }
+
+    const userId = engineer.profile.user.id;
+    const currentEmail = engineer.profile.user.email;
+    const currentName = engineer.profile.user.name;
+
+    // Собираем payload ТОЛЬКО из реально изменённых полей
+    const updatePayload: { name?: string; email?: string; password?: string } =
+      {};
+
+    if (name !== currentName) {
+      updatePayload.name = name;
+    }
+
+    if (email !== currentEmail) {
+      updatePayload.email = email;
+    }
 
     if (password && password.trim() !== "") {
       updatePayload.password = password.trim();
     }
 
-    // 2. 🎯 ВЫЗОВ ИЗ ДОКУМЕНТАЦИИ BETTER AUTH:
-    // Поля userId и data лежат внутри body, как требует Admin Plugin
-    await auth.api.adminUpdateUser({
-      body: {
-        userId: engineerId,
-        data: updatePayload,
-      },
-      headers: await headers(),
-    });
-
-    const existingProfile = await prisma.profile.findUnique({
-      where: { userId: engineerId },
-    });
-
-    if (existingProfile) {
-      await prisma.profile.update({
-        where: { userId: engineerId },
-        data: { name, email, phone: phone || null },
-      });
-    } else {
-      await prisma.profile.create({
-        data: { userId: engineerId, name, email, phone: phone || null },
-      });
+    // Вызываем Better Auth только если есть изменения для auth-таблицы
+    if (Object.keys(updatePayload).length > 0) {
+      try {
+        await auth.api.adminUpdateUser({
+          body: {
+            userId,
+            data: updatePayload,
+          },
+          headers: await headers(),
+        });
+      } catch (error: unknown) {
+        if (
+          error &&
+          typeof error === "object" &&
+          "body" in error &&
+          (error as { body?: { code?: string } }).body?.code ===
+            "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL"
+        ) {
+          return {
+            success: false,
+            message: null,
+            error: "Этот email уже используется другим сотрудником",
+          };
+        }
+        throw error;
+      }
     }
+
+    const updatedProfile = await prisma.profile.update({
+      where: { id: engineer.profileId },
+      data: { name, email, phone: phone || null },
+    });
 
     updateTag("support-engineers");
     updateTag(`support-engineers-${engineerId}`);
 
     return {
       success: true,
-      message: "Профиль сотрудника и учетные данные успешно обновлены",
+      message: "Профиль сотрудника успешно обновлен",
       error: null,
+      data: updatedProfile,
     };
   } catch (error) {
     console.error("Ошибка при выполнении updateSupportEngineerAction:", error);
     return {
       success: false,
       message: null,
-      error: "Критическая ошибка базы данных при сохранении на сервере Beget",
+      error: "Критическая ошибка базы данных при сохранении",
     };
   }
 };

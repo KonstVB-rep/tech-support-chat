@@ -3,7 +3,7 @@ import { prisma } from "@/prisma/prisma-client";
 import { USER_ROLE } from "@/shared/constants";
 import { OrgRole } from "@prisma/client";
 
-export type EmployeeActionType = "CREATE" | "UPDATE" | "DELETE";
+type EmployeeActionType = "CREATE" | "UPDATE" | "DELETE";
 
 export const EMPLOYEE_MANAGE_ACTIONS = {
   CREATE: "CREATE",

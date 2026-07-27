@@ -109,7 +109,7 @@ type UpdateEmployeeFormProps = {
   submitText?: string;
 };
 
-export const UpdateEmployeeForm = ({
+const UpdateEmployeeForm = ({
   form,
   formAction,
   isPending = false,

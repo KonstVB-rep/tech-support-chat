@@ -10,9 +10,6 @@ import {
   deleteChatAction,
 } from "../actions";
 
-/**
- * 📥 ХУК ЧТЕНИЯ: Загружает список людей в шторку через Server Action
- */
 export function useChatMembers(chatId: string, isOpen: boolean) {
   return useQuery<EmployeeInChat[]>({
     queryKey: ["chat-members-list", chatId],

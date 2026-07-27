@@ -42,7 +42,7 @@ export const AvatarChangeForm = ({
   };
 
   return (
-    <div className="flex flex-col items-center gap-4 p-4">
+    <div className="flex flex-col items-center gap-3 py-4 px-4 pb-2">
       <Label htmlFor="avatar-upload" className="cursor-pointer group relative">
         <div className="relative h-24 w-24 rounded-full border-2 border-border transition-opacity group-hover:opacity-80">
           {previewUrl && (

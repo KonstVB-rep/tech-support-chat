@@ -8,7 +8,6 @@ export {
   hasAnyPermissionChat,
   hasAllPermissionChat,
   hasPermissionChat,
-  type AppChatRole,
   type ChatPermission,
 } from "./permissions";
 

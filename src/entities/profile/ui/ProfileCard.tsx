@@ -9,12 +9,12 @@ import {
   CardTitle,
 } from "@/shared/ui/card";
 import Link from "next/link";
-import { OrgRole, User } from "@prisma/client";
+import { OrgRole } from "@prisma/client";
 import { getProfile } from "../api";
 import { getCurrentUser } from "@/shared/lib/server-current-user";
 
 export type ProfileData = NonNullable<Awaited<ReturnType<typeof getProfile>>>;
-export type UserType = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
+type UserType = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
 
 const ProfileCard = ({
   profile,

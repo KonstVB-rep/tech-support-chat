@@ -382,8 +382,6 @@ export const deleteChatAction = async ({
   try {
     const session = await getSession();
 
-    // 🔒 ЖЕСТКИЙ БАРЬЕР: Менеджеры завода или инженеры саппорта не имеют права тереть историю.
-    // ЕслиRPC-вызов сделает не админ — сразу выкидываем ошибку безопасности.
     if (!session?.user || session.user.role.toLowerCase() !== "admin") {
       return {
         success: false,

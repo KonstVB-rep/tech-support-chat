@@ -28,7 +28,7 @@ const PasswordChangeForm = () => {
   }, [state, queryClient]);
 
   return (
-    <form action={formAction} className="flex flex-col gap-6">
+    <form action={formAction} className="flex flex-col gap-3">
       <div className="grid gap-2">
         <Label htmlFor="current_password">Текущий пароль</Label>
         <Input

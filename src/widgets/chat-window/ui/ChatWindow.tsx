@@ -82,35 +82,7 @@ export const ChatWindow = () => {
     const socket = getSocket();
     socket.emit("chat:join", activeTicketId);
 
-    const handleNewMessage = (message: Message) => {
-      if (message.chatId !== activeTicketId) return;
-
-      queryClient.setQueryData<MessagesResponse>(
-        ["messages", activeTicketId],
-        (old) => {
-          const messages = old?.messages || [];
-          if (messages.some((m) => m.id === message.id)) {
-            return old;
-          }
-          return {
-            messages: [...messages, message],
-            chat: old?.chat || null,
-          };
-        },
-      );
-    };
-
-    socket.on("message:new", handleNewMessage);
-
-    return () => {
-      socket.off("message:new", handleNewMessage);
-      socket.emit("chat:leave", activeTicketId);
-    };
-  }, [activeTicketId, queryClient]);
-
-  useEffect(() => {
-    if (!activeTicketId) return;
-
+    // ✅ Помечаем как прочитанное при ОТКРЫТИИ чата
     fetch(`/api/chats/${activeTicketId}/read`, { method: "POST" })
       .then(() => {
         queryClient.setQueryData<Chat[]>(["chats"], (old) => {
@@ -128,20 +100,122 @@ export const ChatWindow = () => {
       })
       .catch(() => {});
 
-    const socket = getSocket();
+    // ✅ Обработка НОВОГО сообщения
+    const handleNewMessage = (message: Message) => {
+      if (message.chatId !== activeTicketId) return;
 
+      // Добавляем сообщение в список
+      queryClient.setQueryData<MessagesResponse>(
+        ["messages", activeTicketId],
+        (old) => {
+          const messages = old?.messages || [];
+          if (messages.some((m) => m.id === message.id)) return old;
+          return {
+            messages: [...messages, message],
+            chat: old?.chat || null,
+          };
+        },
+      );
+
+      // Сбрасываем unreadCount в сайдбаре (чат открыт = прочитано)
+      queryClient.setQueryData<Chat[]>(["chats"], (old) => {
+        if (!old) return old;
+        return old.map((chat) =>
+          chat.id === activeTicketId
+            ? { ...chat, unreadCount: 0, lastReadAt: new Date().toISOString() }
+            : chat,
+        );
+      });
+
+      // Сообщаем серверу (для синхронизации других вкладок/устройств)
+      fetch(`/api/chats/${activeTicketId}/read`, { method: "POST" }).catch(
+        () => {},
+      );
+    };
+
+    // ✅ Обработка удаления чата
     const handleChatRemoved = (data: { chatId: string }) => {
       if (data.chatId === activeTicketId) {
         clearChat();
       }
     };
 
+    socket.on("message:new", handleNewMessage);
     socket.on("chat:removed", handleChatRemoved);
 
     return () => {
+      socket.off("message:new", handleNewMessage);
       socket.off("chat:removed", handleChatRemoved);
+      socket.emit("chat:leave", activeTicketId);
     };
-  }, [activeTicketId, clearChat, queryClient]);
+  }, [activeTicketId, queryClient, clearChat]);
+
+  // useEffect(() => {
+  //   if (!activeTicketId) return;
+
+  //   const socket = getSocket();
+  //   socket.emit("chat:join", activeTicketId);
+
+  //   const handleNewMessage = (message: Message) => {
+  //     if (message.chatId !== activeTicketId) return;
+
+  //     queryClient.setQueryData<MessagesResponse>(
+  //       ["messages", activeTicketId],
+  //       (old) => {
+  //         const messages = old?.messages || [];
+  //         if (messages.some((m) => m.id === message.id)) {
+  //           return old;
+  //         }
+  //         return {
+  //           messages: [...messages, message],
+  //           chat: old?.chat || null,
+  //         };
+  //       },
+  //     );
+  //   };
+
+  //   socket.on("message:new", handleNewMessage);
+
+  //   return () => {
+  //     socket.off("message:new", handleNewMessage);
+  //     socket.emit("chat:leave", activeTicketId);
+  //   };
+  // }, [activeTicketId, queryClient]);
+
+  // useEffect(() => {
+  //   if (!activeTicketId) return;
+
+  //   fetch(`/api/chats/${activeTicketId}/read`, { method: "POST" })
+  //     .then(() => {
+  //       queryClient.setQueryData<Chat[]>(["chats"], (old) => {
+  //         if (!old) return old;
+  //         return old.map((chat) =>
+  //           chat.id === activeTicketId
+  //             ? {
+  //                 ...chat,
+  //                 unreadCount: 0,
+  //                 lastReadAt: new Date().toISOString(),
+  //               }
+  //             : chat,
+  //         );
+  //       });
+  //     })
+  //     .catch(() => {});
+
+  //   const socket = getSocket();
+
+  //   const handleChatRemoved = (data: { chatId: string }) => {
+  //     if (data.chatId === activeTicketId) {
+  //       clearChat();
+  //     }
+  //   };
+
+  //   socket.on("chat:removed", handleChatRemoved);
+
+  //   return () => {
+  //     socket.off("chat:removed", handleChatRemoved);
+  //   };
+  // }, [activeTicketId, clearChat, queryClient]);
 
   const handleRenameSubmit = () => {
     if (newTitle === chatDisplayTitle) return;
@@ -261,7 +335,7 @@ export const ChatWindow = () => {
       {/* ✅ Callback ref вместо useRef + useEffect */}
       <div className="flex flex-col flex-1 min-h-0 w-full mx-auto">
         <ScrollArea ref={setScrollContainerRef} className="px-4 w-full h-full">
-          <div className="w-full max-w-2xl mx-auto px-3 backdrop-blur-[1px]">
+          <div className="w-full max-w-2xl mx-auto p-3 backdrop-blur-[1px]">
             {!messagesData && isLoading && (
               <div className="text-center text-xs text-muted-foreground py-4 animate-pulse">
                 Загрузка переписки...
@@ -320,4 +394,3 @@ export const ChatWindow = () => {
     </WrapperScreen>
   );
 };
-export default ChatWindow;

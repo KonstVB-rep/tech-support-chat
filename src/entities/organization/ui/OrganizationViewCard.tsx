@@ -140,5 +140,3 @@ export const OrganizationViewCard = ({
     </div>
   );
 };
-
-export default OrganizationViewCard;

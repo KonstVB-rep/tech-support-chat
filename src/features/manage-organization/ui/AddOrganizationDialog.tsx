@@ -99,5 +99,3 @@ export const AddOrganizationDialog = () => {
     </Dialog>
   );
 };
-
-export default AddOrganizationDialog;

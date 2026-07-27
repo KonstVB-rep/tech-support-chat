@@ -48,7 +48,7 @@ const ChangeEmailForm = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <div className="grid gap-2">
         <Label htmlFor="email">Электронная почта</Label>
         <Input

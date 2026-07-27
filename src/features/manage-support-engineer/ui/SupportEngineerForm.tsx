@@ -8,20 +8,19 @@ import InputPassword from "@/shared/ui/custom/InputPassword";
 import InputPhoneForm from "@/shared/ui/custom/InputPhoneForm";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
-import {
-  Controller,
-  type FieldValues,
-  Path,
-  UseFormReturn,
-} from "react-hook-form";
+import { Controller, UseFormReturn } from "react-hook-form";
 
 type SupportEngineerFormProps = {
-  form: UseFormReturn<SupportEngineerFormValues>;
+  form: UseFormReturn<{
+    email: string;
+    name: string;
+    password?: string;
+    phone?: string;
+  }>;
   formAction: (data: FormData) => void;
   isPending?: boolean;
   submitText?: string;
 };
-
 export const SupportEngineerForm = ({
   form,
   formAction,
@@ -99,40 +98,16 @@ export const SupportEngineerForm = ({
               )}
             />
 
-            <InputPhoneForm<SupportEngineerFormValues> // 1. Явно передаем тип формы в дженерик инпута
+            <InputPhoneForm
               name="phone"
-              label="Telephone"
+              label="Телефон"
               control={form.control}
-              // 2. Оборачиваем в String(), чтобы гарантировать тип string для TS
               errorMessage={
                 form.formState.errors.phone?.message
                   ? String(form.formState.errors.phone.message)
                   : undefined
               }
             />
-
-            {/* <Controller
-              name={"phone" as Path<T>}
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="phone">Телефон</FieldLabel>
-                  <Input
-                    {...field}
-                    value={String(field.value ?? "")}
-                    id="phone"
-                    type="tel"
-                    aria-invalid={fieldState.invalid}
-                    autoComplete="off"
-                    placeholder="+7 (999) 123-45-67"
-                    className="field-height"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            /> */}
           </FieldGroup>
         </CardContent>
 

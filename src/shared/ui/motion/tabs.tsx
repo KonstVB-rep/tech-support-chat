@@ -158,9 +158,6 @@ export function TabsTrigger({
     );
   }
 
-  // The default max-contrast pill uses exclusion so labels invert exactly as
-  // the indicator passes beneath them. Custom indicators retain explicit text
-  // colors because their background may not be suitable for blending.
   const radius = variant === "pill" ? "rounded-full" : "rounded-md";
 
   return (
@@ -200,40 +197,5 @@ export function TabsTrigger({
         {children}
       </button>
     </div>
-  );
-}
-
-export function TabsContent({
-  value,
-  children,
-  className,
-}: {
-  value: string;
-  children: ReactNode;
-  className?: string;
-}) {
-  const { value: current } = useTabs();
-  const reduce = useReducedMotion();
-  const active = current === value;
-  // Inactive panels stay mounted but hidden, so their content (e.g. source
-  // code) is present in the server-rendered HTML for crawlers and assistive
-  // tech, instead of being dropped from the DOM.
-  if (!active) {
-    return (
-      <div hidden className={className}>
-        {children}
-      </div>
-    );
-  }
-  return (
-    <motion.div
-      key={value}
-      initial={{ opacity: 0, y: reduce ? 0 : 4 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.18, ease: EASE_OUT }}
-      className={cn("mt-4", className)}
-    >
-      {children}
-    </motion.div>
   );
 }

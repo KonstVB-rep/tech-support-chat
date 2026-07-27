@@ -11,6 +11,7 @@ const EngineerListMobile = ({ data }: EngineerListProps) => {
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
   if (isDesktop) return null;
+
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center w-full py-12 text-muted-foreground text-sm">

@@ -1,5 +1,6 @@
 // src/features/manage-support-engineer/ui/UpdateSupportEngineerForm.tsx
 "use client";
+
 import { startTransition, useActionState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,10 +14,11 @@ import {
 import { updateSupportEngineerAction } from "../actions/update";
 import { SupportEngineerForm } from "./SupportEngineerForm";
 import { ActionState } from "@/shared/lib/types";
+import { Profile } from "@prisma/client";
 
 interface UpdateSupportEngineerFormProps {
   engineer: SupportEngineerWithProfile;
-  onSuccess?: () => void; // Коллбэк для закрытия модалки
+  onSuccess?: () => void;
   submitText?: string;
 }
 
@@ -25,11 +27,12 @@ export const UpdateSupportEngineerForm = ({
   onSuccess,
   submitText = "Сохранить",
 }: UpdateSupportEngineerFormProps) => {
-  const initialState: ActionState = {
+  const initialState: ActionState & { data?: Profile } = {
     success: false,
     message: null,
     error: null,
   };
+
   const [state, formAction, isPending] = useActionState(
     updateSupportEngineerAction,
     initialState,
@@ -48,21 +51,16 @@ export const UpdateSupportEngineerForm = ({
   useEffect(() => {
     if (state.success && state.message) {
       toast.success(state.message);
+      form.setValue("password", "");
+      form.setValue("email", state.data?.email ?? "");
+      form.setValue("name", state.data?.name ?? "");
+      form.setValue("phone", state.data?.phone ?? "");
       onSuccess?.();
     }
     if (state.error) {
       toast.error(state.error);
     }
-  }, [state, onSuccess]);
-
-  useEffect(() => {
-    form.reset({
-      email: engineer.profile?.email ?? "",
-      name: engineer.profile?.name ?? "",
-      password: "",
-      phone: engineer.profile?.phone ?? "",
-    });
-  }, [engineer, form]);
+  }, [state, onSuccess, form]);
 
   const handleFormAction = async (formData: FormData) => {
     const isValid = await form.trigger();
@@ -75,7 +73,7 @@ export const UpdateSupportEngineerForm = ({
   };
 
   return (
-    <SupportEngineerForm<UpdateSupportEngineerFormValues>
+    <SupportEngineerForm
       form={form}
       formAction={handleFormAction}
       isPending={isPending}

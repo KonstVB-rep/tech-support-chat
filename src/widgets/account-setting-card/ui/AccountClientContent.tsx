@@ -1,7 +1,7 @@
 "use client";
 
 import { ProfileData } from "@/entities/profile/ui/ProfileCard";
-import { checkIsSupportActionNyProfileId } from "@/features/update-account-info/api/checkIsSupportAction";
+import { checkIsSupportActionMyProfileId } from "@/features/update-account-info/api/checkIsSupportAction";
 import { useMediaQuery } from "@/shared/lib/hooks/useMediaQuery";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -53,7 +53,7 @@ const AccountClientContent = ({ profile }: { profile: ProfileData }) => {
 
   const { data: isSupport = false } = useQuery({
     queryKey: ["current-user-is-support"],
-    queryFn: () => checkIsSupportActionNyProfileId(profile.id),
+    queryFn: () => checkIsSupportActionMyProfileId(profile.id),
     staleTime: 10 * 60 * 1000,
   });
 

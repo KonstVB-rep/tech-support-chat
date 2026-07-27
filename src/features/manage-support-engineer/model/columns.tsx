@@ -13,7 +13,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 
 import type { User } from "@prisma/client";
-import { DeleteSupportEngineerDialog } from "../ui";
+import { DeleteSupportEngineerDialog } from "@/features/manage-support-engineer/ui";
 
 export const columns: ColumnDef<User>[] = [
   {
@@ -54,9 +54,8 @@ export const columns: ColumnDef<User>[] = [
               className="text-red-600"
             >
               <DeleteSupportEngineerDialog
-                engineerId={engineer.id}
+                engineerIds={engineer.id}
                 engineerName={engineer.name}
-                engineerEmail={engineer.email}
               />
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -1,8 +1,8 @@
 "use client";
 
 import { SingleOrganizationWithCounts } from "@/entities/organization";
-import OrganizationViewCard from "@/entities/organization/ui/OrganizationViewCard";
-import { UpdateOrganizationForm } from "@/features/manage-organization/ui/UpdateOrganizationForm";
+import { OrganizationViewCard } from "@/entities/organization/ui/OrganizationViewCard";
+import { UpdateOrganizationForm } from "@/features/manage-organization";
 import { ProtectByRole } from "@/shared/lib/ProtectByRole";
 import { Button } from "@/shared/ui/button";
 import { Pencil } from "lucide-react";

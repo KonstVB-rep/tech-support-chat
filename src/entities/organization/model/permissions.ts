@@ -27,15 +27,11 @@ export type ChatPermission =
   // Статистика
   | "stats.view"; // Видеть статистику
 
-// 🚀 БЕСТ-ПРАКТИКС ТИПИЗАЦИЯ: Наш новый объединенный тип ролей для логики доступов
-export type AppChatRole = "admin" | "SUPPORT" | "RESPONSIBLE" | "MEMBER";
+type AppChatRole = "admin" | "SUPPORT" | "RESPONSIBLE" | "MEMBER";
 
-// ✅ Маппинг: теперь ключами являются наши чистые строковые роли
 export const ROLE_PERMISSIONS_CHAT: Record<AppChatRole, ChatPermission[]> = {
-  // Обычный сотрудник клиента внутри компании
   MEMBER: ["ticket.create", "message.send", "message.delete.own"],
 
-  // Инженер техподдержки портала
   SUPPORT: [
     "ticket.create",
     "ticket.close",
@@ -44,7 +40,6 @@ export const ROLE_PERMISSIONS_CHAT: Record<AppChatRole, ChatPermission[]> = {
     "message.delete.any",
   ],
 
-  // Ответственное лицо клиента (Директор/Управляющий)
   RESPONSIBLE: [
     "ticket.create",
     "ticket.view.all",
@@ -73,7 +68,6 @@ export const ROLE_PERMISSIONS_CHAT: Record<AppChatRole, ChatPermission[]> = {
   ],
 };
 
-// ✅ Хелперы: теперь принимают наш чистый тип AppChatRole вместо Role из Prisma
 export const hasPermissionChat = (
   role: AppChatRole,
   permission: ChatPermission,

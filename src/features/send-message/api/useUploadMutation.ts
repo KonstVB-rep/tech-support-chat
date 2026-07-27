@@ -1,6 +1,10 @@
 // src/features/send-message/api/useUploadMutation.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { MessagesResponse, Message } from "@/entities/chat/api/types";
+import type {
+  MessagesResponse,
+  Message,
+  Chat,
+} from "@/entities/chat/api/types";
 
 interface UploadParams {
   files: File[];
@@ -47,7 +51,14 @@ export const useUploadMutation = (activeTicketId: string | null) => {
         },
       );
 
-      queryClient.invalidateQueries({ queryKey: ["chats"] });
+      queryClient.setQueryData<Chat[]>(["chats"], (old) => {
+        if (!old) return old;
+        return old.map((chat) =>
+          chat.id === activeTicketId
+            ? { ...chat, unreadCount: 0, lastReadAt: new Date().toISOString() }
+            : chat,
+        );
+      });
     },
   });
 };

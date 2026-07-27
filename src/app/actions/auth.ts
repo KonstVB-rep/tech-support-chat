@@ -30,134 +30,134 @@ type ActionState =
     }
   | undefined;
 
-export async function signUpAction(_: unknown, formData: FormData) {
-  const data = Object.fromEntries(formData);
+// export async function signUpAction(_: unknown, formData: FormData) {
+//   const data = Object.fromEntries(formData);
 
-  const validated = validationSchemaSignUp.safeParse(data);
+//   const validated = validationSchemaSignUp.safeParse(data);
 
-  if (!validated.success) {
-    // const errorMessage = validated.error.issues
-    //   .map((issue: z.core.$ZodIssue) => issue.message)
-    //   .join(", ")
+//   if (!validated.success) {
+//     // const errorMessage = validated.error.issues
+//     //   .map((issue: z.core.$ZodIssue) => issue.message)
+//     //   .join(", ")
 
-    return {
-      error: "Не верный email или пароль",
-    };
-  }
+//     return {
+//       error: "Не верный email или пароль",
+//     };
+//   }
 
-  const { name, email, password } = validated.data;
+//   const { name, email, password } = validated.data;
 
-  try {
-    await auth.api.signUpEmail({
-      body: { email, password, name },
-    });
-  } catch (error: unknown) {
-    if (isRedirectError(error)) {
-      throw error;
-    }
+//   try {
+//     await auth.api.signUpEmail({
+//       body: { email, password, name },
+//     });
+//   } catch (error: unknown) {
+//     if (isRedirectError(error)) {
+//       throw error;
+//     }
 
-    let errorMessage: string | null = null;
+//     let errorMessage: string | null = null;
 
-    if (error instanceof APIError) {
-      errorMessage =
-        typeof error.body === "string"
-          ? error.body
-          : (error.body?.message ?? "Ошибка при смене пароля");
-    } else if (error instanceof Error) {
-      errorMessage = error.message;
-    } else {
-      errorMessage = "Произошла непредвиденная ошибка. Попробуйте ещё раз.";
-    }
+//     if (error instanceof APIError) {
+//       errorMessage =
+//         typeof error.body === "string"
+//           ? error.body
+//           : (error.body?.message ?? "Ошибка при смене пароля");
+//     } else if (error instanceof Error) {
+//       errorMessage = error.message;
+//     } else {
+//       errorMessage = "Произошла непредвиденная ошибка. Попробуйте ещё раз.";
+//     }
 
-    return {
-      error: errorMessage,
-    };
-  }
-  redirect("/auth/email-verify");
-}
+//     return {
+//       error: errorMessage,
+//     };
+//   }
+//   redirect("/auth/email-verify");
+// }
 
-export async function signInAction(_: unknown, formData: FormData) {
-  const data = Object.fromEntries(formData);
+// export async function signInAction(_: unknown, formData: FormData) {
+//   const data = Object.fromEntries(formData);
 
-  const validated = validationSchemaSignIn.safeParse(data);
+//   const validated = validationSchemaSignIn.safeParse(data);
 
-  if (!validated.success) {
-    // const errorMessage = validated.error.issues
-    //   .map((issue: z.core.$ZodIssue) => issue.message)
-    //   .join(", ")
+//   if (!validated.success) {
+//     // const errorMessage = validated.error.issues
+//     //   .map((issue: z.core.$ZodIssue) => issue.message)
+//     //   .join(", ")
 
-    return {
-      error: "Не верный email или пароль",
-    };
-  }
+//     return {
+//       error: "Не верный email или пароль",
+//     };
+//   }
 
-  const { email, password } = validated.data;
-  try {
-    await auth.api.signInEmail({
-      body: { email, password, rememberMe: false },
-    });
-  } catch (error: unknown) {
-    if (isRedirectError(error)) {
-      throw error;
-    }
+//   const { email, password } = validated.data;
+//   try {
+//     await auth.api.signInEmail({
+//       body: { email, password, rememberMe: false },
+//     });
+//   } catch (error: unknown) {
+//     if (isRedirectError(error)) {
+//       throw error;
+//     }
 
-    // Строгая обработка ошибки — только string | null
-    let errorMessage: string | null = null;
+//     // Строгая обработка ошибки — только string | null
+//     let errorMessage: string | null = null;
 
-    if (error instanceof APIError) {
-      errorMessage =
-        typeof error.body === "string"
-          ? error.body
-          : (error.body?.message ?? "Ошибка при смене пароля");
-    } else if (error instanceof Error) {
-      errorMessage = "Не верный email или пароль";
-    } else {
-      errorMessage = "Произошла непредвиденная ошибка. Попробуйте ещё раз.";
-    }
-    console.log(errorMessage, "errorMessage");
-    return {
-      error: errorMessage,
-    };
-  }
+//     if (error instanceof APIError) {
+//       errorMessage =
+//         typeof error.body === "string"
+//           ? error.body
+//           : (error.body?.message ?? "Ошибка при смене пароля");
+//     } else if (error instanceof Error) {
+//       errorMessage = "Не верный email или пароль";
+//     } else {
+//       errorMessage = "Произошла непредвиденная ошибка. Попробуйте ещё раз.";
+//     }
+//     console.log(errorMessage, "errorMessage");
+//     return {
+//       error: errorMessage,
+//     };
+//   }
 
-  redirect("/");
-}
+//   redirect("/");
+// }
 
-export async function signInActionWith2FA(_: unknown, formData: FormData) {
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
-  let isTwoFactorRequired = false;
+// export async function signInActionWith2FA(_: unknown, formData: FormData) {
+//   const email = formData.get("email") as string;
+//   const password = formData.get("password") as string;
+//   let isTwoFactorRequired = false;
 
-  try {
-    const res = await auth.api.signInEmail({
-      body: {
-        email,
-        password,
-      },
-      headers: await headers(), // Критично для установки кук
-    });
+//   try {
+//     const res = await auth.api.signInEmail({
+//       body: {
+//         email,
+//         password,
+//       },
+//       headers: await headers(), // Критично для установки кук
+//     });
 
-    // Better Auth на сервере возвращает twoFactorRedirect в объекте ответа
-    // if (res.user.twoFactorEnabled) {
-    //   isTwoFactorRequired = true;
-    // }
-  } catch (error: unknown) {
-    // Обязательно пропускаем ошибку редиректа, иначе Next.js её заблокирует
-    if (isRedirectError(error)) throw error;
+//     // Better Auth на сервере возвращает twoFactorRedirect в объекте ответа
+//     // if (res.user.twoFactorEnabled) {
+//     //   isTwoFactorRequired = true;
+//     // }
+//   } catch (error: unknown) {
+//     // Обязательно пропускаем ошибку редиректа, иначе Next.js её заблокирует
+//     if (isRedirectError(error)) throw error;
 
-    return {
-      error: "Неверный email или пароль",
-    };
-  }
+//     return {
+//       error: "Неверный email или пароль",
+//     };
+//   }
 
-  if (isTwoFactorRequired) {
-    redirect("/auth/two-factor");
-  }
+//   if (isTwoFactorRequired) {
+//     redirect("/auth/two-factor");
+//   }
 
-  redirect("/");
-}
+//   redirect("/");
+// }
 
-export async function signOutAction() {
+export async function signInActionsignInAction() {
   await auth.api.signOut({
     headers: await headers(),
   });
@@ -275,13 +275,13 @@ export async function resetPasswordConfirmAction(
   }
 }
 
-export const updateUserName = async (name: string) => {
-  await auth.api.updateUser({
-    body: {
-      name,
-    },
-  });
-};
+// export const updateUserName = async (name: string) => {
+//   await auth.api.updateUser({
+//     body: {
+//       name,
+//     },
+//   });
+// };
 
 export const changeEmail = async (
   email: string,
@@ -355,18 +355,18 @@ export const changePassword = async (
     return { success: false, error: "Произошла системная ошибка" };
   }
 };
-export const deleteAccount = async (
-  password: string,
-): Promise<{ success: true }> => {
-  const requestHeaders = await headers();
+// export const deleteAccount = async (
+//   password: string,
+// ): Promise<{ success: true }> => {
+//   const requestHeaders = await headers();
 
-  await auth.api.deleteUser({
-    body: { password },
-    headers: requestHeaders,
-  });
+//   await auth.api.deleteUser({
+//     body: { password },
+//     headers: requestHeaders,
+//   });
 
-  return { success: true };
-};
+//   return { success: true };
+// };
 
 export const sendVerificationEmail = async (
   _prevState: unknown,

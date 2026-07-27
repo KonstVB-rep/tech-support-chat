@@ -34,6 +34,6 @@ export type EmployeeFormValues = z.infer<typeof employeeFormSchema>;
 
 export type UpdateEmployeeFormValues = z.infer<typeof updateEmployeeFormSchema>;
 
-export type UpdateEmployeeRoleFormValues = z.infer<
-  typeof updateEmployeeRoleFormSchema
->;
+// export type UpdateEmployeeRoleFormValues = z.infer<
+//   typeof updateEmployeeRoleFormSchema
+// >;

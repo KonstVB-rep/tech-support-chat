@@ -1,6 +1,10 @@
 // src/features/send-message/api/useSendMessage.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Message, MessagesResponse } from "@/entities/chat/api/types";
+import type {
+  Chat,
+  Message,
+  MessagesResponse,
+} from "@/entities/chat/api/types";
 
 type SendMessageParams = {
   chatId: string;
@@ -43,7 +47,16 @@ export const useSendMessage = (activeTicketId: string | null) => {
           },
         );
       }
-      queryClient.invalidateQueries({ queryKey: ["chats"] });
+
+      // ✅ Сброс unreadCount при отправке собственного сообщения
+      queryClient.setQueryData<Chat[]>(["chats"], (old) => {
+        if (!old) return old;
+        return old.map((chat) =>
+          chat.id === chatId
+            ? { ...chat, unreadCount: 0, lastReadAt: new Date().toISOString() }
+            : chat,
+        );
+      });
     },
   });
 };
