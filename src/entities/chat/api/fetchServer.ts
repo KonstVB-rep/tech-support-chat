@@ -23,6 +23,7 @@ export const fetchMessagesServer = async (
   const res = await fetch(`${getBaseUrl()}/api/chats/${chatId}/messages`, {
     headers: { cookie: cookieStore.toString() },
   });
+
   if (!res.ok) throw new Error("Ошибка загрузки сообщений");
   return await res.json();
 };

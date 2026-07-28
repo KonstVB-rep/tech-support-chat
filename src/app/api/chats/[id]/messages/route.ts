@@ -47,6 +47,7 @@ async function checkChatAccess(
   chatId: string,
   session: { user: { role: string; id: string } },
   userProfileId: string,
+  options: { checkContract: boolean } = { checkContract: true },
 ) {
   const isGlobalAdmin = session.user.role.toLowerCase() === "admin";
   if (isGlobalAdmin) return { allowed: true };
@@ -58,10 +59,21 @@ async function checkChatAccess(
 
   const chat = await prisma.chat.findUnique({
     where: { id: chatId },
-    select: { organizationId: true },
+    include: { organization: true },
   });
 
   if (!chat) return { allowed: false, error: "Чат не найден", status: 404 };
+
+  // ✅ Проверка договора только когда явно запрошена
+  if (options.checkContract && chat.organization) {
+    const now = new Date();
+    if (
+      now < chat.organization.contractStart ||
+      now > chat.organization.contractEnd
+    ) {
+      return { allowed: false, error: "Договор не активен", status: 403 };
+    }
+  }
 
   if (chat.organizationId) {
     const orgMembership = await prisma.organizationMember.findUnique({
@@ -73,18 +85,14 @@ async function checkChatAccess(
       },
       select: { role: true },
     });
-
     if (orgMembership && orgMembership.role === "RESPONSIBLE") {
       return { allowed: true };
     }
   }
 
   const isChatMember = await prisma.chatMember.findUnique({
-    where: {
-      chatId_profileId: { chatId, profileId: userProfileId },
-    },
+    where: { chatId_profileId: { chatId, profileId: userProfileId } },
   });
-
   if (isChatMember) return { allowed: true };
 
   return {
@@ -93,7 +101,6 @@ async function checkChatAccess(
     status: 403,
   };
 }
-
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -102,6 +109,8 @@ export async function GET(
     const { id: chatId } = await params;
 
     const session = await auth.api.getSession({ headers: await headers() });
+
+    console.log("[messages/route] session:", session?.user?.id ?? "NULL");
     if (!session?.user) {
       return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
     }
@@ -114,7 +123,9 @@ export async function GET(
       return NextResponse.json({ error: "Профиль не найден" }, { status: 404 });
     }
 
-    const access = await checkChatAccess(chatId, session, userProfile.id);
+    const access = await checkChatAccess(chatId, session, userProfile.id, {
+      checkContract: false,
+    });
     if (!access.allowed) {
       return NextResponse.json(
         { error: access.error },
@@ -180,7 +191,9 @@ export async function POST(
       return NextResponse.json({ error: "Профиль не найден" }, { status: 404 });
     }
 
-    const access = await checkChatAccess(chatId, session, userProfile.id);
+    const access = await checkChatAccess(chatId, session, userProfile.id, {
+      checkContract: true,
+    });
     if (!access.allowed) {
       return NextResponse.json(
         { error: access.error },

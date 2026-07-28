@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { auth } from "@/app/lib/auth";
 import { prisma } from "@/prisma/prisma-client";
 import { triggerSocketEvent } from "@/shared/lib/socket-trigger";
+import { Prisma } from "@prisma/client";
 
 export async function POST(
   req: NextRequest,
@@ -12,7 +13,6 @@ export async function POST(
   try {
     const { id: chatId } = await params;
 
-    // 1. Авторизация
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) {
       return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
@@ -26,7 +26,6 @@ export async function POST(
       return NextResponse.json({ error: "Профиль не найден" }, { status: 404 });
     }
 
-    // 2. Проверка доступа к чату
     const chatMember = await prisma.chatMember.findUnique({
       where: {
         chatId_profileId: { chatId, profileId: userProfile.id },
@@ -45,7 +44,6 @@ export async function POST(
       );
     }
 
-    // 3. Парсинг тела запроса
     const { fileUrl, fileType, fileName, fileSize, text } = await req.json();
 
     if (!fileUrl || !fileType) {
@@ -55,16 +53,19 @@ export async function POST(
       );
     }
 
-    // 4. Создание сообщения в БД
     const message = await prisma.message.create({
       data: {
         text: text?.trim() || "",
         chatId,
         profileId: userProfile.id,
-        fileUrl,
-        fileType,
-        fileName: fileName || null,
-        fileSize: fileSize || null,
+        attachments: [
+          {
+            url: fileUrl,
+            type: fileType,
+            name: fileName,
+            size: fileSize,
+          },
+        ] as unknown as Prisma.InputJsonValue,
       },
       include: {
         profile: {
@@ -78,19 +79,16 @@ export async function POST(
       },
     });
 
-    // 5. Обновляем updatedAt чата (чтобы он поднялся в сайдбаре)
     await prisma.chat.update({
       where: { id: chatId },
       data: { updatedAt: new Date() },
     });
 
-    // 6. Получаем organizationId для адресной доставки
     const chatInfo = await prisma.chat.findUnique({
       where: { id: chatId },
       select: { organizationId: true },
     });
 
-    // 7. ✅ Real-time доставка всем участникам чата
     await triggerSocketEvent("srv:message:new", {
       message,
       organizationId: chatInfo?.organizationId || null,

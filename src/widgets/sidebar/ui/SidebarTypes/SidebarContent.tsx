@@ -3,7 +3,7 @@
 
 import { FC } from "react";
 import { SidebarChatList } from "./SidebarContentByType/SidebarChatList";
-import { Chat } from "@/entities/chat/api/types";
+import { ChatItem } from "@/entities/chat/api/types";
 
 interface SidebarContentComponent extends FC {
   Chats: FC<ChatListProps>;
@@ -12,7 +12,7 @@ interface SidebarContentComponent extends FC {
 const SidebarContent: SidebarContentComponent = () => null;
 
 interface ChatListProps {
-  chats: Chat[];
+  chats: ChatItem[];
 }
 
 SidebarContent.Chats = SidebarChatList;

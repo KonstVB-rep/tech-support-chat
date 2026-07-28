@@ -28,4 +28,4 @@ const EngineerListMobile = ({ data }: EngineerListProps) => {
   );
 };
 
-export default EngineerList;
+export default EngineerListMobile;

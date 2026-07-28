@@ -3,7 +3,10 @@ import { cn } from "@/shared/lib/utils";
 import type { OrganizationMembership } from "@/entities/profile/types";
 import { OrgRole } from "@prisma/client";
 import { OrganizationMembersDrawer } from "@/entities/organization";
-import { OrganizationMembersContent } from "@/entities/organization/ui/OrganizationMembersContent";
+import {
+  OrganizationMembersContent,
+  OrganizationMembersContentMobile,
+} from "@/widgets/employee/ui/OrganizationMembersContent";
 import { Suspense } from "react";
 
 interface OrganizationListProps {
@@ -54,59 +57,66 @@ export const OrganizationList = ({ organizations }: OrganizationListProps) => {
 
             <div className="h-px w-full bg-border/60" />
 
-            <div className="flex flex-col gap-2.5 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2.5">
-                <FileText className="size-4 shrink-0 opacity-60" />
-                <span className="truncate">
-                  <span className="font-medium text-foreground/80">
-                    Договор:
-                  </span>{" "}
-                  {organization.contractNumber}
-                </span>
+            <div className="flex gap-4">
+              <div className="flex flex-col gap-2.5 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2.5">
+                  <FileText className="size-4 shrink-0 opacity-60" />
+                  <span className="truncate">
+                    <span className="font-medium text-foreground/80">
+                      Договор:
+                    </span>{" "}
+                    {organization.contractNumber}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <CalendarRange className="size-4 shrink-0 opacity-60" />
+                  <span className="truncate">
+                    <span className="font-medium text-foreground/80">
+                      Срок:
+                    </span>{" "}
+                    {new Intl.DateTimeFormat("ru").format(
+                      organization.contractStart,
+                    )}{" "}
+                    –{" "}
+                    {new Intl.DateTimeFormat("ru").format(
+                      organization.contractEnd,
+                    )}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <Clock className="size-4 shrink-0 opacity-60" />
+                  <span>
+                    <span className="font-medium text-foreground/80">
+                      Поддержка:
+                    </span>{" "}
+                    {organization.timeSupportFrom} –{" "}
+                    {organization.timeSupportTo}
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-2.5">
-                <CalendarRange className="size-4 shrink-0 opacity-60" />
-                <span className="truncate">
-                  <span className="font-medium text-foreground/80">Срок:</span>{" "}
-                  {new Intl.DateTimeFormat("ru").format(
-                    organization.contractStart,
-                  )}{" "}
-                  –{" "}
-                  {new Intl.DateTimeFormat("ru").format(
-                    organization.contractEnd,
-                  )}
-                </span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <Clock className="size-4 shrink-0 opacity-60" />
-                <span>
-                  <span className="font-medium text-foreground/80">
-                    Поддержка:
-                  </span>{" "}
-                  {organization.timeSupportFrom} – {organization.timeSupportTo}
-                </span>
-              </div>
+
+              <OrganizationMembersContent organizationId={organization.id} />
             </div>
 
-            <div className="mt-auto flex items-center justify-between pt-3 border-t border-border/40">
-              {org.position ? (
-                <span className="text-xs text-muted-foreground/70">
-                  Должность:{" "}
-                  <span className="font-medium text-foreground/60">
-                    {org.position}
+            <div className="mt-auto h-10 border-t border-border/40">
+              <div className="flex items-center justify-between pt-3 md:hidden">
+                {org.position && (
+                  <span className="text-xs text-muted-foreground/70">
+                    Должность:{" "}
+                    <span className="font-medium text-foreground/60">
+                      {org.position}
+                    </span>
                   </span>
-                </span>
-              ) : (
-                <span />
-              )}
+                )}
 
-              <OrganizationMembersDrawer>
-                <Suspense fallback={<EmployeesSkeleton />}>
-                  <OrganizationMembersContent
-                    organizationId={organization.id}
-                  />
-                </Suspense>
-              </OrganizationMembersDrawer>
+                <OrganizationMembersDrawer>
+                  <Suspense fallback={<EmployeesSkeleton />}>
+                    <OrganizationMembersContentMobile
+                      organizationId={organization.id}
+                    />
+                  </Suspense>
+                </OrganizationMembersDrawer>
+              </div>
             </div>
           </div>
         );

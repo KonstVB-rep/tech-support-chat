@@ -25,10 +25,20 @@ export async function GET() {
     });
     const isGlobalAdmin = session.user.role.toLowerCase() === "admin";
 
-    // ✅ УБРАН нерабочий unreadMessages — подсчёт делается ниже через message.count
     const chatInclude = {
       creator: { select: { id: true, name: true, imageUrl: true } },
-      organization: { select: { id: true, name: true } },
+      organization: {
+        select: {
+          id: true,
+          name: true,
+          contractStart: true,
+          contractEnd: true,
+          members: {
+            where: { profileId: userProfile.id },
+            select: { role: true },
+          },
+        },
+      },
       _count: { select: { messages: true } },
       messages: {
         orderBy: { createdAt: "desc" as const },
@@ -70,6 +80,8 @@ export async function GET() {
       });
     }
 
+    const now = new Date();
+
     // ✅ Точный подсчёт непрочитанных через отдельные запросы
     const chatsWithUnread = await Promise.all(
       chats.map(async (chat) => {
@@ -96,12 +108,21 @@ export async function GET() {
           });
         }
 
+        const isContractActive =
+          !chat.organization ||
+          (now >= new Date(chat.organization.contractStart) &&
+            now <= new Date(chat.organization.contractEnd));
+
+        const orgMemberRole = chat.organization?.members?.[0]?.role ?? null;
+
         return {
           ...chat,
           lastMessage,
           messages: undefined,
           members: undefined,
           unreadCount,
+          isContractActive,
+          memberRole: orgMemberRole,
         };
       }),
     );

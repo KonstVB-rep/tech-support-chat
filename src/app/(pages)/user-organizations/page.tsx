@@ -18,7 +18,7 @@ const UserOrganizationsPage = async () => {
     <div className="w-full">
       <WrapperHeaderScreen>
         <h2 className="text-center font-semibold uppercase flex-1">
-          Карточка организации
+          Карточка компании
         </h2>
       </WrapperHeaderScreen>
 

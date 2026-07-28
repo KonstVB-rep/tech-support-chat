@@ -8,32 +8,28 @@ import InputPassword from "@/shared/ui/custom/InputPassword";
 import InputPhoneForm from "@/shared/ui/custom/InputPhoneForm";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { Input } from "@/shared/ui/input";
-import { Controller, UseFormReturn } from "react-hook-form";
+import { Controller, FieldValues, Path, UseFormReturn } from "react-hook-form";
 
-type SupportEngineerFormProps = {
-  form: UseFormReturn<{
-    email: string;
-    name: string;
-    password?: string;
-    phone?: string;
-  }>;
+type SupportEngineerFormProps<T extends FieldValues> = {
+  form: UseFormReturn<T>;
   formAction: (data: FormData) => void;
   isPending?: boolean;
   submitText?: string;
 };
-export const SupportEngineerForm = ({
+
+export const SupportEngineerForm = <T extends FieldValues>({
   form,
   formAction,
-  isPending = false,
+  isPending,
   submitText = "Сохранить",
-}: SupportEngineerFormProps) => {
+}: SupportEngineerFormProps<T>) => {
   return (
     <Card className="w-full min-w-2xs h-fit bg-transparent shadow-none ring-0">
       <form id="support-engineer-form" action={formAction}>
         <CardContent>
           <FieldGroup>
             <Controller
-              name={"email"}
+              name={"email" as Path<T>}
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
@@ -56,7 +52,7 @@ export const SupportEngineerForm = ({
             />
 
             <Controller
-              name={"name"}
+              name={"name" as Path<T>}
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
@@ -77,7 +73,7 @@ export const SupportEngineerForm = ({
             />
 
             <Controller
-              name={"password"}
+              name={"password" as Path<T>}
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
@@ -99,7 +95,7 @@ export const SupportEngineerForm = ({
             />
 
             <InputPhoneForm
-              name="phone"
+              name={"phone" as Path<T>}
               label="Телефон"
               control={form.control}
               errorMessage={

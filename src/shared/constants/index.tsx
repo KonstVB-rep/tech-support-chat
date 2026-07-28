@@ -41,7 +41,7 @@ export const LINKS_NAV: NavigationLink[] = [
   },
   {
     href: "/user-organizations",
-    title: "Карточка организации",
+    title: "Компания",
     icon: <Building2 className="size-5" />,
     isResponsibleOnly: true,
   },

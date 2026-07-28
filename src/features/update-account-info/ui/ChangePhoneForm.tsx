@@ -69,9 +69,8 @@ const ChangePhoneForm = ({
         <Label htmlFor="phone">Телефон</Label>
 
         <PhoneInput
-          id="phone"
           value={phone ?? ""}
-          onAccept={(value) => setPhone(value)} // Исправлено с (e) => setPhone(e.target.value)
+          onAccept={(value) => setPhone(value)}
           required
           className="field-height dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
         />

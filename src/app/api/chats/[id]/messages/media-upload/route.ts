@@ -1,12 +1,13 @@
 // src/app/api/chats/[id]/messages/media-upload/route.ts
-import { type NextRequest, NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { auth } from "@/app/lib/auth";
 import { prisma } from "@/prisma/prisma-client";
 import { triggerSocketEvent } from "@/shared/lib/socket-trigger";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { Prisma } from "@prisma/client";
 import { randomUUID } from "crypto";
+import { mkdir, writeFile } from "fs/promises";
+import { headers } from "next/headers";
+import { type NextRequest, NextResponse } from "next/server";
+import path from "path";
 
 const UPLOAD_DIR = process.env.UPLOAD_DIR || "/opt/chat-app/uploads";
 const MEDIA_DIR = path.join(UPLOAD_DIR, "media");
@@ -104,10 +105,14 @@ export async function POST(
           text: messageText,
           chatId,
           profileId: userProfile.id,
-          fileUrl,
-          fileType,
-          fileName: file.name,
-          fileSize: file.size,
+          attachments: [
+            {
+              url: fileUrl,
+              type: fileType,
+              name: file.name,
+              size: file.size,
+            },
+          ] as unknown as Prisma.InputJsonValue,
         },
         include: {
           profile: {

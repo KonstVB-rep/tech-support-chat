@@ -6,6 +6,7 @@ import { LINKS_NAV } from "@/shared/constants";
 import { useMediaQuery } from "@/shared/lib/hooks/useMediaQuery";
 import { cn } from "@/shared/lib/utils";
 import { SharedLayoutBg } from "@/shared/ui/motion/shared-layout-bg";
+import { useCurrentMemberRole } from "@/store/useChatStore";
 import { OrgRole } from "@prisma/client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -19,7 +20,7 @@ export const SidebarNav = ({ isAdmin }: SidebarNavProps) => {
 
   const isDekstop = useMediaQuery("(min-width: 768px)");
 
-  const currentMemberRole = useGetCurrentMemberRole();
+  const currentMemberRole = useCurrentMemberRole();
 
   const isActive = (href: string) => pathname.startsWith(href);
 
@@ -63,7 +64,7 @@ export const SidebarNav = ({ isAdmin }: SidebarNavProps) => {
                     className={linkClass(link.href)}
                   >
                     {link.icon}
-                    <span className="text-xs">{link.title}</span>
+                    <span className="text-xs text-center">{link.title}</span>
                   </Link>
                 );
               })}

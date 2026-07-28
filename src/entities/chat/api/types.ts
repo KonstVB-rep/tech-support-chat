@@ -1,5 +1,7 @@
 // src/entities/chat/api/types.ts
 
+import { OrgRole } from "@prisma/client";
+
 export type AttachmentMeta = {
   url: string;
   name: string;
@@ -31,9 +33,12 @@ export type Chat = {
     name: string;
     imageUrl: string | null;
   };
+  organizationId: string | null;
   organization?: {
     id: string;
     name: string;
+    contractStart: Date;
+    contractEnd: Date;
   };
   _count: {
     messages: number;
@@ -48,6 +53,11 @@ export type Chat = {
     };
   } | null;
   unreadCount?: number;
+  memberRole: OrgRole;
+};
+export type ChatItem = Chat & { isContractActive: boolean };
+export type ChatsListItem = {
+  chats: Chat & { isContractActive: boolean }[];
 };
 
 export type Message = {

@@ -1,8 +1,9 @@
 import { NavigationLink } from "@/shared/constants";
 import Link from "next/link";
 import React from "react";
-import { useGetCurrentMemberRole } from "@/entities/employee/api/useGetCurrentMemberRole";
+
 import { OrgRole } from "@prisma/client";
+import { useCurrentMemberRole } from "@/store/useChatStore";
 
 type LinksListNavProps<T> = {
   isAdmin: boolean;
@@ -15,7 +16,7 @@ export const LinksListNav = <T extends NavigationLink>({
   data,
   linkClass,
 }: LinksListNavProps<T>) => {
-  const currentMemberRole = useGetCurrentMemberRole();
+  const currentMemberRole = useCurrentMemberRole();
 
   const visibleLinks = data.filter((link) => {
     if (link.isAdminOnly && !isAdmin) return null;

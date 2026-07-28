@@ -92,7 +92,6 @@ export const AddOrganizationDialog = () => {
             formAction={handleFormAction}
             isPending={false}
             title="Добавить организацию"
-            submitText="Добавить"
           />
         </FieldGroup>
       </DialogContent>

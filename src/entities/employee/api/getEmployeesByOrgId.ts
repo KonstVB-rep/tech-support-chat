@@ -50,7 +50,6 @@ export const getEmployeesByOrgId = async (
     throw new Error("Организация не найдена");
   }
 
-  // 1. Сначала проверяем, является ли текущий юзер ответственным (RESPONSIBLE) в ЭТОЙ компании
   const isResponsible = await prisma.organizationMember.findFirst({
     where: {
       organizationId: orgId,
@@ -61,17 +60,14 @@ export const getEmployeesByOrgId = async (
     },
   });
 
-  // 2. Глобальный админ Better Auth
   const isGlobalAdmin = session.user.role === "admin";
 
-  // 🎯 ОГРАНИЧЕНИЕ ДОСТУПА: Если ты НЕ админ И ты НЕ ответственный за эту фирму — Forbidden!
   if (!isGlobalAdmin && !isResponsible) {
     throw new Error(
       "Forbidden: Недостаточно прав для просмотра списка сотрудников",
     );
   }
 
-  // Если ты либо админ, либо законный RESPONSIBLE — база Beget отдает данные
   const employees = await fetchEmployeesByOrgId(orgId);
 
   return employees ?? [];

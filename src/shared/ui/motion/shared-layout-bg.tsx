@@ -22,9 +22,7 @@ import { cn } from "@/shared/lib/utils";
 export interface SharedLayoutBgProps {
   children: ReactNode;
   className?: string;
-  /** Tailwind class applied to the moving pill. Defaults to a subtle foreground tint. */
   pillClassName?: string;
-  /** Horizontal inset of the pill relative to each row (px). Default 20. */
   inset?: number;
   classNameChild?: string;
 }
@@ -54,8 +52,6 @@ export function SharedLayoutBg({
   const reduce = useReducedMotion();
 
   return (
-    // layoutRoot scopes the pill's layout projection to this list, so fixed or
-    // scrolled ancestors can't smear scroll offsets into its movement.
     <motion.div
       layoutRoot
       onMouseLeave={() => setActiveId(null)}

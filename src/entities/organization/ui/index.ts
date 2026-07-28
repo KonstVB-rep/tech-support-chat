@@ -1,2 +1,2 @@
 export { OrganizationViewCard } from "./OrganizationViewCard";
-export { OrganizationMembersDrawer } from "./OrganizationMembersDrawer";
+export { OrganizationMembersDrawer } from "../../../widgets/employee/ui/OrganizationMembersDrawer";
