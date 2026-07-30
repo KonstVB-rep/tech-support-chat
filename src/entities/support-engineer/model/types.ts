@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client"
 
 export type SupportEngineerWithProfile = Prisma.SupportEngineerGetPayload<{
   include: {
@@ -6,15 +6,15 @@ export type SupportEngineerWithProfile = Prisma.SupportEngineerGetPayload<{
       include: {
         user: {
           select: {
-            id: true;
-            name: true;
-            email: true;
-            role: true;
-            isActive: true;
-            createdAt: true;
-          };
-        };
-      };
-    };
-  };
-}>;
+            id: true
+            name: true
+            email: true
+            role: true
+            isActive: true
+            createdAt: true
+          }
+        }
+      }
+    }
+  }
+}>

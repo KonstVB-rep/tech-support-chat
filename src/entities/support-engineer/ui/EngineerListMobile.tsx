@@ -1,32 +1,27 @@
-"use client";
-import { SupportEngineerWithProfile } from "@/entities/support-engineer/model";
-import EngineerCard from "./EngineerCard";
-import { useMediaQuery } from "@/shared/lib/hooks/useMediaQuery";
+"use client"
+import type { SupportEngineerWithProfile } from "@/entities/support-engineer/model"
+import EngineerCard from "./EngineerCard"
 
 interface EngineerListProps {
-  data: SupportEngineerWithProfile[];
+  data: SupportEngineerWithProfile[]
 }
 
 const EngineerListMobile = ({ data }: EngineerListProps) => {
-  const isDesktop = useMediaQuery("(min-width: 768px)");
-
-  if (isDesktop) return null;
-
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center w-full py-12 text-muted-foreground text-sm">
+      <div className="flex w-full items-center justify-center py-12 text-muted-foreground text-sm md:hidden">
         Инженеры не найдены
       </div>
-    );
+    )
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full p-4">
+    <div className="grid w-full grid-cols-1 gap-6 p-4 sm:grid-cols-2 md:hidden">
       {data.map((engineer) => (
-        <EngineerCard key={engineer.id} engineer={engineer} />
+        <EngineerCard engineer={engineer} key={engineer.id} />
       ))}
     </div>
-  );
-};
+  )
+}
 
-export default EngineerListMobile;
+export default EngineerListMobile

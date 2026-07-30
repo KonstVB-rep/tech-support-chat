@@ -1,6 +1,6 @@
 interface EmailTemplateProps {
-  email: string;
-  resetUrl: string;
+  email: string
+  resetUrl: string
 }
 
 export function getResetPasswordHtml({ email, resetUrl }: EmailTemplateProps) {
@@ -27,5 +27,5 @@ export function getResetPasswordHtml({ email, resetUrl }: EmailTemplateProps) {
         </div>
       </div>
     </div>
-  `;
+  `
 }

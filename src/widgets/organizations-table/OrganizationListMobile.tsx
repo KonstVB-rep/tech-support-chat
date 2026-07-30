@@ -1,53 +1,42 @@
-"use client";
+"use client"
 
-import { OrganizationWithCounts } from "@/entities/organization";
-import OrganizationCardMobile from "./OrganizationCardMobile";
-import { Input } from "@/shared/ui/input";
-import { useState } from "react";
-import { useMediaQuery } from "@/shared/lib/hooks/useMediaQuery";
+import { useState } from "react"
+import type { OrganizationWithCounts } from "@/entities/organization"
+import { Input } from "@/shared/ui/components/input"
+import OrganizationCardMobile from "./OrganizationCardMobile"
 
 type OrganizationsListProps = {
-  organizations: OrganizationWithCounts[];
-};
+  organizations: OrganizationWithCounts[]
+}
 
 const OrganizationListMobile = ({ organizations }: OrganizationsListProps) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const isDesktop = useMediaQuery("(min-width: 768px)");
-
-  if (isDesktop) return null;
+  const [searchQuery, setSearchQuery] = useState("")
 
   const filtered = organizations.filter((org) => {
-    if (!searchQuery.trim()) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      org.name?.toLowerCase().includes(query) ||
-      org.inn?.toLowerCase().includes(query)
-    );
-  });
+    if (!searchQuery.trim()) return true
+    const query = searchQuery.toLowerCase()
+    return org.name?.toLowerCase().includes(query) || org.inn?.toLowerCase().includes(query)
+  })
 
   return (
-    <div className="max-h-[81dvh] overflow-y-auto flex flex-col">
-      <div className="sticky top-0 z-10 bg-background p-4 pb-2 border-b">
+    <div className="flex max-h-[81dvh] flex-col overflow-y-auto md:hidden">
+      <div className="sticky top-0 z-10 border-b bg-background p-4 pb-2">
         <Input
-          value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Поиск по названию или ИНН..."
+          value={searchQuery}
         />
       </div>
 
       <div className="grid gap-4 p-4">
         {filtered.length === 0 ? (
-          <div className="text-center text-sm text-muted-foreground py-8">
-            Ничего не найдено
-          </div>
+          <div className="py-8 text-center text-muted-foreground text-sm">Ничего не найдено</div>
         ) : (
-          filtered.map((org) => (
-            <OrganizationCardMobile key={org.id} data={org} />
-          ))
+          filtered.map((org) => <OrganizationCardMobile data={org} key={org.id} />)
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default OrganizationListMobile;
+export default OrganizationListMobile

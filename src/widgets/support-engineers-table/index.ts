@@ -1,2 +1,2 @@
-export { SupportEngineersTable } from "./SupportEngineersTable";
-export { columns } from "./columns";
+export { columns } from "./columns"
+export { SupportEngineersTable } from "./SupportEngineersTable"

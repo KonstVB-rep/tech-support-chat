@@ -8,8 +8,8 @@
     "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
-    "lint": "biome check",
-    "format": "biome format --write",
+    "format": "biome check --write --unsafe --enforce-assist=true src && biome format --write src",
+    "lint": "biome lint src",
     "socket": "npx tsx server.js"
   },
   "dependencies": {

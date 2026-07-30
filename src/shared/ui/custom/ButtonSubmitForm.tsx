@@ -1,12 +1,12 @@
-"use client";
+"use client"
 
-import type React from "react";
-import { Loader } from "lucide-react";
-import { useFormStatus } from "react-dom";
-import { Button } from "../button";
-import { cn } from "@/shared/lib/utils";
+import type React from "react"
+import { Loader } from "lucide-react"
+import { useFormStatus } from "react-dom"
+import { cn } from "@/shared/lib/utils"
+import { Button } from "../components/button"
 
-type SubmitButtonProps = { text?: string } & React.ComponentProps<"button">;
+type SubmitButtonProps = { text?: string } & React.ComponentProps<"button">
 
 const ButtonSubmitForm = ({
   title,
@@ -14,7 +14,7 @@ const ButtonSubmitForm = ({
   className = "w-fit justify-center",
   ...props
 }: SubmitButtonProps) => {
-  const { pending } = useFormStatus();
+  const { pending } = useFormStatus()
 
   return (
     <Button
@@ -32,7 +32,7 @@ const ButtonSubmitForm = ({
         title || text
       )}
     </Button>
-  );
-};
+  )
+}
 
-export default ButtonSubmitForm;
+export default ButtonSubmitForm

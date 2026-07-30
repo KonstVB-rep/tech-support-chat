@@ -1,33 +1,31 @@
-"use client";
+"use client"
 
-import { EmployeeWithProfile } from "@/entities/employee";
-import { Button } from "@/shared/ui/button";
+import { Pencil } from "lucide-react"
+import type { EmployeeWithProfile } from "@/entities/employee"
+import { Button } from "@/shared/ui/components/button"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/shared/ui/dialog";
-import { Pencil } from "lucide-react";
-import { UpdateEmployee } from "./UpdateEmployee";
+} from "@/shared/ui/components/dialog"
+import { UpdateEmployee } from "./UpdateEmployee"
 
 interface UpdateEmployeeDialogProps {
-  employee: EmployeeWithProfile;
+  employee: EmployeeWithProfile
 }
 
-export const UpdateEmployeeDialog = ({
-  employee,
-}: UpdateEmployeeDialogProps) => {
+export const UpdateEmployeeDialog = ({ employee }: UpdateEmployeeDialogProps) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button
-          variant="ghost"
+          className="flex w-full items-center justify-start gap-2 whitespace-break-spaces"
           size="sm"
-          className="whitespace-break-spaces w-full flex items-center justify-start gap-2"
+          variant="ghost"
         >
-          <Pencil className="w-4 h-4" />
+          <Pencil className="h-4 w-4" />
           Редактировать
         </Button>
       </DialogTrigger>
@@ -38,5 +36,5 @@ export const UpdateEmployeeDialog = ({
         <UpdateEmployee employee={employee} />
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}

@@ -1,5 +1,15 @@
 {
+  "WillLuke.nextjs.addTypesOnSave": true,
   "WillLuke.nextjs.hasPrompted": true,
+
+  "editor.formatOnSave": true,
+
+  "editor.codeActionsOnSave": {
+    "source.fixAll" : "explicit",
+    "source.organizeImports": "explicit"
+  },
+  
+  "notebook.defaultFormatter": "esbenp.prettier-vscode",
 
   // ✅ Исключаем из file watcher (снижает нагрузку на CPU)
   "files.watcherExclude": {
@@ -45,14 +55,6 @@
   "js/ts.suggest.autoImports": true,
   "js/ts.validate.enable": true,
 
-  // ✅ ESLint
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact"
-  ],
-  "eslint.run": "onSave",
 
   // ✅ Tailwind CSS
   "tailwindCSS.emmetCompletions": false,

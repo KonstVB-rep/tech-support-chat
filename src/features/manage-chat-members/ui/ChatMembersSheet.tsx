@@ -1,133 +1,146 @@
-// src/features/manage-chat-members/ui/ChatMembersSheet.tsx
-"use client";
+"use client"
 
-import { useState } from "react";
-import { Button } from "@/shared/ui/button";
+import { useEffect, useState } from "react"
+import { Loader, UserMinus, UserPlus, Users } from "lucide-react"
+import { useMediaQuery } from "@/shared/lib/hooks/useMediaQuery"
+import { Button } from "@/shared/ui/components/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/shared/ui/components/dialog"
 import {
   Drawer,
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/shared/ui/drawer";
-import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
-import { Users, UserPlus, UserMinus, Loader } from "lucide-react";
+} from "@/shared/ui/components/drawer"
 import {
-  useChatMembers,
   useAddChatMember,
+  useChatMembers,
   useRemoveChatMember,
-} from "../api/useChatMembersMutations";
-import { useMediaQuery } from "@/shared/lib/hooks/useMediaQuery";
+} from "../api/useChatMembersMutations"
 
 interface ChatMembersSheetProps {
-  chatId: string;
+  chatId: string
 }
 
 export const ChatMembersSheet = ({ chatId }: ChatMembersSheetProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const isDesktop = useMediaQuery("(min-width: 768px)");
+  const [isOpen, setIsOpen] = useState(false)
+  const [isMounted, setIsMounted] = useState(false) // 🔥 Добавили стейт монтирования
+  const isDesktop = useMediaQuery("(min-width: 768px)")
 
-  const { data: employees = [], isLoading } = useChatMembers(chatId, isOpen);
-  const { mutate: addMember, isPending: isAdding } = useAddChatMember(chatId);
-  const { mutate: removeMember, isPending: isRemoving } =
-    useRemoveChatMember(chatId);
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
-  const isMutating = isAdding || isRemoving;
+  const { data: employees = [], isLoading } = useChatMembers(chatId, isOpen)
+  const { mutate: addMember, isPending: isAdding } = useAddChatMember(chatId)
+  const { mutate: removeMember, isPending: isRemoving } = useRemoveChatMember(chatId)
+
+  const isMutating = isAdding || isRemoving
 
   const renderList = () => (
-    <div className="space-y-2.5 p-4 max-h-[350px] overflow-y-auto pr-1 select-none">
+    <div className="max-h-[350px] select-none space-y-2.5 overflow-y-auto p-4 pr-1">
       {isLoading ? (
-        <div className="flex items-center justify-center py-6 text-muted-foreground gap-2 text-xs">
-          <Loader className="size-4 animate-spin text-blue-600" /> Синхронизация
-          списка...
+        <div className="flex items-center justify-center gap-2 py-6 text-muted-foreground text-xs">
+          <Loader className="size-4 animate-spin text-blue-600" /> Синхронизация списка...
         </div>
       ) : employees.length === 0 ? (
-        <div className="text-center text-xs text-muted-foreground py-6">
+        <div className="py-6 text-center text-muted-foreground text-xs">
           Доступные сотрудники организации не найдены
         </div>
       ) : (
         employees.map((emp) => (
           <div
+            className="flex items-center justify-between rounded-xl border border-border/40 bg-muted/5 p-2"
             key={emp.profileId}
-            className="flex items-center justify-between p-2 rounded-xl border border-border/40 bg-muted/5"
           >
-            <span className="text-xs font-semibold truncate max-w-[170px] md:max-w-[200px]">
+            <span className="max-w-[170px] truncate font-semibold text-xs md:max-w-[200px]">
               {emp.name}
             </span>
 
             {emp.isInChat ? (
               <Button
-                variant="ghost"
-                size="sm"
+                className="h-8 rounded-lg px-2.5 font-medium text-destructive text-xs hover:bg-destructive/5"
                 disabled={isMutating}
-                className="h-8 rounded-lg text-xs text-destructive hover:bg-destructive/5 px-2.5 font-medium"
                 onClick={() => removeMember(emp.profileId)}
+                size="sm"
+                variant="ghost"
               >
-                <UserMinus className="size-3.5 mr-1" /> Исключить
+                <UserMinus className="mr-1 size-3.5" /> Исключить
               </Button>
             ) : (
               <Button
-                size="sm"
+                className="h-8 rounded-lg bg-blue-600 px-3 font-medium text-white text-xs hover:bg-blue-700"
                 disabled={isMutating}
-                className="h-8 rounded-lg text-xs px-3 font-medium bg-blue-600 hover:bg-blue-700 text-white"
                 onClick={() => addMember(emp.profileId)}
+                size="sm"
               >
-                <UserPlus className="size-3.5 mr-1" /> Добавить
+                <UserPlus className="mr-1 size-3.5" /> Добавить
               </Button>
             )}
           </div>
         ))
       )}
     </div>
-  );
+  )
+
+  if (!isMounted) {
+    return (
+      <Button
+        className="flex h-10 items-center justify-start gap-2 rounded-full bg-primary/15 text-primary hover:bg-primary/30 focus-visible:bg-primary/30"
+        size="icon"
+      >
+        <Users className="size-5" /> Пользователи
+      </Button>
+    )
+  }
 
   if (isDesktop) {
     return (
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-xl size-9 text-muted-foreground hover:text-foreground"
-          >
-            <Users className="size-5" />
+      <Dialog onOpenChange={setIsOpen} open={isOpen}>
+        <DialogTrigger asChild>
+          <Button className="h-10 items-center justify-start gap-2 rounded-md bg-primary/15 text-primary hover:bg-primary/30 focus-visible:bg-primary/30">
+            <Users className="size-5" /> Пользователи
           </Button>
-        </PopoverTrigger>
-        <PopoverContent
-          className="w-80 p-0 rounded-xl shadow-2xl border-border/60"
-          align="end"
-        >
-          <div className="px-4 pt-3 pb-1 border-b border-border/40">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Доступы к переписке
-            </h4>
-          </div>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="sr-only">Edit profile</DialogTitle>
+            <DialogDescription className="sr-only"></DialogDescription>
+          </DialogHeader>
           {renderList()}
-        </PopoverContent>
-      </Popover>
-    );
+          <DialogFooter></DialogFooter>
+        </DialogContent>
+      </Dialog>
+    )
   }
 
   return (
-    <Drawer open={isOpen} onOpenChange={setIsOpen}>
+    <Drawer onOpenChange={setIsOpen} open={isOpen}>
       <DrawerTrigger asChild>
         <Button
-          variant="ghost"
+          className="flex h-10 rounded-md bg-primary/15 text-primary hover:bg-primary/30 focus-visible:bg-primary/30 md:hidden"
           size="icon"
-          className="rounded-xl size-9 text-muted-foreground active:bg-muted"
         >
-          <Users className="size-5" />
+          <Users className="size-5" /> Пользователи
         </Button>
       </DrawerTrigger>
       <DrawerContent className="rounded-t-2xl pb-4">
-        <div className="mx-auto w-12 h-1.5 rounded-full bg-muted-foreground/20 my-2" />
-        <DrawerHeader className="text-left px-4 pt-1">
-          <DrawerTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-            Участники обсуждения
+        <div className="mx-auto my-2 h-1.5 w-12 rounded-full bg-muted-foreground/20" />
+        <DrawerHeader className="px-4 pt-1 text-left">
+          <DrawerTitle className="font-bold text-muted-foreground text-sm uppercase tracking-wider">
+            Участники
           </DrawerTitle>
         </DrawerHeader>
         {renderList()}
       </DrawerContent>
     </Drawer>
-  );
-};
+  )
+}

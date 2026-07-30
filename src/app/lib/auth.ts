@@ -1,10 +1,10 @@
-import { getResetPasswordHtml } from "@/shared/ui/email-templates/getResetPasswordHtml";
-import { APIError, betterAuth, type User } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
-import { nextCookies } from "better-auth/next-js";
-import { prisma } from "@/prisma/prisma-client";
-import { sendEmail } from "./sendEmail";
-import { admin } from "better-auth/plugins";
+import { APIError, betterAuth, type User } from "better-auth"
+import { prismaAdapter } from "better-auth/adapters/prisma"
+import { nextCookies } from "better-auth/next-js"
+import { admin } from "better-auth/plugins"
+import { prisma } from "@/prisma/prisma-client"
+import { getResetPasswordHtml } from "@/shared/ui/email-templates/getResetPasswordHtml"
+import { sendEmail } from "./sendEmail"
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -38,7 +38,7 @@ export const auth = betterAuth({
       if (user.email.includes("admin")) {
         throw new APIError("BAD_REQUEST", {
           message: "Admin accounts can't be deleted",
-        });
+        })
       }
     },
     // afterDelete: async (user: User, request: Request | undefined) => {
@@ -61,9 +61,9 @@ export const auth = betterAuth({
                 imageUrl: user.image || "https://github.com/shadcn.png",
                 username: `user_${Math.random().toString(36).substring(2, 8)}`,
               },
-            });
+            })
           } catch (error) {
-            console.error("Ошибка авто-профиля:", error);
+            console.error("Ошибка авто-профиля:", error)
           }
         },
       },
@@ -75,27 +75,27 @@ export const auth = betterAuth({
     sendOnSignIn: true,
     autoSignInAfterVerification: true,
     async sendVerificationEmail({ user, url }) {
-      console.log("👉 ССЫЛКА ДЛЯ ТЕСТИРОВАНИЯ ПОДТВЕРЖДЕНИЯ EMAIL:", url);
+      console.log("👉 ССЫЛКА ДЛЯ ТЕСТИРОВАНИЯ ПОДТВЕРЖДЕНИЯ EMAIL:", url)
       try {
         const { data, error } = await sendEmail({
           to: user.email,
           subject: "Подтвердите свой адрес электронной почты",
           text: `Нажмите на ссылку чтобы подтвердить свой адрес электронной почты: ${url}`,
-        });
+        })
         if (error) {
           // Это ошибка именно от Resend (например, неверный API ключ)
-          console.error("Resend Error:", error);
-          throw new Error("Failed to send email"); // Чтобы Better Auth знал о проблеме
+          console.error("Resend Error:", error)
+          throw new Error("Failed to send email") // Чтобы Better Auth знал о проблеме
         }
 
         if (process.env.NODE_ENV === "development") {
-          console.log("Reset url:", url);
+          console.log("Reset url:", url)
         }
 
-        console.log("Email sent successfully:", data);
+        console.log("Email sent successfully:", data)
       } catch (error) {
-        console.error("Critical SendResetPassword Error:", error);
-        throw error; // Пробрасываем, чтобы API вернуло ошибку
+        console.error("Critical SendResetPassword Error:", error)
+        throw error // Пробрасываем, чтобы API вернуло ошибку
       }
     },
   },
@@ -106,30 +106,30 @@ export const auth = betterAuth({
     //requireEmailVerification: true, //запретить вход без подтверждения email
 
     sendResetPassword: async ({ user, url }) => {
-      console.log("👉 ССЫЛКА ДЛЯ ТЕСТИРОВАНИЯ СБРОСА ПАРОЛЯ:", url);
+      console.log("👉 ССЫЛКА ДЛЯ ТЕСТИРОВАНИЯ СБРОСА ПАРОЛЯ:", url)
       try {
         const emailHtml = getResetPasswordHtml({
           email: user.email,
           resetUrl: url,
-        });
+        })
 
         const { data, error } = await sendEmail({
           to: user.email,
           subject: "Сброс пароля",
           text: emailHtml,
-        });
+        })
         if (error) {
-          console.error("Resend Error:", error);
+          console.error("Resend Error:", error)
         }
 
         if (process.env.NODE_ENV === "development") {
-          console.log("Reset url:", url);
+          console.log("Reset url:", url)
         }
 
-        console.log("Email sent successfully:", data);
+        console.log("Email sent successfully:", data)
       } catch (error) {
-        console.error("SendResetPassword Catch:", error);
-        throw error;
+        console.error("SendResetPassword Catch:", error)
+        throw error
       }
     },
     //   onPasswordReset: async ({ user }, request) => {
@@ -162,7 +162,7 @@ export const auth = betterAuth({
     nextCookies(),
     // twoFactor(),
   ],
-});
+})
 
 // export type Session = typeof auth.$Infer.Session;
 // export type UserCustom = Session["user"];

@@ -1,5 +1,5 @@
-import { ChatWindow } from "@/widgets/chat-window";
+import { ChatWindow } from "@/widgets/chat-window"
 
 export const SelectedScreen = {
   ChatWindow,
-};
+}

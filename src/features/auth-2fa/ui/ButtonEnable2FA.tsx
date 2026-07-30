@@ -1,82 +1,82 @@
-"use client";
-import { useState } from "react";
-import { RefreshCwIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { QRCodeSVG } from "qrcode.react";
-import { toast } from "sonner";
-import { authClient } from "@/app/lib/auth-client";
+"use client"
+import { useState } from "react"
+import { RefreshCwIcon } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { QRCodeSVG } from "qrcode.react"
+import { toast } from "sonner"
+import { authClient } from "@/app/lib/auth-client"
+import { Button } from "@/shared/ui/components/button"
 import {
   Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from "@/shared/ui/card";
-import { Field, FieldLabel } from "@/shared/ui/field";
-import { Button } from "@/shared/ui/button";
+} from "@/shared/ui/components/card"
+import { Field, FieldLabel } from "@/shared/ui/components/field"
 import {
   InputOTP,
   InputOTPGroup,
-  InputOTPSlot,
   InputOTPSeparator,
-} from "@/shared/ui/input-otp";
+  InputOTPSlot,
+} from "@/shared/ui/components/input-otp"
 
 const Steps = {
   idle: "idle",
   qr: "qr",
   verify: "verify",
-} as const;
-type StepsState = keyof typeof Steps;
+} as const
+type StepsState = keyof typeof Steps
 
 const ButtonEnable2FA = () => {
-  const [step, setStep] = useState<StepsState>(Steps.idle);
-  const [totpURI, setTotpURI] = useState("");
-  const [backUpCodes, setBackUpCodes] = useState<string[]>([]);
-  const [code, setCode] = useState("");
-  const router = useRouter();
+  const [step, setStep] = useState<StepsState>(Steps.idle)
+  const [totpURI, setTotpURI] = useState("")
+  const [backUpCodes, setBackUpCodes] = useState<string[]>([])
+  const [code, setCode] = useState("")
+  const router = useRouter()
 
   const enable2FA = async () => {
-    const password = prompt("Введите текущий пароль для подтверждения");
-    if (!password) return;
+    const password = prompt("Введите текущий пароль для подтверждения")
+    if (!password) return
 
     // Включаем 2FA на сервере
     const { data, error: authError } = await authClient.twoFactor.enable({
       password,
       issuer: "Proffecto Portal", // Твое название приложения
-    });
+    })
 
     if (authError) {
-      toast.error(authError.message || "Ошибка подтверждения пароля");
-      return;
+      toast.error(authError.message || "Ошибка подтверждения пароля")
+      return
     }
 
     if (data?.totpURI) {
-      setTotpURI(data.totpURI);
-      setStep(Steps.qr);
-      setBackUpCodes(data.backupCodes || []);
+      setTotpURI(data.totpURI)
+      setStep(Steps.qr)
+      setBackUpCodes(data.backupCodes || [])
     }
-  };
+  }
   const verifyInitialCode = async (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    e.preventDefault()
 
     const { error } = await authClient.twoFactor.verifyTotp({
       code,
-    });
+    })
 
     if (error) {
-      toast.error(error.message || "Неверный код");
-      return;
+      toast.error(error.message || "Неверный код")
+      return
     }
 
     // Очищаем и закрываем/сбрасываем шаг
-    setCode("");
-    toast.success("2FA успешно активирована!");
-    router.refresh();
-  };
+    setCode("")
+    toast.success("2FA успешно активирована!")
+    router.refresh()
+  }
 
   return (
-    <div className="flex flex-col gap-4 items-center">
+    <div className="flex flex-col items-center gap-4">
       {step === Steps.idle && (
         <Button onClick={enable2FA} variant="secondary">
           Включить 2FA
@@ -84,22 +84,20 @@ const ButtonEnable2FA = () => {
       )}
 
       {step === Steps.qr && (
-        <div className="flex flex-col items-center gap-4 p-4 border rounded-lg bg-card">
+        <div className="flex flex-col items-center gap-4 rounded-lg border bg-card p-4">
           <h3 className="font-bold">Шаг 1: Сканирование</h3>
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-center text-muted-foreground text-sm">
             Отсканируйте код в Google Authenticator или Яндекс.Ключ
           </p>
 
-          <div className="bg-white p-2 rounded-lg">
+          <div className="rounded-lg bg-white p-2">
             <QRCodeSVG size={200} value={totpURI} />
           </div>
           <div>
             <p>Резервные коды</p>
             <pre>{backUpCodes.join("\n")}</pre>
           </div>
-          <Button onClick={() => setStep(Steps.verify)}>
-            Я отсканировал, перейти к проверке
-          </Button>
+          <Button onClick={() => setStep(Steps.verify)}>Я отсканировал, перейти к проверке</Button>
         </div>
       )}
 
@@ -118,9 +116,7 @@ const ButtonEnable2FA = () => {
               <CardContent>
                 <Field>
                   <div className="flex items-center justify-between">
-                    <FieldLabel htmlFor="otp-verification">
-                      Verification code
-                    </FieldLabel>
+                    <FieldLabel htmlFor="otp-verification">Verification code</FieldLabel>
                     <Button size="xs" variant="outline">
                       <RefreshCwIcon />
                       Resend Code
@@ -168,7 +164,7 @@ const ButtonEnable2FA = () => {
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default ButtonEnable2FA;
+export default ButtonEnable2FA

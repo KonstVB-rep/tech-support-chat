@@ -1,1 +1,1 @@
-export { MessageItem } from "./ui/MessageItem";
+export { MessageItem } from "./ui/MessageItem"

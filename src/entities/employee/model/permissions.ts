@@ -1,4 +1,4 @@
-import { OrgRole } from "@prisma/client";
+import type { OrgRole } from "@prisma/client"
 
 // Действия над сотрудниками
 type EmployeePermission =
@@ -6,7 +6,7 @@ type EmployeePermission =
   | "employee.create" // Создать сотрудника
   | "employee.update" // Обновить данные
   | "employee.delete" // Уволить сотрудника
-  | "employee.view.phone"; // Видеть телефон (конфиденциально)
+  | "employee.view.phone" // Видеть телефон (конфиденциально)
 
 export const ROLE_PERMISSIONS: Record<OrgRole, EmployeePermission[]> = {
   RESPONSIBLE: [
@@ -20,4 +20,4 @@ export const ROLE_PERMISSIONS: Record<OrgRole, EmployeePermission[]> = {
   MEMBER: [
     "employee.view", // видит коллег, без телефона
   ],
-};
+}

@@ -1,75 +1,57 @@
-"use client";
+"use client"
 
-import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/motion/tabs";
-import { useTheme } from "next-themes";
+import { useTheme } from "next-themes"
+import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/components/motion/tabs"
 
 export const ToggleTheme = () => {
-  const { setTheme, theme } = useTheme();
+  const { setTheme, theme } = useTheme()
 
   return (
     <div className="flex w-full max-w-md flex-col gap-8">
       <Section title="Тема">
-        <Tabs defaultValue={theme} variant="pill" onValueChange={setTheme}>
-          <TabsList className="w-full flex border">
-            <TabsTrigger
-              value="system"
-              classNameWrapper="flex-1 flex items-center justify-center"
-            >
+        <Tabs defaultValue={theme} onValueChange={setTheme} variant="pill">
+          <TabsList className="flex w-full border">
+            <TabsTrigger classNameWrapper="flex-1 flex items-center justify-center" value="system">
               Системная
             </TabsTrigger>
-            <TabsTrigger
-              value="light"
-              classNameWrapper="flex-1 flex items-center justify-center"
-            >
+
+            <TabsTrigger classNameWrapper="flex-1 flex items-center justify-center" value="light">
               Светлая
             </TabsTrigger>
-            <TabsTrigger
-              value="dark"
-              classNameWrapper="flex-1 flex items-center justify-center"
-            >
+
+            <TabsTrigger classNameWrapper="flex-1 flex items-center justify-center" value="dark">
               Темная
             </TabsTrigger>
           </TabsList>
         </Tabs>
       </Section>
     </div>
-  );
-};
+  )
+}
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-2">
-      <span className="font-semibold uppercase tracking-wider text-muted-foreground">
-        {title}
-      </span>
+      <span className="font-semibold text-muted-foreground uppercase tracking-wider">{title}</span>
       {children}
     </div>
-  );
+  )
 }
 
 export const ToggleThemeSkeleton = () => {
   return (
-    <div className="flex w-full max-w-md flex-col gap-8 animate-pulse select-none">
+    <div className="flex w-full max-w-md animate-pulse select-none flex-col gap-8">
       <div className="flex flex-col gap-2">
-        {/* Имитация заголовка секции "Тема" с идентичным трекингом */}
-        <div className="h-4 w-12 bg-muted rounded-md tracking-wider" />
+        <div className="h-4 w-12 rounded-md bg-muted tracking-wider" />
 
-        {/* Внешний контейнер табов с фиксированной высотой (высота стандартного TabsList) */}
-        <div className="w-full h-9 bg-card/20 rounded-xl border border-border/40 flex p-1 gap-1 items-center">
-          {/* Имитация вкладки "Системная" */}
-          <div className="flex-1 h-full bg-muted/60 rounded-lg" />
-          {/* Имитация вкладки "Светлая" */}
-          <div className="flex-1 h-full bg-muted/30 rounded-lg" />
-          {/* Имитация вкладки "Темная" */}
-          <div className="flex-1 h-full bg-muted/30 rounded-lg" />
+        <div className="flex h-9 w-full items-center gap-1 rounded-xl border border-border/40 bg-card/20 p-1">
+          <div className="h-full flex-1 rounded-lg bg-muted/60" />
+
+          <div className="h-full flex-1 rounded-lg bg-muted/30" />
+
+          <div className="h-full flex-1 rounded-lg bg-muted/30" />
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

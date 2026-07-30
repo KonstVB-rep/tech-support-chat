@@ -1,38 +1,35 @@
-"use server";
+"use server"
 
-import { updateTag } from "next/cache";
-import { prisma } from "@/prisma/prisma-client";
-import { auth } from "@/app/lib/auth";
-import { headers } from "next/headers";
-import { triggerSocketEvent } from "@/shared/lib/socket-trigger";
-import { unlink } from "fs/promises";
-import path from "path";
-import {
-  EMPLOYEE_MANAGE_ACTIONS,
-  hasEmployeeManagePermission,
-} from "../lib/checkPermission";
-import { DeleteActionState, UserRoleTypes } from "@/shared/lib/types";
-import { getSession } from "@/shared/lib/server-current-user";
+import { unlink } from "node:fs/promises"
+import path from "node:path"
+import { updateTag } from "next/cache"
+import { headers } from "next/headers"
+import { auth } from "@/app/lib/auth"
+import { prisma } from "@/prisma/prisma-client"
+import { getSession } from "@/shared/lib/server-current-user"
+import { triggerSocketEvent } from "@/shared/lib/socket-trigger"
+import type { DeleteActionState, UserRoleTypes } from "@/shared/lib/types"
+import { EMPLOYEE_MANAGE_ACTIONS, hasEmployeeManagePermission } from "../lib/checkPermission"
 
 export const deleteEmployeeAction = async (
   ids: string | string[],
   organizationId: string,
 ): Promise<DeleteActionState> => {
   try {
-    const session = await getSession();
+    const session = await getSession()
     if (!session?.user) {
-      return { success: false, deletedCount: 0, error: "Не авторизован" };
+      return { success: false, deletedCount: 0, error: "Не авторизован" }
     }
 
-    const idsArray = Array.isArray(ids) ? ids : [ids];
-    const validIds = idsArray.filter((id) => id && id.trim() !== "");
+    const idsArray = Array.isArray(ids) ? ids : [ids]
+    const validIds = idsArray.filter((id) => id && id.trim() !== "")
 
     if (!validIds.length) {
       return {
         success: false,
         deletedCount: 0,
         error: "Не переданы валидные ID для удаления",
-      };
+      }
     }
 
     // 1. Проверка прав
@@ -42,9 +39,9 @@ export const deleteEmployeeAction = async (
         organizationId,
         targetEmployeeId: targetId,
         actionType: EMPLOYEE_MANAGE_ACTIONS.DELETE,
-      });
+      })
       if (!check.allowed) {
-        return { success: false, deletedCount: 0, error: check.error };
+        return { success: false, deletedCount: 0, error: check.error }
       }
     }
 
@@ -64,77 +61,73 @@ export const deleteEmployeeAction = async (
           },
         },
       },
-    });
+    })
 
     if (!membersData.length) {
       return {
         success: false,
         deletedCount: 0,
         error: "Сотрудники не найдены",
-      };
+      }
     }
 
-    const timestamp = Math.floor(Date.now() / 1000);
-    const suffix = `_deleted_${timestamp}`;
+    const timestamp = Math.floor(Date.now() / 1000)
+    const suffix = `_deleted_${timestamp}`
 
     // 3. Атомарная транзакция обезличивания
-    const updateOperations = membersData
-      .map((member) => {
-        const profile = member.profile;
-        if (!profile) return [];
+    const updateOperations = membersData.flatMap((member) => {
+      const profile = member.profile
+      if (!profile) return []
 
-        const newFakeEmail = `${profile.email}${suffix}`;
-        const originalName = profile.name || "Без имени";
+      const newFakeEmail = `${profile.email}${suffix}`
+      const originalName = profile.name || "Без имени"
 
-        return [
-          prisma.user.update({
-            where: { id: profile.userId },
-            data: {
-              isActive: false,
-              email: newFakeEmail,
-              name: originalName,
-              image: null,
-            },
-          }),
-          prisma.profile.update({
-            where: { id: profile.id },
-            data: {
-              name: originalName,
-              deactivationLabel: "Уволен",
-              email: newFakeEmail,
-              phone: null,
-              username: profile.username
-                ? `${profile.username}${suffix}`
-                : null,
-              imageUrl: null,
-              deletedAt: new Date(),
-            },
-          }),
-          prisma.organizationMember.delete({
-            where: { id: member.id },
-          }),
-        ];
-      })
-      .flat();
+      return [
+        prisma.user.update({
+          where: { id: profile.userId },
+          data: {
+            isActive: false,
+            email: newFakeEmail,
+            name: originalName,
+            image: null,
+          },
+        }),
+        prisma.profile.update({
+          where: { id: profile.id },
+          data: {
+            name: originalName,
+            deactivationLabel: "Уволен",
+            email: newFakeEmail,
+            phone: null,
+            username: profile.username ? `${profile.username}${suffix}` : null,
+            imageUrl: null,
+            deletedAt: new Date(),
+          },
+        }),
+        prisma.organizationMember.delete({
+          where: { id: member.id },
+        }),
+      ]
+    })
 
     if (updateOperations.length > 0) {
-      await prisma.$transaction(updateOperations);
+      await prisma.$transaction(updateOperations)
     }
 
     // 4. Удаляем аватары с диска + блокировка входа
-    const requestHeaders = await headers();
+    const requestHeaders = await headers()
     for (const member of membersData) {
-      const profile = member.profile;
-      if (!profile) continue;
+      const profile = member.profile
+      if (!profile) continue
 
       if (
         profile.imageUrl &&
         typeof profile.imageUrl === "string" &&
         profile.imageUrl.startsWith("/uploads/")
       ) {
-        const filePath = path.join(process.cwd(), "public", profile.imageUrl);
+        const filePath = path.join(process.cwd(), "public", profile.imageUrl)
         try {
-          await unlink(filePath);
+          await unlink(filePath)
         } catch {}
       }
 
@@ -142,26 +135,23 @@ export const deleteEmployeeAction = async (
         await auth.api.banUser({
           body: { userId: profile.userId },
           headers: requestHeaders,
-        });
+        })
       } catch (e) {
-        console.error(
-          `⚠️ Не удалось заблокировать аккаунт ${profile.userId}:`,
-          e,
-        );
+        console.error(`⚠️ Не удалось заблокировать аккаунт ${profile.userId}:`, e)
       }
     }
 
     // 5. Инвалидация серверного кэша
     for (const id of validIds) {
-      updateTag(`employee-${id}`);
+      updateTag(`employee-${id}`)
     }
-    updateTag(`employees-${organizationId}`);
-    updateTag("support-engineers");
+    updateTag(`employees-${organizationId}`)
+    updateTag("support-engineers")
 
     // 6. Real-time уведомление
     for (const member of membersData) {
-      const profile = member.profile;
-      if (!profile) continue;
+      const profile = member.profile
+      if (!profile) continue
 
       await triggerSocketEvent("srv:user:updated", {
         userId: profile.userId,
@@ -171,20 +161,20 @@ export const deleteEmployeeAction = async (
         deactivationLabel: "Уволен",
         image: null,
         isEngineer: false,
-      });
+      })
     }
 
     return {
       success: true,
       deletedCount: membersData.length,
       error: null,
-    };
+    }
   } catch (error) {
-    console.error("Критическая ошибка в deleteEmployeeAction:", error);
+    console.error("Критическая ошибка в deleteEmployeeAction:", error)
     return {
       success: false,
       deletedCount: 0,
       error: "Системная ошибка при деактивации и обезличивании сотрудника",
-    };
+    }
   }
-};
+}

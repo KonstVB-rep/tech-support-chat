@@ -1,29 +1,30 @@
 // src/app/api/chats/get/route.ts
-import { auth } from "@/app/lib/auth";
-import { prisma } from "@/prisma/prisma-client";
-import { NextResponse } from "next/server";
-import { headers } from "next/headers";
+
+import { headers } from "next/headers"
+import { NextResponse } from "next/server"
+import { auth } from "@/app/lib/auth"
+import { prisma } from "@/prisma/prisma-client"
 
 export async function GET() {
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const session = await auth.api.getSession({ headers: await headers() })
     if (!session?.user) {
-      return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
+      return NextResponse.json({ error: "Не авторизован" }, { status: 401 })
     }
 
     const userProfile = await prisma.profile.findUnique({
       where: { userId: session.user.id },
       include: { organizationMembers: true },
-    });
+    })
 
     if (!userProfile) {
-      return NextResponse.json({ error: "Профиль не найден" }, { status: 404 });
+      return NextResponse.json({ error: "Профиль не найден" }, { status: 404 })
     }
 
     const isSupportEngineer = await prisma.supportEngineer.findUnique({
       where: { profileId: userProfile.id },
-    });
-    const isGlobalAdmin = session.user.role.toLowerCase() === "admin";
+    })
+    const isGlobalAdmin = session.user.role.toLowerCase() === "admin"
 
     const chatInclude = {
       creator: { select: { id: true, name: true, imageUrl: true } },
@@ -54,19 +55,19 @@ export async function GET() {
         where: { profileId: userProfile.id },
         select: { lastReadAt: true },
       },
-    };
+    }
 
-    let chats = [];
+    let chats = []
 
     if (isGlobalAdmin || isSupportEngineer) {
       chats = await prisma.chat.findMany({
         orderBy: { updatedAt: "desc" },
         include: chatInclude,
-      });
+      })
     } else {
       const managedOrgIds = userProfile.organizationMembers
         .filter((m) => m.role === "RESPONSIBLE")
-        .map((m) => m.organizationId);
+        .map((m) => m.organizationId)
 
       chats = await prisma.chat.findMany({
         where: {
@@ -77,19 +78,19 @@ export async function GET() {
         },
         orderBy: { updatedAt: "desc" },
         include: chatInclude,
-      });
+      })
     }
 
-    const now = new Date();
+    const now = new Date()
 
     // ✅ Точный подсчёт непрочитанных через отдельные запросы
     const chatsWithUnread = await Promise.all(
       chats.map(async (chat) => {
-        const member = chat.members?.[0];
-        const lastReadAt = member?.lastReadAt;
-        const lastMessage = chat.messages?.[0] || null;
+        const member = chat.members?.[0]
+        const lastReadAt = member?.lastReadAt
+        const lastMessage = chat.messages?.[0] || null
 
-        let unreadCount = 0;
+        let unreadCount = 0
 
         if (lastReadAt) {
           unreadCount = await prisma.message.count({
@@ -98,22 +99,22 @@ export async function GET() {
               createdAt: { gt: lastReadAt },
               profileId: { not: userProfile.id },
             },
-          });
+          })
         } else {
           unreadCount = await prisma.message.count({
             where: {
               chatId: chat.id,
               profileId: { not: userProfile.id },
             },
-          });
+          })
         }
 
         const isContractActive =
           !chat.organization ||
           (now >= new Date(chat.organization.contractStart) &&
-            now <= new Date(chat.organization.contractEnd));
+            now <= new Date(chat.organization.contractEnd))
 
-        const orgMemberRole = chat.organization?.members?.[0]?.role ?? null;
+        const orgMemberRole = chat.organization?.members?.[0]?.role ?? null
 
         return {
           ...chat,
@@ -123,13 +124,13 @@ export async function GET() {
           unreadCount,
           isContractActive,
           memberRole: orgMemberRole,
-        };
+        }
       }),
-    );
+    )
 
-    return NextResponse.json({ chats: chatsWithUnread });
+    return NextResponse.json({ chats: chatsWithUnread })
   } catch (error) {
-    console.error("Ошибка загрузки чатов:", error);
-    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+    console.error("Ошибка загрузки чатов:", error)
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 })
   }
 }

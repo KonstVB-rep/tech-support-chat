@@ -1,99 +1,80 @@
-"use client";
+"use client"
 
-import { ActiveScreenKeys } from "@/features/update-account-info/model/constants";
-import { Button } from "@/shared/ui/button";
-import {
-  ChevronRight,
-  LaptopMinimalCheck,
-  PaintbrushVertical,
-  User,
-} from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import ButtonSignOut from "@/features/auth-signout/ui/ButtonSignOut";
+import { ChevronRight, LaptopMinimalCheck, PaintbrushVertical, User } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
+import ButtonSignOut from "@/features/auth-signout/ui/ButtonSignOut"
+import type { ActiveScreenKeys } from "@/features/update-account-info/model/constants"
+import { Button } from "@/shared/ui/components/button"
 
 interface SidebarProfileListProps {
-  setActiveScreen: (screen: ActiveScreenKeys) => void;
+  setActiveScreen: (screen: ActiveScreenKeys) => void
 }
 
-export const SidebarProfileList = ({
-  setActiveScreen,
-}: SidebarProfileListProps) => {
-  const searchParams = useSearchParams();
-  const router = useRouter();
+export const SidebarProfileList = ({ setActiveScreen }: SidebarProfileListProps) => {
+  const searchParams = useSearchParams()
+  const router = useRouter()
 
-  const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const button = (e.target as HTMLElement).closest("[data-screen]");
+  const handleScreenChange = (screen: ActiveScreenKeys) => {
+    console.log(`⌨️ Переключение экрана настроек PWA на: ${screen}`)
 
-    if (button instanceof HTMLElement) {
-      const screen = button.dataset.screen as ActiveScreenKeys;
-      if (screen) {
-        console.log(`⌨️ Переключение экрана настроек PWA на: ${screen}`);
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("screen", screen)
+    router.replace(`?${params.toString()}`)
 
-        const params = new URLSearchParams(searchParams.toString());
-        params.set("screen", screen);
-        router.replace(`?${params.toString()}`);
-
-        setActiveScreen(screen);
-      }
-    }
-  };
+    setActiveScreen(screen)
+  }
 
   return (
-    <div
-      onClick={handleContainerClick}
-      className="flex-1 w-full p-3 overflow-y-auto space-y-2 select-none"
-    >
+    <div className="w-full flex-1 select-none space-y-2 overflow-y-auto p-3">
       <Button
-        data-screen="profile"
-        className="flex items-center justify-start flex-1 w-full h-10 p-3"
+        className="flex h-10 w-full flex-1 items-center justify-start p-3"
+        onClick={() => handleScreenChange("profile")}
         variant="outline"
       >
-        <span className="w-full text-sm font-semibold flex items-center justify-start gap-2">
+        <span className="flex w-full items-center justify-start gap-2 font-semibold text-sm">
           <User className="h-4 w-4 text-muted-foreground" /> Профиль
         </span>
         <ChevronRight className="h-4 w-4 text-muted-foreground" />
       </Button>
 
       <Button
-        data-screen="session"
-        className="flex items-center justify-start flex-1 w-full h-10 p-3"
+        className="flex h-10 w-full flex-1 items-center justify-start p-3"
+        onClick={() => handleScreenChange("session")}
         variant="outline"
       >
-        <span className="w-full text-sm font-semibold flex items-center justify-start gap-2">
-          <LaptopMinimalCheck className="h-4 w-4 text-muted-foreground" />{" "}
-          Сессия
+        <span className="flex w-full items-center justify-start gap-2 font-semibold text-sm">
+          <LaptopMinimalCheck className="h-4 w-4 text-muted-foreground" /> Сессия
         </span>
         <ChevronRight className="h-4 w-4 text-muted-foreground" />
       </Button>
 
       <Button
-        data-screen="decoration"
-        className="flex items-center justify-start flex-1 w-full h-10 p-3"
+        className="flex h-10 w-full flex-1 items-center justify-start p-3"
+        onClick={() => handleScreenChange("decoration")}
         variant="outline"
       >
-        <span className="w-full text-sm font-semibold flex items-center justify-start gap-2">
-          <PaintbrushVertical className="h-4 w-4 text-muted-foreground" />{" "}
-          Оформление
+        <span className="flex w-full items-center justify-start gap-2 font-semibold text-sm">
+          <PaintbrushVertical className="h-4 w-4 text-muted-foreground" /> Оформление
         </span>
         <ChevronRight className="h-4 w-4 text-muted-foreground" />
       </Button>
 
       <Button
-        data-screen="accountDel"
-        className="flex items-center justify-start flex-1 w-full h-10 p-3 hover:text-destructive hover:bg-destructive/5"
+        className="flex h-10 w-full flex-1 items-center justify-start p-3 hover:bg-destructive/5 hover:text-destructive"
+        onClick={() => handleScreenChange("accountDel")}
         variant="destructive"
       >
-        <span className="w-full text-sm font-semibold flex items-center justify-start text-white">
+        <span className="flex w-full items-center justify-start font-semibold text-sm text-white">
           Удалить аккаунт
         </span>
         <ChevronRight className="h-4 w-4" />
       </Button>
 
       <ButtonSignOut
-        className="flex w-full field-height var gap-1 items-center justify-center p-2 rounded-xl select-none transition-colors mx-auto hover:bg-muted/50 hover:text-foreground"
+        className="field-height var mx-auto flex w-full select-none items-center justify-center gap-1 rounded-xl p-2 transition-colors hover:bg-muted/50 hover:text-foreground"
         withIcon={true}
         withText={true}
       />
     </div>
-  );
-};
+  )
+}

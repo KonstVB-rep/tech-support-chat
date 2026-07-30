@@ -2,9 +2,9 @@
 
 import {
   hasPermission as check,
-  hasAnyPermission as checkAny,
   hasAllPermissions as checkAll,
-} from "@/shared/lib/permissions";
+  hasAnyPermission as checkAny,
+} from "@/shared/lib/permissions"
 
 // Все возможные действия в системе
 export type ChatPermission =
@@ -25,9 +25,9 @@ export type ChatPermission =
   | "user.view.all" // Видеть всех пользователей
 
   // Статистика
-  | "stats.view"; // Видеть статистику
+  | "stats.view" // Видеть статистику
 
-type AppChatRole = "admin" | "SUPPORT" | "RESPONSIBLE" | "MEMBER";
+type AppChatRole = "admin" | "SUPPORT" | "RESPONSIBLE" | "MEMBER"
 
 export const ROLE_PERMISSIONS_CHAT: Record<AppChatRole, ChatPermission[]> = {
   MEMBER: ["ticket.create", "message.send", "message.delete.own"],
@@ -66,29 +66,20 @@ export const ROLE_PERMISSIONS_CHAT: Record<AppChatRole, ChatPermission[]> = {
     "user.view.all",
     "stats.view",
   ],
-};
+}
 
-export const hasPermissionChat = (
-  role: AppChatRole,
-  permission: ChatPermission,
-): boolean => {
-  return check(role, permission, ROLE_PERMISSIONS_CHAT);
-};
+export const hasPermissionChat = (role: AppChatRole, permission: ChatPermission): boolean => {
+  return check(role, permission, ROLE_PERMISSIONS_CHAT)
+}
 
-export const hasAnyPermissionChat = (
-  role: AppChatRole,
-  permissions: ChatPermission[],
-): boolean => {
-  return checkAny(role, permissions, ROLE_PERMISSIONS_CHAT);
-};
+export const hasAnyPermissionChat = (role: AppChatRole, permissions: ChatPermission[]): boolean => {
+  return checkAny(role, permissions, ROLE_PERMISSIONS_CHAT)
+}
 
-export const hasAllPermissionChat = (
-  role: AppChatRole,
-  permissions: ChatPermission[],
-): boolean => {
-  return checkAll(role, permissions, ROLE_PERMISSIONS_CHAT);
-};
+export const hasAllPermissionChat = (role: AppChatRole, permissions: ChatPermission[]): boolean => {
+  return checkAll(role, permissions, ROLE_PERMISSIONS_CHAT)
+}
 
 export const getPermissions = (role: AppChatRole): ChatPermission[] => {
-  return ROLE_PERMISSIONS_CHAT[role] ?? [];
-};
+  return ROLE_PERMISSIONS_CHAT[role] ?? []
+}

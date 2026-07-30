@@ -1,27 +1,23 @@
-"use client";
+"use client"
 
-import { SingleOrganizationWithCounts } from "@/entities/organization";
-import { OrganizationViewCard } from "@/entities/organization/ui/OrganizationViewCard";
-import { UpdateOrganizationForm } from "@/features/manage-organization";
-import { ProtectByRole } from "@/shared/lib/ProtectByRole";
-import { Button } from "@/shared/ui/button";
-import { Pencil } from "lucide-react";
-import { useState } from "react";
+import { useState } from "react"
+import { Pencil } from "lucide-react"
+import type { SingleOrganizationWithCounts } from "@/entities/organization"
+import { OrganizationViewCard } from "@/entities/organization/ui/OrganizationViewCard"
+import { UpdateOrganizationForm } from "@/features/manage-organization"
+import { ProtectByRole } from "@/shared/lib/ProtectByRole"
+import { Button } from "@/shared/ui/components/button"
 
-export const OrganizationDetails = ({
-  data,
-}: {
-  data: SingleOrganizationWithCounts;
-}) => {
-  const [edit, setEdit] = useState(false);
+export const OrganizationDetails = ({ data }: { data: SingleOrganizationWithCounts }) => {
+  const [edit, setEdit] = useState(false)
   return (
     <div>
       <ProtectByRole>
         <Button
-          variant="outline"
+          onClick={() => setEdit((prev) => !prev)}
           size="icon"
           title="Редактировать"
-          onClick={() => setEdit((prev) => !prev)}
+          variant="outline"
         >
           <Pencil />
         </Button>
@@ -31,8 +27,8 @@ export const OrganizationDetails = ({
           <UpdateOrganizationForm organization={data} />
         </ProtectByRole>
       ) : (
-        <OrganizationViewCard data={data} className="w-full justify-center" />
+        <OrganizationViewCard className="w-full justify-center" data={data} />
       )}
     </div>
-  );
-};
+  )
+}

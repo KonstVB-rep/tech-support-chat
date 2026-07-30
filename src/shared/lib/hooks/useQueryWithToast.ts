@@ -1,19 +1,19 @@
-"use client";
+"use client"
 
-import { useEffect } from "react";
-import { useQuery, UseQueryOptions } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useEffect } from "react"
+import { type UseQueryOptions, useQuery } from "@tanstack/react-query"
+import { toast } from "sonner"
 
 export const useQueryWithToast = <TData, TError extends Error>(
   options: UseQueryOptions<TData, TError>,
 ) => {
-  const query = useQuery(options);
+  const query = useQuery(options)
 
   useEffect(() => {
     if (query.isError && query.error) {
-      toast.error(query.error.message);
+      toast.error(query.error.message)
     }
-  }, [query.isError, query.error]);
+  }, [query.isError, query.error])
 
-  return query;
-};
+  return query
+}

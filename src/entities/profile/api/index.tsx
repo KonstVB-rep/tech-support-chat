@@ -1,2 +1,2 @@
-export { useMyProfile } from "./useMyProfile";
-export { getProfile } from "./getProfile";
+export { getProfile } from "./getProfile"
+export { useMyProfile } from "./useMyProfile"

@@ -1,11 +1,13 @@
-"use client";
+"use client"
 
-import {
-  FormSchemaOrganizationType,
-  formSchemaOrganization,
-} from "@/entities/organization";
-import { ActionState } from "@/shared/lib/types";
-import { Button } from "@/shared/ui/button";
+import { startTransition, useActionState, useEffect } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Plus } from "lucide-react"
+import { useForm } from "react-hook-form"
+import { toast } from "sonner"
+import { type FormSchemaOrganizationType, formSchemaOrganization } from "@/entities/organization"
+import type { ActionState } from "@/shared/lib/types"
+import { Button } from "@/shared/ui/components/button"
 import {
   Dialog,
   DialogContent,
@@ -13,15 +15,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/shared/ui/dialog";
-import { FieldGroup } from "@/shared/ui/field";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus } from "lucide-react";
-import { startTransition, useActionState, useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { addOrganizationAction } from "../actions/add";
-import { OrganizationForm } from "./OrganizationForm";
+} from "@/shared/ui/components/dialog"
+import { FieldGroup } from "@/shared/ui/components/field"
+import { addOrganizationAction } from "../actions/add"
+import { OrganizationForm } from "./OrganizationForm"
 
 const defValues = {
   name: "",
@@ -33,55 +30,47 @@ const defValues = {
   timeSupportTo: "",
   contractStart: "",
   contractEnd: "",
-};
+}
 
 export const AddOrganizationDialog = () => {
   const initialState: ActionState = {
     success: false,
     message: null,
     error: null,
-  };
-  const [state, formAction, isPending] = useActionState(
-    addOrganizationAction,
-    initialState,
-  );
+  }
+  const [state, formAction, _isPending] = useActionState(addOrganizationAction, initialState)
 
   const form = useForm<FormSchemaOrganizationType>({
     resolver: zodResolver(formSchemaOrganization),
     defaultValues: defValues,
-  });
+  })
 
   useEffect(() => {
     if (state.success && state.message) {
-      toast.success(state.message);
+      toast.success(state.message)
     }
     if (state.error) {
-      toast.error(state.error);
+      toast.error(state.error)
     }
-  }, [state]);
+  }, [state])
 
   const handleFormAction = async (formData: FormData) => {
-    const isValid = await form.trigger();
-    if (!isValid) return;
+    const isValid = await form.trigger()
+    if (!isValid) return
 
     startTransition(() => {
-      formAction(formData);
-    });
-  };
+      formAction(formData)
+    })
+  }
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon"
-          title="Добавить организацию"
-          className="m-0"
-        >
+        <Button className="m-0" size="icon" title="Добавить организацию" variant="outline">
           <Plus />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg m-0">
+      <DialogContent className="m-0 sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="sr-only">Добавить организацию</DialogTitle>
           <DialogDescription></DialogDescription>
@@ -96,5 +85,5 @@ export const AddOrganizationDialog = () => {
         </FieldGroup>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}

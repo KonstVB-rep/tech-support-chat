@@ -1,2 +1,2 @@
-export { default as ButtonSendEmail } from "./ui/ButtonSignOut";
-export { useSignOut } from "./model/useSignOut";
+export { useSignOut } from "./model/useSignOut"
+export { default as ButtonSendEmail } from "./ui/ButtonSignOut"

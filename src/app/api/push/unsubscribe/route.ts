@@ -1,12 +1,12 @@
-import { prisma } from "@/prisma/prisma-client";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server"
+import { prisma } from "@/prisma/prisma-client"
 
 export async function POST(req: NextRequest) {
   try {
-    const { profileId } = await req.json();
+    const { profileId } = await req.json()
 
     if (!profileId) {
-      return NextResponse.json({ error: "Missing profileId" }, { status: 400 });
+      return NextResponse.json({ error: "Missing profileId" }, { status: 400 })
     }
 
     await prisma.profile.update({
@@ -15,15 +15,12 @@ export async function POST(req: NextRequest) {
         pushEnabled: false,
         pushSubscription: undefined,
       },
-    });
+    })
 
-    console.log(`🔕 [PUSH] Отписка подтверждена для profile:${profileId}`);
-    return NextResponse.json({ success: true });
+    console.log(`🔕 [PUSH] Отписка подтверждена для profile:${profileId}`)
+    return NextResponse.json({ success: true })
   } catch (err) {
-    console.error("❌ [PUSH UNSUBSCRIBE] Ошибка:", err);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    console.error("❌ [PUSH UNSUBSCRIBE] Ошибка:", err)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

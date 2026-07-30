@@ -1,1 +1,1 @@
-export { default as CreateTopicDialog } from "./ui/CreateTopicDialog";
+export { default as CreateTopicDialog } from "./ui/CreateTopicDialog"

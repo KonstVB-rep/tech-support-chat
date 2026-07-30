@@ -1,9 +1,10 @@
-import React, { Suspense } from "react";
-import { SidebarNavWrapper } from "@/widgets/sidebar/ui/SidebarNavWrapper";
-import { MobileNavWrapper } from "@/widgets/mobile-nav/MobileNavWrapper";
+import type React from "react"
+import { Suspense } from "react"
+import { MobileNavWrapper } from "@/widgets/mobile-nav/MobileNavWrapper"
+import { SidebarNavWrapper } from "@/widgets/sidebar/ui/SidebarNavWrapper"
 
 interface PageLayoutProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 const PageLayout = async ({ children }: PageLayoutProps) => {
@@ -15,25 +16,41 @@ const PageLayout = async ({ children }: PageLayoutProps) => {
         </Suspense>
       </div>
 
-      <div className="flex flex-col md:flex-row w-full overflow-hidden max-h-[calc(100dvh-80px)] md:max-h-none">
+      <div className="flex max-h-[calc(100dvh-80px)] w-full flex-col overflow-hidden md:max-h-none md:flex-row">
         {children}
-        <Suspense>
+        <Suspense fallback={<LinksListNavSkeleton />}>
           <MobileNavWrapper />
         </Suspense>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default PageLayout;
+export default PageLayout
 
 const SidebarNavSkeleton = () => {
   return (
-    <div className="flex flex-col gap-2 p-2 items-center justify-start w-full h-full">
-      <div className="w-12 h-12 animate-pulse dark:bg-zinc-800 bg-zinc-100 rounded-md" />
-      <div className="w-12 h-12 animate-pulse dark:bg-zinc-800 bg-zinc-100 rounded-md" />
-      <div className="w-12 h-12 animate-pulse dark:bg-zinc-800 bg-zinc-100 rounded-md" />
-      <div className="w-12 h-12 animate-pulse dark:bg-zinc-800 bg-zinc-100 rounded-md" />
+    <div className="flex h-full w-full flex-col items-center justify-start gap-2 p-2">
+      <div className="h-12 w-12 animate-pulse rounded-md bg-zinc-100 dark:bg-zinc-800" />
+      <div className="h-12 w-12 animate-pulse rounded-md bg-zinc-100 dark:bg-zinc-800" />
+      <div className="h-12 w-12 animate-pulse rounded-md bg-zinc-100 dark:bg-zinc-800" />
+      <div className="h-12 w-12 animate-pulse rounded-md bg-zinc-100 dark:bg-zinc-800" />
     </div>
-  );
-};
+  )
+}
+
+const LinksListNavSkeleton = () => {
+  return (
+    <nav className="fixed bottom-0 z-50 flex w-full animate-pulse select-none justify-center gap-2 border-none bg-background px-1 py-3 shadow-[0_0_20px_0_#00000030] md:hidden dark:shadow-[0_0_20px_0_#000000]">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div
+          className="flex max-w-[80px] flex-1 flex-col items-center justify-center gap-1 rounded-xl px-2 py-1"
+          key={i}
+        >
+          <div className="h-5 w-5 shrink-0 rounded-md bg-muted" />
+          <div className="mt-0.5 h-3 w-12 rounded-sm bg-muted" />
+        </div>
+      ))}
+    </nav>
+  )
+}

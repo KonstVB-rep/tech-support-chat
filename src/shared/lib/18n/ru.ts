@@ -3,14 +3,12 @@ export const RU_LOCALE = {
   MEMBER_PLURAL: "участники",
   MEMBER_SINGULAR: "участник",
   NO_TEAMS_FOUND: "Команды не найдены",
-  MANAGE_TEAM_MEMBERS_DESCRIPTION:
-    "Поиск и добавление участников организации в эту команду.",
+  MANAGE_TEAM_MEMBERS_DESCRIPTION: "Поиск и добавление участников организации в эту команду.",
   MANAGE_TEAM_MEMBERS: "Управление участниками команды",
   UPDATE_TEAM_SUCCESS: "Команда успешно обновлена",
   ADD_TEAM_MEMBER_SUCCESS: "Участник успешно добавлен в команду",
   REMOVE_TEAM_MEMBER_SUCCESS: "Участник успешно удален из команды",
-  REMOVE_TEAM_MEMBER_CONFIRM:
-    "Вы уверены, что хотите удалить этого участника из команды?",
+  REMOVE_TEAM_MEMBER_CONFIRM: "Вы уверены, что хотите удалить этого участника из команды?",
   REMOVE_TEAM_MEMBER: "Удалить участника команды",
   ADD_TEAM_MEMBER: "Добавить участника команды",
   TEAM_MEMBERS_DESCRIPTION: "Управление участниками вашей команды и их ролями.",
@@ -28,8 +26,7 @@ export const RU_LOCALE = {
   TEAM_NAME_PLACEHOLDER: "Инженерная команда",
   TEAM_NAME: "Имя команды",
   CREATE_TEAM_INSTRUCTIONS: "Добавить новую команду в вашу организацию.",
-  REMOVE_TEAM_CONFIRM:
-    "Вы уверены, что хотите удалить эту команду из организации?",
+  REMOVE_TEAM_CONFIRM: "Вы уверены, что хотите удалить эту команду из организации?",
   UPDATE_TEAMS_DESCRIPTION: "Добавить или удалить команды для этого участника",
   UPDATE_TEAM_DESCRIPTION: "Обновить имя этой команды",
   REMOVE: "Удалить",
@@ -45,8 +42,7 @@ export const RU_LOCALE = {
   TEAM: "Команда",
   SLUG_DOES_NOT_MATCH: "Слаг (URL) не совпадает",
   SLUG_REQUIRED: "Слаг (URL) организации обязателен",
-  DELETE_ORGANIZATION_INSTRUCTIONS:
-    "Введите слаг (URL) организации, чтобы продолжить:",
+  DELETE_ORGANIZATION_INSTRUCTIONS: "Введите слаг (URL) организации, чтобы продолжить:",
   DELETE_ORGANIZATION_SUCCESS: "Организация успешно удалена",
   DELETE_ORGANIZATION_DESCRIPTION:
     "Навсегда удалить вашу организацию и все ее содержимое. Это действие необратимо — пожалуйста, продолжайте с осторожностью.",
@@ -60,10 +56,8 @@ export const RU_LOCALE = {
   ACCEPT_INVITATION: "Принять приглашение",
   INVITATION_CANCELLED: "Приглашение успешно отменено",
   CANCEL_INVITATION: "Отменить приглашение",
-  PENDING_USER_INVITATIONS_DESCRIPTION:
-    "Приглашения, которые вы получили от организаций.",
-  PENDING_INVITATIONS_DESCRIPTION:
-    "Управление ожидающими приглашениями в вашу организацию.",
+  PENDING_USER_INVITATIONS_DESCRIPTION: "Приглашения, которые вы получили от организаций.",
+  PENDING_INVITATIONS_DESCRIPTION: "Управление ожидающими приглашениями в вашу организацию.",
   PENDING_INVITATIONS: "Ожидающие приглашения",
   SEND_INVITATION_SUCCESS: "Приглашение успешно отправлено",
   SEND_INVITATION: "Отправить приглашение",
@@ -79,18 +73,15 @@ export const RU_LOCALE = {
   INVITE_MEMBER_DESCRIPTION:
     "Отправьте приглашение, чтобы добавить нового участника в вашу организацию.",
   MEMBERS_INSTRUCTIONS: "Пригласить новых участников в вашу организацию.",
-  MEMBERS_DESCRIPTION:
-    "Добавляйте или удаляйте участников и управляйте их ролями.",
+  MEMBERS_DESCRIPTION: "Добавляйте или удаляйте участников и управляйте их ролями.",
   MEMBERS: "Участники",
   INVITE_MEMBER: "Пригласить участника",
   REMOVE_MEMBER_SUCCESS: "Участник успешно удален",
-  REMOVE_MEMBER_CONFIRM:
-    "Вы уверены, что хотите удалить этого участника из организации?",
+  REMOVE_MEMBER_CONFIRM: "Вы уверены, что хотите удалить этого участника из организации?",
   REMOVE_MEMBER: "Удалить участника",
   MANAGE_ORGANIZATION: "Управление организацией",
   LEAVE_ORGANIZATION_SUCCESS: "Вы успешно покинули организацию.",
-  LEAVE_ORGANIZATION_CONFIRM:
-    "Вы уверены, что хотите покинуть эту организацию?",
+  LEAVE_ORGANIZATION_CONFIRM: "Вы уверены, что хотите покинуть эту организацию?",
   LEAVE_ORGANIZATION: "Покинуть организацию",
   ORGANIZATIONS_INSTRUCTIONS:
     "Создайте организацию для совместной работы с другими пользователями.",
@@ -105,8 +96,7 @@ export const RU_LOCALE = {
   UPLOAD_LOGO: "Загрузить логотип",
   UPLOAD: "Загрузить",
   LOGO_INSTRUCTIONS: "Логотип необязателен, но настоятельно рекомендуется.",
-  LOGO_DESCRIPTION:
-    "Нажмите на логотип, чтобы загрузить собственный из ваших файлов.",
+  LOGO_DESCRIPTION: "Нажмите на логотип, чтобы загрузить собственный из ваших файлов.",
   LOGO: "Логотип",
   UPLOAD_AVATAR: "Загрузить аватар",
   SESSION_NOT_FRESH: "Ваша сессия устарела. Пожалуйста, войдите снова.",
@@ -118,8 +108,7 @@ export const RU_LOCALE = {
   OPTIONAL_BRACKETS: "(Необязательно)",
   USERNAME_PLACEHOLDER: "Имя пользователя",
   USERNAME_INSTRUCTIONS: "Пожалуйста, используйте максимум 32 символа.",
-  USERNAME_DESCRIPTION:
-    "Введите имя пользователя, которое хотите использовать для входа.",
+  USERNAME_DESCRIPTION: "Введите имя пользователя, которое хотите использовать для входа.",
   USERNAME: "Имя пользователя",
   UPDATED_SUCCESSFULLY: "Успешно обновлено",
   UNLINK: "Отвязать",
@@ -128,14 +117,10 @@ export const RU_LOCALE = {
   TWO_FACTOR_PROMPT: "Двухфакторная аутентификация",
   TWO_FACTOR_DISABLED: "Двухфакторная аутентификация отключена",
   TWO_FACTOR_ENABLED: "Двухфакторная аутентификация была включена",
-  TWO_FACTOR_ENABLE_INSTRUCTIONS:
-    "Пожалуйста, введите ваш пароль, чтобы включить 2FA",
-  TWO_FACTOR_DISABLE_INSTRUCTIONS:
-    "Пожалуйста, введите ваш пароль, чтобы отключить 2FA.",
-  TWO_FACTOR_CARD_DESCRIPTION:
-    "Добавьте дополнительный уровень безопасности вашему аккаунту.",
-  TWO_FACTOR_DESCRIPTION:
-    "Пожалуйста, введите ваш одноразовый пароль, чтобы продолжить",
+  TWO_FACTOR_ENABLE_INSTRUCTIONS: "Пожалуйста, введите ваш пароль, чтобы включить 2FA",
+  TWO_FACTOR_DISABLE_INSTRUCTIONS: "Пожалуйста, введите ваш пароль, чтобы отключить 2FA.",
+  TWO_FACTOR_CARD_DESCRIPTION: "Добавьте дополнительный уровень безопасности вашему аккаунту.",
+  TWO_FACTOR_DESCRIPTION: "Пожалуйста, введите ваш одноразовый пароль, чтобы продолжить",
   TWO_FACTOR_ACTION: "Проверить код",
   TWO_FACTOR: "Двухфакторная",
   TRUST_DEVICE: "Доверять этому устройству",
@@ -148,8 +133,7 @@ export const RU_LOCALE = {
   SET_PASSWORD: "Установить пароль",
   SESSIONS_DESCRIPTION: "Управление вашими активными сессиями и отзыв доступа.",
   SESSIONS: "Сессии",
-  SIGN_UP_EMAIL:
-    "Проверьте вашу электронную почту на наличие ссылки для подтверждения.",
+  SIGN_UP_EMAIL: "Проверьте вашу электронную почту на наличие ссылки для подтверждения.",
   SIGN_UP_DESCRIPTION: "Введите вашу информацию, чтобы создать аккаунт",
   SIGN_UP_ACTION: "Создать аккаунт",
   SIGN_UP: "Регистрация",
@@ -172,8 +156,7 @@ export const RU_LOCALE = {
   RESEND_VERIFICATION_EMAIL: "Повторно отправить письмо подтверждения",
   RESEND_CODE: "Повторно отправить код",
   REMEMBER_ME: "Запомнить меня",
-  RECOVER_ACCOUNT_DESCRIPTION:
-    "Пожалуйста, введите резервный код для доступа к вашему аккаунту",
+  RECOVER_ACCOUNT_DESCRIPTION: "Пожалуйста, введите резервный код для доступа к вашему аккаунту",
   RECOVER_ACCOUNT_ACTION: "Восстановить аккаунт",
   RECOVER_ACCOUNT: "Восстановление аккаунта",
   PROVIDERS_DESCRIPTION: "Подключите ваш аккаунт к стороннему сервису.",
@@ -184,12 +167,10 @@ export const RU_LOCALE = {
   PASSWORD: "Пароль",
   CREATE_ORGANIZATION_SUCCESS: "Организация успешно создана",
   ORGANIZATION_SLUG_PLACEHOLDER: "acme-inc",
-  ORGANIZATION_SLUG_INSTRUCTIONS:
-    "Пожалуйста, используйте максимум 48 символов.",
+  ORGANIZATION_SLUG_INSTRUCTIONS: "Пожалуйста, используйте максимум 48 символов.",
   ORGANIZATION_SLUG_DESCRIPTION: "Это пространство имен URL вашей организации.",
   ORGANIZATION_SLUG: "Слаг URL",
-  ORGANIZATION_NAME_INSTRUCTIONS:
-    "Пожалуйста, используйте максимум 32 символа.",
+  ORGANIZATION_NAME_INSTRUCTIONS: "Пожалуйста, используйте максимум 32 символа.",
   ORGANIZATION_NAME_DESCRIPTION: "Это видимое название вашей организации.",
   ORGANIZATION_NAME_PLACEHOLDER: "Acme Inc.",
   ORGANIZATION_NAME: "Название",
@@ -205,10 +186,8 @@ export const RU_LOCALE = {
   CREATE_API_KEY_DESCRIPTION:
     "Введите уникальное имя для вашего API ключа, чтобы отличать его от других ключей.",
   CREATE_API_KEY: "Создать API ключ",
-  API_KEYS_INSTRUCTIONS:
-    "Создавайте API ключи для программного доступа к вашему аккаунту.",
-  API_KEYS_DESCRIPTION:
-    "Управление вашими API ключами для безопасного доступа.",
+  API_KEYS_INSTRUCTIONS: "Создавайте API ключи для программного доступа к вашему аккаунту.",
+  API_KEYS_DESCRIPTION: "Управление вашими API ключами для безопасного доступа.",
   API_KEYS: "API ключи",
   PERSONAL_ACCOUNT: "Личный аккаунт",
   PASSKEYS_INSTRUCTIONS: "Безопасный доступ к вашему аккаунту без пароля.",
@@ -224,8 +203,7 @@ export const RU_LOCALE = {
   NAME_INSTRUCTIONS: "Пожалуйста, используйте максимум 32 символа.",
   NAME_DESCRIPTION: "Пожалуйста, введите ваше полное имя или отображаемое имя.",
   NAME: "Имя",
-  EMAIL_OTP_VERIFICATION_SENT:
-    "Пожалуйста, проверьте вашу почту на наличие проверочного кода.",
+  EMAIL_OTP_VERIFICATION_SENT: "Пожалуйста, проверьте вашу почту на наличие проверочного кода.",
   EMAIL_OTP_DESCRIPTION: "Введите ваш email, чтобы получить код",
   EMAIL_OTP_VERIFY_ACTION: "Проверить код",
   EMAIL_OTP_SEND_ACTION: "Отправить код",
@@ -236,8 +214,7 @@ export const RU_LOCALE = {
   MAGIC_LINK: "Волшебная ссылка",
   LINK: "Привязать",
   FORGOT_PASSWORD_LINK: "Забыли ваш пароль?",
-  FORGOT_PASSWORD_EMAIL:
-    "Проверьте вашу почту на наличие ссылки для сброса пароля.",
+  FORGOT_PASSWORD_EMAIL: "Проверьте вашу почту на наличие ссылки для сброса пароля.",
   FORGOT_PASSWORD_DESCRIPTION: "Введите ваш email, чтобы сбросить пароль",
   FORGOT_PASSWORD_ACTION: "Отправить ссылку для сброса",
   FORGOT_PASSWORD: "Забыли пароль",
@@ -250,20 +227,16 @@ export const RU_LOCALE = {
   EMAIL_VERIFICATION_DESCRIPTION:
     "Пожалуйста, проверьте вашу почту на наличие проверочного кода для завершения регистрации.",
   EMAIL_VERIFICATION: "Подтверждение Email",
-  EMAIL_VERIFY_CHANGE:
-    "Пожалуйста, проверьте вашу почту, чтобы подтвердить изменения.",
+  EMAIL_VERIFY_CHANGE: "Пожалуйста, проверьте вашу почту, чтобы подтвердить изменения.",
   EMAIL_REQUIRED: "Адрес электронной почты обязателен",
   EMAIL_PLACEHOLDER: "m@example.com",
   EMAIL_IS_THE_SAME: "Email совпадает с текущим",
-  EMAIL_INSTRUCTIONS:
-    "Пожалуйста, введите действительный адрес электронной почты.",
-  EMAIL_DESCRIPTION:
-    "Введите адрес электронной почты, который вы хотите использовать для входа.",
+  EMAIL_INSTRUCTIONS: "Пожалуйста, введите действительный адрес электронной почты.",
+  EMAIL_DESCRIPTION: "Введите адрес электронной почты, который вы хотите использовать для входа.",
   EMAIL: "Email",
   DONE: "Готово",
   DONT_HAVE_AN_ACCOUNT: "Нет аккаунта?",
-  DISABLED_CREDENTIALS_DESCRIPTION:
-    "Выберите провайдера, чтобы войти в ваш аккаунт",
+  DISABLED_CREDENTIALS_DESCRIPTION: "Выберите провайдера, чтобы войти в ваш аккаунт",
   DISABLE_TWO_FACTOR: "Отключить двухфакторную аутентификацию",
   DELETE_ACCOUNT_SUCCESS: "Ваш аккаунт был удален.",
   DELETE_ACCOUNT_VERIFY:
@@ -299,8 +272,7 @@ export const RU_LOCALE = {
   BACKUP_CODES: "Резервные коды",
   BACKUP_CODE_REQUIRED: "Резервный код обязателен",
   AVATAR_INSTRUCTIONS: "Аватар необязателен, но настоятельно рекомендуется.",
-  AVATAR_DESCRIPTION:
-    "Нажмите на аватар, чтобы загрузить собственный из ваших файлов.",
+  AVATAR_DESCRIPTION: "Нажмите на аватар, чтобы загрузить собственный из ваших файлов.",
   AVATAR: "Аватар",
   ALREADY_HAVE_AN_ACCOUNT: "Уже есть аккаунт?",
   ADD_PASSKEY: "Добавить ключ доступа (Passkey)",
@@ -330,22 +302,16 @@ export const RU_LOCALE = {
   FAILED_TO_UPDATE_USER: "Не удалось обновить пользователя",
   FAILED_TO_CREATE_SESSION: "Не удалось создать сессию",
   BANNED_USER: "Пользователь забанен",
-  YOU_ARE_NOT_ALLOWED_TO_SET_USERS_PASSWORD:
-    "Вам не разрешено устанавливать пароль пользователя",
+  YOU_ARE_NOT_ALLOWED_TO_SET_USERS_PASSWORD: "Вам не разрешено устанавливать пароль пользователя",
   YOU_ARE_NOT_ALLOWED_TO_DELETE_USERS: "Вам не разрешено удалять пользователей",
-  YOU_ARE_NOT_ALLOWED_TO_REVOKE_USERS_SESSIONS:
-    "Вам не разрешено отзывать сессии пользователей",
+  YOU_ARE_NOT_ALLOWED_TO_REVOKE_USERS_SESSIONS: "Вам не разрешено отзывать сессии пользователей",
   YOU_ARE_NOT_ALLOWED_TO_IMPERSONATE_USERS:
     "Вам не разрешено выдавать себя за других пользователей",
   YOU_ARE_NOT_ALLOWED_TO_BAN_USERS: "Вам не разрешено банить пользователей",
-  YOU_ARE_NOT_ALLOWED_TO_LIST_USERS_SESSIONS:
-    "Вам не разрешено просматривать сессии пользователей",
-  YOU_ARE_NOT_ALLOWED_TO_LIST_USERS:
-    "Вам не разрешено просматривать список пользователей",
-  YOU_ARE_NOT_ALLOWED_TO_CREATE_USERS:
-    "Вам не разрешено создавать пользователей",
-  YOU_ARE_NOT_ALLOWED_TO_CHANGE_USERS_ROLE:
-    "Вам не разрешено менять роль пользователей",
+  YOU_ARE_NOT_ALLOWED_TO_LIST_USERS_SESSIONS: "Вам не разрешено просматривать сессии пользователей",
+  YOU_ARE_NOT_ALLOWED_TO_LIST_USERS: "Вам не разрешено просматривать список пользователей",
+  YOU_ARE_NOT_ALLOWED_TO_CREATE_USERS: "Вам не разрешено создавать пользователей",
+  YOU_ARE_NOT_ALLOWED_TO_CHANGE_USERS_ROLE: "Вам не разрешено менять роль пользователей",
   YOU_CANNOT_BAN_YOURSELF: "Вы не можете забанить самого себя",
   USER_ALREADY_EXISTS: "Пользователь уже существует",
   ANONYMOUS_USERS_CANNOT_SIGN_IN_AGAIN_ANONYMOUSLY:
@@ -372,10 +338,8 @@ export const RU_LOCALE = {
   KEY_NOT_FOUND: "Ключ не найден",
   UNAUTHORIZED_SESSION: "Неавторизованная сессия",
   USER_BANNED: "Пользователь забанен",
-  REFILL_INTERVAL_AND_AMOUNT_REQUIRED:
-    "Требуется интервал пополнения и количество",
-  REFILL_AMOUNT_AND_INTERVAL_REQUIRED:
-    "Требуется количество пополнения и интервал",
+  REFILL_INTERVAL_AND_AMOUNT_REQUIRED: "Требуется интервал пополнения и количество",
+  REFILL_AMOUNT_AND_INTERVAL_REQUIRED: "Требуется количество пополнения и интервал",
   INVALID_METADATA_TYPE: "Неверный тип метаданных",
   UNKNOWN_ERROR: "Неизвестная ошибка",
   MISSING_RESPONSE: "Отсутствует ответ",
@@ -389,66 +353,51 @@ export const RU_LOCALE = {
   PASSWORD_COMPROMISED: "Пароль скомпрометирован",
   INVALID_SESSION_TOKEN: "Недействительный токен сессии",
   INVITATION_LIMIT_REACHED: "Превышен лимит приглашений",
-  YOU_ARE_NOT_ALLOWED_TO_DELETE_THIS_TEAM:
-    "Вам не разрешено удалять эту команду",
-  YOU_ARE_NOT_ALLOWED_TO_UPDATE_THIS_TEAM:
-    "Вам не разрешено обновлять эту команду",
+  YOU_ARE_NOT_ALLOWED_TO_DELETE_THIS_TEAM: "Вам не разрешено удалять эту команду",
+  YOU_ARE_NOT_ALLOWED_TO_UPDATE_THIS_TEAM: "Вам не разрешено обновлять эту команду",
   YOU_ARE_NOT_ALLOWED_TO_DELETE_TEAMS_IN_THIS_ORGANIZATION:
     "Вам не разрешено удалять команды в этой организации",
   YOU_ARE_NOT_ALLOWED_TO_CREATE_TEAMS_IN_THIS_ORGANIZATION:
     "Вам не разрешено создавать команды в этой организации",
-  ORGANIZATION_MEMBERSHIP_LIMIT_REACHED:
-    "Достигнут лимит членства в организации",
-  YOU_ARE_NOT_ALLOWED_TO_UPDATE_THIS_MEMBER:
-    "Вам не разрешено обновлять этого участника",
+  ORGANIZATION_MEMBERSHIP_LIMIT_REACHED: "Достигнут лимит членства в организации",
+  YOU_ARE_NOT_ALLOWED_TO_UPDATE_THIS_MEMBER: "Вам не разрешено обновлять этого участника",
   UNABLE_TO_REMOVE_LAST_TEAM: "Невозможно удалить последнюю команду",
-  YOU_HAVE_REACHED_THE_MAXIMUM_NUMBER_OF_TEAMS:
-    "Вы достигли максимального количества команд",
+  YOU_HAVE_REACHED_THE_MAXIMUM_NUMBER_OF_TEAMS: "Вы достигли максимального количества команд",
   FAILED_TO_RETRIEVE_INVITATION: "Не удалось получить приглашение",
   YOU_ARE_NOT_ALLOWED_TO_INVITE_USER_WITH_THIS_ROLE:
     "Вам не разрешено приглашать пользователя с этой ролью",
   INVITER_IS_NO_LONGER_A_MEMBER_OF_THE_ORGANIZATION:
     "Пригласивший больше не является участником организации",
-  YOU_ARE_NOT_ALLOWED_TO_CANCEL_THIS_INVITATION:
-    "Вам не разрешено отменять это приглашение",
-  YOU_ARE_NOT_THE_RECIPIENT_OF_THE_INVITATION:
-    "Вы не являетесь получателем приглашения",
+  YOU_ARE_NOT_ALLOWED_TO_CANCEL_THIS_INVITATION: "Вам не разрешено отменять это приглашение",
+  YOU_ARE_NOT_THE_RECIPIENT_OF_THE_INVITATION: "Вы не являетесь получателем приглашения",
   INVITATION_NOT_FOUND: "Приглашение не найдено",
-  USER_IS_ALREADY_INVITED_TO_THIS_ORGANIZATION:
-    "Пользователь уже приглашен в эту организацию",
+  USER_IS_ALREADY_INVITED_TO_THIS_ORGANIZATION: "Пользователь уже приглашен в эту организацию",
   YOU_ARE_NOT_ALLOWED_TO_INVITE_USERS_TO_THIS_ORGANIZATION:
     "Вам не разрешено приглашать пользователей в эту организацию",
-  YOU_ARE_NOT_ALLOWED_TO_DELETE_THIS_MEMBER:
-    "Вам не разрешено удалять этого участника",
+  YOU_ARE_NOT_ALLOWED_TO_DELETE_THIS_MEMBER: "Вам не разрешено удалять этого участника",
   YOU_CANNOT_LEAVE_THE_ORGANIZATION_AS_THE_ONLY_OWNER:
     "Вы не можете покинуть организацию, являясь единственным владельцем",
   TEAM_ALREADY_EXISTS: "Команда уже существует",
-  YOU_ARE_NOT_ALLOWED_TO_CREATE_A_NEW_TEAM:
-    "Вам не разрешено создавать новую команду",
+  YOU_ARE_NOT_ALLOWED_TO_CREATE_A_NEW_TEAM: "Вам не разрешено создавать новую команду",
   ROLE_NOT_FOUND: "Роль не найдена",
   MEMBER_NOT_FOUND: "Участник не найден",
   USER_IS_ALREADY_A_MEMBER_OF_THIS_ORGANIZATION:
     "Пользователь уже является участником этой организации",
   NO_ACTIVE_ORGANIZATION: "Нет активной организации",
-  YOU_ARE_NOT_ALLOWED_TO_DELETE_THIS_ORGANIZATION:
-    "Вам не разрешено удалять эту организацию",
-  YOU_ARE_NOT_ALLOWED_TO_UPDATE_THIS_ORGANIZATION:
-    "Вам не разрешено обновлять эту организацию",
-  USER_IS_NOT_A_MEMBER_OF_THE_ORGANIZATION:
-    "Пользователь не является участником организации",
+  YOU_ARE_NOT_ALLOWED_TO_DELETE_THIS_ORGANIZATION: "Вам не разрешено удалять эту организацию",
+  YOU_ARE_NOT_ALLOWED_TO_UPDATE_THIS_ORGANIZATION: "Вам не разрешено обновлять эту организацию",
+  USER_IS_NOT_A_MEMBER_OF_THE_ORGANIZATION: "Пользователь не является участником организации",
   ORGANIZATION_NOT_FOUND: "Организация не найдена",
   ORGANIZATION_ALREADY_EXISTS: "Организация уже существует",
   YOU_HAVE_REACHED_THE_MAXIMUM_NUMBER_OF_ORGANIZATIONS:
     "Вы достигли максимального количества организаций",
-  YOU_ARE_NOT_ALLOWED_TO_CREATE_A_NEW_ORGANIZATION:
-    "Вам не разрешено создавать новую организацию",
+  YOU_ARE_NOT_ALLOWED_TO_CREATE_A_NEW_ORGANIZATION: "Вам не разрешено создавать новую организацию",
   FAILED_TO_UPDATE_PASSKEY: "Не удалось обновить ключ доступа",
   UNABLE_TO_CREATE_SESSION: "Невозможно создать сессию",
   AUTHENTICATION_FAILED: "Аутентификация не удалась",
   PASSKEY_NOT_FOUND: "Ключ доступа не найден",
   FAILED_TO_VERIFY_REGISTRATION: "Не удалось подтвердить регистрацию",
-  YOU_ARE_NOT_ALLOWED_TO_REGISTER_THIS_PASSKEY:
-    "Вам не разрешено регистрировать этот ключ доступа",
+  YOU_ARE_NOT_ALLOWED_TO_REGISTER_THIS_PASSKEY: "Вам не разрешено регистрировать этот ключ доступа",
   CHALLENGE_NOT_FOUND: "Вызов не найден",
   PHONE_NUMBER_NOT_VERIFIED: "Номер телефона не подтвержден",
   INVALID_OTP: "Неверный одноразовый пароль",
@@ -457,8 +406,7 @@ export const RU_LOCALE = {
   INVALID_PHONE_NUMBER_OR_PASSWORD: "Неверный номер телефона или пароль",
   PHONE_NUMBER_EXIST: "Номер телефона существует",
   INVALID_PHONE_NUMBER: "Неверный номер телефона",
-  SUBSCRIPTION_NOT_SCHEDULED_FOR_CANCELLATION:
-    "Отмена подписки не запланирована",
+  SUBSCRIPTION_NOT_SCHEDULED_FOR_CANCELLATION: "Отмена подписки не запланирована",
   SUBSCRIPTION_NOT_ACTIVE: "Подписка не активна",
   EMAIL_VERIFICATION_REQUIRED: "Требуется подтверждение email",
   FAILED_TO_FETCH_PLANS: "Не удалось загрузить тарифные планы",
@@ -476,8 +424,7 @@ export const RU_LOCALE = {
   TEAM_MEMBER_LIMIT_REACHED: "Достигнут лимит участников команды",
   TEAM_LIMIT_REACHED: "Достигнут лимит команд",
   INVALID_TWO_FACTOR_COOKIE: "Неверный куки двухфакторной аутентификации",
-  TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE:
-    "Слишком много попыток запроса нового кода",
+  TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE: "Слишком много попыток запроса нового кода",
   INVALID_CODE: "Неверный код",
   INVALID_BACKUP_CODE: "Неверный резервный код",
   BACKUP_CODES_NOT_ENABLED: "Резервные коды не включены",
@@ -492,4 +439,4 @@ export const RU_LOCALE = {
   UNEXPECTED_ERROR: "Непредвиденная ошибка",
   EMAIL_NOT_VERIFIED: "Email не подтвержден",
   INVALID_USERNAME_OR_PASSWORD: "Неверное имя пользователя или пароль",
-};
+}

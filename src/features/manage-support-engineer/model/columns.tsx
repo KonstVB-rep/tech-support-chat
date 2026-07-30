@@ -1,6 +1,10 @@
-"use client";
+"use client"
 
-import { Button } from "@/shared/ui/button";
+import type { User } from "@prisma/client"
+import type { ColumnDef } from "@tanstack/react-table"
+import { MoreHorizontal } from "lucide-react"
+import { DeleteSupportEngineerDialog } from "@/features/manage-support-engineer/ui"
+import { Button } from "@/shared/ui/components/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,12 +12,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
-import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
-
-import type { User } from "@prisma/client";
-import { DeleteSupportEngineerDialog } from "@/features/manage-support-engineer/ui";
+} from "@/shared/ui/components/dropdown-menu"
 
 export const columns: ColumnDef<User>[] = [
   {
@@ -28,19 +27,19 @@ export const columns: ColumnDef<User>[] = [
     accessorKey: "createdAt",
     header: "Создан",
     cell: ({ row }) => {
-      const date = new Date(row.getValue("createdAt"));
-      return new Intl.DateTimeFormat("ru-RU").format(date);
+      const date = new Date(row.getValue("createdAt"))
+      return new Intl.DateTimeFormat("ru-RU").format(date)
     },
   },
   {
     id: "actions",
     cell: ({ row }) => {
-      const engineer = row.original;
+      const engineer = row.original
 
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button className="h-8 w-8 p-0" variant="ghost">
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -48,19 +47,16 @@ export const columns: ColumnDef<User>[] = [
             <DropdownMenuLabel>Действия</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onSelect={(e) => {
-                e.preventDefault();
-              }}
               className="text-red-600"
+              onSelect={(e) => {
+                e.preventDefault()
+              }}
             >
-              <DeleteSupportEngineerDialog
-                engineerIds={engineer.id}
-                engineerName={engineer.name}
-              />
+              <DeleteSupportEngineerDialog engineerIds={engineer.id} engineerName={engineer.name} />
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      );
+      )
     },
   },
-];
+]

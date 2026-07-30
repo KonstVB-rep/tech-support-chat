@@ -1,17 +1,17 @@
-"use client";
+"use client"
 
-import type { PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react"
 import {
   environmentManager,
   MutationCache,
   QueryCache,
   QueryClient,
   QueryClientProvider,
-} from "@tanstack/react-query";
-import { TOAST } from "@/shared/ui/Toast";
+} from "@tanstack/react-query"
+import { TOAST } from "@/shared/ui/components/Toast"
 
 function makeQueryClient() {
-  const isServerSide = environmentManager.isServer();
+  const isServerSide = environmentManager.isServer()
 
   return new QueryClient({
     defaultOptions: {
@@ -23,73 +23,69 @@ function makeQueryClient() {
     },
 
     queryCache: new QueryCache({
-      onError: (error: any, query) => {
+      onError: (error: unknown, query) => {
+        const err = error as { status?: number; message?: string }
+
         const isAuthError =
-          error?.status === 401 ||
-          error?.status === 403 ||
-          error?.message?.includes("401") ||
-          error?.message?.includes("Unauthorized") ||
-          error?.message?.includes("Не авторизован");
+          err?.status === 401 ||
+          err?.status === 403 ||
+          err?.message?.includes("401") ||
+          err?.message?.includes("Unauthorized") ||
+          err?.message?.includes("Не авторизован")
 
         if (isAuthError) {
-          // 🚀 Используем новый безопасный флаг
           if (!isServerSide) {
-            const currentPath = window.location.pathname;
-            window.location.href = `/auth/sign-in?redirect=${encodeURIComponent(currentPath)}`;
+            const currentPath = window.location.pathname
+            window.location.href = `/auth/sign-in?redirect=${encodeURIComponent(currentPath)}`
           }
-          return;
+          return
         }
 
         if (query.meta?.errorMessage) {
-          TOAST.ERROR(query.meta.errorMessage as string);
-          return;
+          TOAST.ERROR(query.meta.errorMessage as string)
+          return
         }
 
-        const message =
-          error instanceof Error ? error.message : "Произошла ошибка";
-        TOAST.ERROR(
-          message === "Failed to fetch"
-            ? "Ошибка сети (Проверьте подключение)"
-            : message,
-        );
+        const message = error instanceof Error ? error.message : "Произошла ошибка"
+        TOAST.ERROR(message === "Failed to fetch" ? "Ошибка сети (Проверьте подключение)" : message)
       },
     }),
 
     mutationCache: new MutationCache({
-      onError: (error: any) => {
-        // 🚀 Защита SSR контура через новое API
-        if (isServerSide) return;
+      onError: (error: unknown) => {
+        if (isServerSide) return
 
-        const isAuthError =
-          error?.status === 401 || error?.message?.includes("401");
+        const err = error as { status?: number; message?: string }
+
+        const isAuthError = err.status === 401 || err.message?.includes("401")
+
         if (isAuthError) {
-          window.location.href = "/auth/sign-in";
-          return;
+          window.location.href = "/auth/sign-in"
+          return
         }
 
-        TOAST.ERROR(error.message || "Ошибка при выполнении операции");
+        const textError = err.message || "Ошибка при выполнении операции"
+        TOAST.ERROR(textError)
       },
     }),
-  });
+  })
 }
 
-let browserQueryClient: QueryClient | undefined;
+let browserQueryClient: QueryClient | undefined
 
 export const getQueryClient = () => {
   if (environmentManager.isServer()) {
-    return makeQueryClient();
+    return makeQueryClient()
   } else {
-    if (!browserQueryClient) browserQueryClient = makeQueryClient();
-    return browserQueryClient;
+    if (!browserQueryClient) browserQueryClient = makeQueryClient()
+    return browserQueryClient
   }
-};
+}
 
 const QueryProvider = ({ children }: PropsWithChildren) => {
-  const queryClient = getQueryClient();
+  const queryClient = getQueryClient()
 
-  return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
-};
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+}
 
-export default QueryProvider;
+export default QueryProvider

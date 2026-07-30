@@ -1,30 +1,30 @@
+import { cn } from "@/shared/lib/utils"
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
-} from "@/shared/ui/card";
-import { cn } from "@/shared/lib/utils";
-import { Field, FieldGroup, FieldLabel } from "@/shared/ui/field";
+} from "@/shared/ui/components/card"
+import { Field, FieldGroup, FieldLabel } from "@/shared/ui/components/field"
 
 interface OrganizationData {
-  name: string;
-  legalAddress: string;
-  actualAddress: string | null;
-  inn: string | null;
-  contractNumber: string;
-  timeSupportFrom: string;
-  timeSupportTo: string;
-  contractStart: Date;
-  contractEnd: Date;
+  name: string
+  legalAddress: string
+  actualAddress: string | null
+  inn: string | null
+  contractNumber: string
+  timeSupportFrom: string
+  timeSupportTo: string
+  contractStart: Date
+  contractEnd: Date
 }
 
 interface OrganizationViewProps {
-  data: OrganizationData;
-  title?: string;
-  description?: string;
-  className?: string;
+  data: OrganizationData
+  title?: string
+  description?: string
+  className?: string
 }
 
 export const OrganizationViewCard = ({
@@ -34,8 +34,8 @@ export const OrganizationViewCard = ({
   className,
 }: OrganizationViewProps) => {
   return (
-    <div className={cn("flex items-start h-full select-none", className)}>
-      <Card className="w-full max-w-lg min-w-2xs h-fit bg-transparent shadow-none ring-0">
+    <div className={cn("flex h-full select-none items-start", className)}>
+      <Card className="h-fit w-full min-w-2xs max-w-lg bg-transparent shadow-none ring-0">
         <CardHeader>
           <CardTitle>{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
@@ -47,7 +47,7 @@ export const OrganizationViewCard = ({
                 <FieldLabel>Название</FieldLabel>
                 <div
                   className={cn(
-                    "field-height flex items-center text-sm font-medium text-foreground px-2 bg-muted rounded-md",
+                    "field-height flex items-center rounded-md bg-muted px-2 font-medium text-foreground text-sm",
                   )}
                 >
                   {data.name || "—"}
@@ -58,7 +58,7 @@ export const OrganizationViewCard = ({
                 <FieldLabel>Юридический адрес</FieldLabel>
                 <div
                   className={cn(
-                    "field-height flex items-center text-sm font-medium text-foreground px-2 bg-muted rounded-md",
+                    "field-height flex items-center rounded-md bg-muted px-2 font-medium text-foreground text-sm",
                   )}
                 >
                   {data.legalAddress || "—"}
@@ -69,7 +69,7 @@ export const OrganizationViewCard = ({
                 <FieldLabel>Фактический адрес</FieldLabel>
                 <div
                   className={cn(
-                    "field-height flex items-center text-sm font-medium text-foreground px-2 bg-muted rounded-md",
+                    "field-height flex items-center rounded-md bg-muted px-2 font-medium text-foreground text-sm",
                   )}
                 >
                   {data.actualAddress || "—"}
@@ -80,7 +80,7 @@ export const OrganizationViewCard = ({
                 <FieldLabel>ИНН</FieldLabel>
                 <div
                   className={cn(
-                    "field-height flex items-center text-sm font-medium text-foreground px-2 bg-muted rounded-md",
+                    "field-height flex items-center rounded-md bg-muted px-2 font-medium text-foreground text-sm",
                   )}
                 >
                   {data.inn || "—"}
@@ -91,7 +91,7 @@ export const OrganizationViewCard = ({
                 <FieldLabel>Номер договора</FieldLabel>
                 <div
                   className={cn(
-                    "field-height flex items-center text-sm font-medium text-foreground px-2 bg-muted rounded-md",
+                    "field-height flex items-center rounded-md bg-muted px-2 font-medium text-foreground text-sm",
                   )}
                 >
                   {data.contractNumber || "—"}
@@ -102,23 +102,22 @@ export const OrganizationViewCard = ({
                 <FieldLabel>Время поддержки</FieldLabel>
                 <div
                   className={cn(
-                    "field-height flex items-center text-sm font-medium text-foreground px-2 bg-muted rounded-md",
+                    "field-height flex items-center rounded-md bg-muted px-2 font-medium text-foreground text-sm",
                   )}
                 >
                   {data.timeSupportFrom} — {data.timeSupportTo}
                 </div>
               </Field>
 
-              <div className="flex gap-2 w-full">
+              <div className="flex w-full gap-2">
                 <Field className="flex-1">
                   <FieldLabel>Дата начала договора</FieldLabel>
                   <div
                     className={cn(
-                      "field-height flex items-center text-sm font-medium text-foreground px-2 bg-muted rounded-md",
+                      "field-height flex items-center rounded-md bg-muted px-2 font-medium text-foreground text-sm",
                     )}
                   >
-                    {Intl.DateTimeFormat("ru").format(data.contractStart) ||
-                      "—"}
+                    {Intl.DateTimeFormat("ru").format(data.contractStart) || "—"}
                   </div>
                 </Field>
 
@@ -126,7 +125,7 @@ export const OrganizationViewCard = ({
                   <FieldLabel>Дата окончания договора</FieldLabel>
                   <div
                     className={cn(
-                      "field-height flex items-center text-sm font-medium text-foreground px-2 bg-muted rounded-md",
+                      "field-height flex items-center rounded-md bg-muted px-2 font-medium text-foreground text-sm",
                     )}
                   >
                     {Intl.DateTimeFormat("ru").format(data.contractEnd) || "—"}
@@ -138,5 +137,5 @@ export const OrganizationViewCard = ({
         </CardContent>
       </Card>
     </div>
-  );
-};
+  )
+}

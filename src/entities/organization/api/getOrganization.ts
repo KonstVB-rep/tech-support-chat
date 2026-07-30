@@ -1,19 +1,15 @@
 // src/entities/organization/api/getOrganization.ts
-"use server";
+"use server"
 
-import { prisma } from "@/prisma/prisma-client";
+import { cacheTag } from "next/cache"
+import { redirect } from "next/navigation"
+import { prisma } from "@/prisma/prisma-client"
+import { getSession } from "@/shared/lib/server-current-user"
+import type { SingleOrganizationWithCounts } from "../model/types"
 
-import { cacheTag } from "next/cache";
-import { redirect, notFound } from "next/navigation";
-import type { SingleOrganizationWithCounts } from "../model/types";
-import { getSession } from "@/shared/lib/server-current-user";
-import { USER_ROLE } from "@/shared/constants";
-
-const fetchOrganization = async (
-  id: string,
-): Promise<SingleOrganizationWithCounts | null> => {
-  "use cache";
-  cacheTag(`organization-${id}`);
+const fetchOrganization = async (id: string): Promise<SingleOrganizationWithCounts | null> => {
+  "use cache"
+  cacheTag(`organization-${id}`)
 
   return prisma.organization.findUnique({
     where: { id },
@@ -25,26 +21,24 @@ const fetchOrganization = async (
         },
       },
     },
-  });
-};
+  })
+}
 
-export const getOrganization = async (
-  id: string,
-): Promise<SingleOrganizationWithCounts> => {
-  const session = await getSession();
+export const getOrganization = async (id: string): Promise<SingleOrganizationWithCounts> => {
+  const session = await getSession()
   if (!session?.user) {
-    redirect("/auth/sign-in?error=unauthorized");
+    redirect("/auth/sign-in?error=unauthorized")
   }
 
-  const isGlobalAdmin = session.user.role.toLowerCase() === "admin";
+  const isGlobalAdmin = session.user.role.toLowerCase() === "admin"
 
   if (!isGlobalAdmin) {
     const userProfile = await prisma.profile.findUnique({
       where: { userId: session.user.id },
-    });
+    })
 
     if (!userProfile) {
-      redirect("/chats?error=profile_not_found");
+      redirect("/chats?error=profile_not_found")
     }
 
     const membership = await prisma.organizationMember.findUnique({
@@ -55,18 +49,18 @@ export const getOrganization = async (
         },
       },
       select: { role: true },
-    });
+    })
 
     if (!membership || membership.role !== "RESPONSIBLE") {
-      redirect("/chats?error=forbidden");
+      redirect("/chats?error=forbidden")
     }
   }
 
-  const organization = await fetchOrganization(id);
+  const organization = await fetchOrganization(id)
 
   if (!organization) {
-    redirect("/chats?error=not_found");
+    redirect("/chats?error=not_found")
   }
 
-  return organization;
-};
+  return organization
+}

@@ -1,41 +1,38 @@
-import { EmployeeWithProfile } from "@/entities/employee";
-import {
-  UpdateEmployee,
-  DeleteEmployeeDialog,
-} from "@/features/manage-employee";
-import { PushSettingsToggle } from "@/features/pwa-push/ui/PushSettingsToggle";
-import { DrawerComponent } from "@/shared/ui/custom/DrawerComponent";
-import { ReactNode } from "react";
+import type { ReactNode } from "react"
+import type { EmployeeWithProfile } from "@/entities/employee"
+import { DeleteEmployeeDialog, UpdateEmployee } from "@/features/manage-employee"
+import { PushSettingsToggle } from "@/features/pwa-push/ui/PushSettingsToggle"
+import { DrawerComponent } from "@/shared/ui/custom/DrawerComponent"
 
 const EmployeeActionsMenu = ({
   data,
   trigger,
   side,
 }: {
-  data: EmployeeWithProfile;
-  trigger: ReactNode;
-  side: "left" | "right" | "bottom" | "top";
+  data: EmployeeWithProfile
+  trigger: ReactNode
+  side: "left" | "right" | "bottom" | "top"
 }) => {
   return (
-    <DrawerComponent trigger={trigger} side={side}>
-      <div className="no-scrollbar overflow-y-auto p-4 flex flex-col gap-3 h-full overflow-hidden">
+    <DrawerComponent side={side} trigger={trigger}>
+      <div className="no-scrollbar flex h-full flex-col gap-3 overflow-hidden overflow-y-auto p-4">
         <UpdateEmployee employee={data} />
         <PushSettingsToggle
-          profileId={data.profileId}
           isSupportEngineer={false}
-          pushEnabled={data.profile.pushEnabled}
           isViewedByAdmin={false}
-          source="organization"
           organizationId={data.organizationId}
+          profileId={data.profileId}
+          pushEnabled={data.profile.pushEnabled}
+          source="organization"
         />
         <DeleteEmployeeDialog
-          ids={data.id}
           employeeName={data.profile.name}
+          ids={data.id}
           organizationId={data.organizationId}
         />
       </div>
     </DrawerComponent>
-  );
-};
+  )
+}
 
-export default EmployeeActionsMenu;
+export default EmployeeActionsMenu

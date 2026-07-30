@@ -1,15 +1,15 @@
 // src/app/providers/auth-ui-wrapper.tsx
-"use client";
+"use client"
 
-import { RU_LOCALE } from "@/shared/lib/18n/ru";
-import { AuthUIProvider } from "@daveyplate/better-auth-ui";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Suspense, type ReactNode } from "react";
-import { authClient } from "../lib/auth-client";
+import { type ReactNode, Suspense } from "react"
+import { AuthUIProvider } from "@daveyplate/better-auth-ui"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { RU_LOCALE } from "@/shared/lib/18n/ru"
+import { authClient } from "../lib/auth-client"
 
 export const AuthUIWrapper = ({ children }: { children: ReactNode }) => {
-  const router = useRouter();
+  const router = useRouter()
 
   return (
     <Suspense fallback={null}>
@@ -24,5 +24,5 @@ export const AuthUIWrapper = ({ children }: { children: ReactNode }) => {
         {children}
       </AuthUIProvider>
     </Suspense>
-  );
-};
+  )
+}

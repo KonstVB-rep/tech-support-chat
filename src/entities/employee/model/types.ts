@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client"
 
 export type EmployeeWithProfile = Prisma.OrganizationMemberGetPayload<{
   include: {
@@ -6,12 +6,12 @@ export type EmployeeWithProfile = Prisma.OrganizationMemberGetPayload<{
       include: {
         user: {
           select: {
-            email: true;
-            role: true;
-            isActive: true;
-          };
-        };
-      };
-    };
-  };
-}>;
+            email: true
+            role: true
+            isActive: true
+          }
+        }
+      }
+    }
+  }
+}>

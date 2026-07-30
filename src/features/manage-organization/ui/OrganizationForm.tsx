@@ -1,168 +1,137 @@
-"use client";
-import { type FormSchemaOrganizationType } from "@/entities/organization";
-import { Button } from "@/shared/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/shared/ui/card";
-import ButtonSubmitForm from "@/shared/ui/custom/ButtonSubmitForm";
-import { CalendarComponent } from "@/shared/ui/custom/CalendarComponent";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/shared/ui/input-group";
-import { Clock2Icon } from "lucide-react";
-import { Controller, UseFormReturn } from "react-hook-form";
+"use client"
+import { Clock2Icon } from "lucide-react"
+import { Controller, type UseFormReturn } from "react-hook-form"
+import type { FormSchemaOrganizationType } from "@/entities/organization"
+import { Button } from "@/shared/ui/components/button"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/shared/ui/components/card"
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/components/field"
+import { Input } from "@/shared/ui/components/input"
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/shared/ui/components/input-group"
+import ButtonSubmitForm from "@/shared/ui/custom/ButtonSubmitForm"
+import { CalendarComponent } from "@/shared/ui/custom/CalendarComponent"
 
 type OrganizationFormProps = {
-  form: UseFormReturn<FormSchemaOrganizationType>;
-  formAction: (formData: FormData) => void;
-  isPending: boolean;
-  title: string;
-};
+  form: UseFormReturn<FormSchemaOrganizationType>
+  formAction: (formData: FormData) => void
+  isPending: boolean
+  title: string
+}
 
-export const OrganizationForm = ({
-  form,
-  formAction,
-  isPending,
-  title,
-}: OrganizationFormProps) => {
+export const OrganizationForm = ({ form, formAction, isPending, title }: OrganizationFormProps) => {
   return (
-    <div className="flex items-start justify-center w-full h-full select-none">
-      <Card className="w-full max-w-lg min-w-2xs h-fit bg-transparent shadow-none ring-0">
-        <form id="organization-form" action={formAction}>
+    <div className="flex h-full w-full select-none items-start justify-center">
+      <Card className="h-fit w-full min-w-2xs max-w-lg bg-transparent shadow-none ring-0">
+        <form action={formAction} id="organization-form">
           <CardHeader>
-            <CardTitle className="text-base font-semibold">{title}</CardTitle>
+            <CardTitle className="font-semibold text-base">{title}</CardTitle>
           </CardHeader>
           <CardContent>
             <FieldGroup>
               <Controller
-                name="name"
                 control={form.control}
+                name="name"
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="name">Название</FieldLabel>
                     <Input
                       {...field}
+                      aria-invalid={fieldState.invalid}
+                      autoComplete="off"
+                      className="field-height"
                       id="name"
-                      aria-invalid={fieldState.invalid}
                       placeholder=""
-                      autoComplete="off"
-                      className="field-height"
                     />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
               />
               <Controller
+                control={form.control}
                 name="legalAddress"
-                control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="legalAddress">
-                      Юридический адрес
-                    </FieldLabel>
+                    <FieldLabel htmlFor="legalAddress">Юридический адрес</FieldLabel>
                     <Input
                       {...field}
+                      aria-invalid={fieldState.invalid}
+                      autoComplete="off"
+                      className="field-height"
                       id="legalAddress"
-                      aria-invalid={fieldState.invalid}
                       placeholder=""
-                      autoComplete="off"
-                      className="field-height"
                     />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
               />
               <Controller
-                name="actualAddress"
                 control={form.control}
+                name="actualAddress"
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="actualAddress">
-                      Фактический адрес
-                    </FieldLabel>
+                    <FieldLabel htmlFor="actualAddress">Фактический адрес</FieldLabel>
                     <Input
                       {...field}
-                      id="actualAddress"
                       aria-invalid={fieldState.invalid}
-                      placeholder=""
                       autoComplete="off"
                       className="field-height"
+                      id="actualAddress"
+                      placeholder=""
                     />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
               />
               <Controller
-                name="inn"
                 control={form.control}
+                name="inn"
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="inn">ИНН</FieldLabel>
                     <Input
                       {...field}
-                      value={field.value ?? ""}
-                      id="inn"
                       aria-invalid={fieldState.invalid}
                       autoComplete="off"
                       className="field-height"
+                      id="inn"
+                      value={field.value ?? ""}
                     />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
               />
               <Controller
-                name="contractNumber"
                 control={form.control}
+                name="contractNumber"
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="contractNumber">
-                      Номер договора
-                    </FieldLabel>
+                    <FieldLabel htmlFor="contractNumber">Номер договора</FieldLabel>
                     <Input
                       {...field}
-                      id="contractNumber"
                       aria-invalid={fieldState.invalid}
-                      placeholder=""
                       autoComplete="off"
                       className="field-height"
+                      id="contractNumber"
+                      placeholder=""
                     />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
               />
 
               <div className="flex gap-2">
                 <Controller
-                  name="timeSupportFrom"
                   control={form.control}
+                  name="timeSupportFrom"
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel htmlFor="time-from"></FieldLabel>
                       <InputGroup>
                         <InputGroupInput
                           {...field}
-                          id="time-from"
-                          type="time"
-                          step="1"
                           className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                          id="time-from"
+                          step="1"
+                          type="time"
                         />
                         <InputGroupAddon>
                           <Clock2Icon className="text-muted-foreground" />
@@ -173,18 +142,18 @@ export const OrganizationForm = ({
                 />
 
                 <Controller
-                  name="timeSupportTo"
                   control={form.control}
+                  name="timeSupportTo"
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel htmlFor="time-to"></FieldLabel>
                       <InputGroup>
                         <InputGroupInput
                           {...field}
-                          id="time-to"
-                          type="time"
-                          step="1"
                           className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                          id="time-to"
+                          step="1"
+                          type="time"
                         />
                         <InputGroupAddon>
                           <Clock2Icon className="text-muted-foreground" />
@@ -197,35 +166,25 @@ export const OrganizationForm = ({
 
               <div className="flex gap-2">
                 <Controller
-                  name="contractStart"
                   control={form.control}
+                  name="contractStart"
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel>Дата начала договора</FieldLabel>
-                      <CalendarComponent
-                        field={field}
-                        aria-invalid={fieldState.invalid}
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
+                      <CalendarComponent aria-invalid={fieldState.invalid} field={field} />
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                     </Field>
                   )}
                 />
 
                 <Controller
-                  name="contractEnd"
                   control={form.control}
+                  name="contractEnd"
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel>Дата окончания договора</FieldLabel>
-                      <CalendarComponent
-                        field={field}
-                        aria-invalid={fieldState.invalid}
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
+                      <CalendarComponent aria-invalid={fieldState.invalid} field={field} />
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                     </Field>
                   )}
                 />
@@ -235,23 +194,23 @@ export const OrganizationForm = ({
           <CardFooter className="border-none bg-transparent p-2">
             <Field orientation="horizontal">
               <Button
+                disabled={isPending}
+                onClick={() => form.reset()}
                 type="button"
                 variant="outline"
-                onClick={() => form.reset()}
-                disabled={isPending}
               >
                 Сбросить
               </Button>
               <ButtonSubmitForm
-                title="Сохранить"
-                text="Сохранение..."
                 disabled={isPending}
                 form="organization-form"
+                text="Сохранение..."
+                title="Сохранить"
               />
             </Field>
           </CardFooter>
         </form>
       </Card>
     </div>
-  );
-};
+  )
+}

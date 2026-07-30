@@ -1,133 +1,128 @@
 // src/entities/chat/ui/ChatListItem.tsx
-import Image from "next/image";
-import Link from "next/link";
-import { cn } from "@/shared/lib/utils";
-import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
-import { Button } from "@/shared/ui/button";
-import type { ChatItem } from "@/entities/chat/api/types";
-import { useMyProfile } from "@/entities/profile/api";
+
+import { MessageSquareOff } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import type { ChatItem } from "@/entities/chat/api/types"
+import { useMyProfile } from "@/entities/profile/api"
+import { cn } from "@/shared/lib/utils"
+import { Avatar, AvatarFallback } from "@/shared/ui/components/avatar"
+import { Button } from "@/shared/ui/components/button"
 
 type ChatListItemProps = {
-  chat: ChatItem;
-  isActive: boolean;
-  onSelect: () => void;
-  onPrefetch: () => void;
-};
+  chat: ChatItem
+  isActive: boolean
+  onSelect: () => void
+  onPrefetch: () => void
+}
 
 const formatTime = (dateStr: string) => {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
 
   if (days === 0) {
     return date.toLocaleTimeString("ru-RU", {
       hour: "2-digit",
       minute: "2-digit",
-    });
+    })
   }
-  if (days === 1) return "Вчера";
-  return date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
-};
+  if (days === 1) return "Вчера"
+  return date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" })
+}
 
 const LinkPath = {
   user: "/user-organizations",
   admin: (id: string) => `/admin/organizations/${id}`,
-};
+}
 
-const ChatListItem = ({
-  chat,
-  isActive,
-  onSelect,
-  onPrefetch,
-}: ChatListItemProps) => {
-  const displayTitle =
-    chat.title || chat.organization?.name || "Обращение в поддержку";
+const ChatListItem = ({ chat, isActive, onSelect, onPrefetch }: ChatListItemProps) => {
+  const displayTitle = chat.title || chat.organization?.name || "Обращение в поддержку"
 
-  const { data: profile } = useMyProfile();
+  const { data: profile } = useMyProfile()
 
-  const lastMsg = chat.lastMessage ?? null;
-  const attachments = lastMsg?.attachments ?? [];
+  const lastMsg = chat.lastMessage ?? null
+  const attachments = lastMsg?.attachments ?? []
 
-  const firstImage = attachments.find((a) => a.type.startsWith("image"));
-  const firstVideo = attachments.find((a) => a.type.startsWith("video"));
+  const firstImage = attachments.find((a) => a.type.startsWith("image"))
+  const firstVideo = attachments.find((a) => a.type.startsWith("video"))
   const firstDoc = attachments.find(
     (a) => !a.type.startsWith("image") && !a.type.startsWith("video"),
-  );
+  )
 
-  console.log(profile, "profile");
+  const hasUnreadMessages = !!(chat.isContractActive && chat.unreadCount && chat.unreadCount > 0)
+  const badgeText = chat.unreadCount && chat.unreadCount > 99 ? "99+" : chat.unreadCount
 
   return (
-    <div className="relative">
+    <div className="relative rounded-lg">
       {!chat.isContractActive && (
         <Link
+          className="absolute top-5 left-4 z-10 rounded-full bg-primary/30 p-2 text-white text-xs md:hover:bg-primary/15"
           href={
             profile?.user?.role === "admin"
               ? LinkPath.admin(chat?.organization?.id || "")
               : LinkPath.user
           }
-          title="Подробнее"
-          className="text-xs z-10 absolute bottom-[2px] right-[2px] p-1 border border-primary rounded-md bg-red-800 text-white"
+          title="Договор не активен.Подробнее"
         >
-          Договор не активен
+          <MessageSquareOff className="font-semibold text-red-600" />
         </Link>
       )}
 
       <Button
+        className={cn(
+          "relative flex h-auto w-full items-center gap-3 rounded-md bg-transparent px-3 py-2.5 text-left transition-colors hover:bg-primary/15",
+          isActive && "md:bg-primary/10 md:hover:bg-primary/15",
+          !chat.isContractActive &&
+            "pointer-events-none border-1 border-primary/15 border-dashed opacity-50",
+        )}
         data-chat-id={chat.id}
         onClick={onSelect}
         onMouseEnter={onPrefetch}
-        className={cn(
-          "w-full relative items-center gap-3 px-3 py-2.5 hover:bg-muted/50 bg-transparent transition-colors text-left h-auto rounded-md flex",
-          isActive && "md:bg-primary/10 md:hover:bg-primary/15",
-        )}
       >
-        <Avatar className="w-11 h-11 border border-border/50 flex-shrink-0">
-          <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-semibold">
+        <Avatar className="h-11 w-11 flex-shrink-0 border border-border/50">
+          <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 font-semibold text-primary-foreground">
             {displayTitle.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-0.5">
-            <h3 className="font-semibold text-sm truncate text-primary">
-              {displayTitle}
-            </h3>
-            <span className="text-[10px] text-muted-foreground flex-shrink-0 ml-2">
-              {lastMsg
-                ? formatTime(lastMsg.createdAt)
-                : formatTime(chat.updatedAt)}
+        <div className="min-w-0 flex-1">
+          <div className="mb-0.5 flex items-center justify-between">
+            <h3 className="truncate font-semibold text-primary text-sm">{displayTitle}</h3>
+            <span className="ml-2 flex-shrink-0 text-[10px] text-muted-foreground">
+              {lastMsg ? formatTime(lastMsg.createdAt) : formatTime(chat.updatedAt)}
             </span>
           </div>
 
-          <div className="flex items-end justify-between gap-2 mt-1">
-            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+          <div className="mt-1 flex items-end justify-between gap-2">
+            <div className="flex min-w-0 flex-1 items-center gap-1.5">
               {firstImage && (
-                <div className="relative w-8 h-8 rounded overflow-hidden flex-shrink-0 border border-border/30">
+                <div className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded border border-border/30">
                   <Image
-                    src={firstImage.url}
                     alt=""
-                    fill
                     className="object-cover"
-                    unoptimized
+                    fill
                     sizes="32px"
+                    src={firstImage.url}
+                    unoptimized
                   />
                 </div>
               )}
 
               {!firstImage && firstVideo && (
-                <div className="relative w-8 h-8 rounded overflow-hidden flex-shrink-0 border border-border/30 bg-black/5 flex items-center justify-center">
+                <div className="relative flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded border border-border/30 bg-black/5">
                   <span className="text-xs">🎥</span>
                 </div>
               )}
 
               {!firstImage && !firstVideo && firstDoc && (
-                <div className="w-8 h-8 rounded flex-shrink-0 border border-border/30 bg-muted/50 flex items-center justify-center">
+                <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded border border-border/30 bg-muted/50">
                   <span className="text-xs">📎</span>
                 </div>
               )}
 
-              <p className="text-xs text-muted-foreground line-clamp-1 leading-tight min-w-0">
+              <p className="line-clamp-1 min-w-0 text-muted-foreground text-xs leading-tight">
                 {lastMsg?.text ||
                   (firstImage
                     ? "Фото"
@@ -139,16 +134,16 @@ const ChatListItem = ({
               </p>
             </div>
 
-            {(chat.unreadCount ?? 0) > 0 && (
-              <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center leading-none flex-shrink-0">
-                {chat.unreadCount! > 99 ? "99+" : chat.unreadCount}
+            {hasUnreadMessages && (
+              <span className="flex h-[18px] min-w-[18px] flex-shrink-0 items-center justify-center rounded-full bg-blue-600 px-1 font-bold text-[10px] text-white leading-none">
+                {badgeText}
               </span>
             )}
           </div>
         </div>
       </Button>
     </div>
-  );
-};
+  )
+}
 
-export default ChatListItem;
+export default ChatListItem

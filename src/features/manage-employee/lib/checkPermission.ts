@@ -1,21 +1,22 @@
 // src/features/manage-employee/lib/checkPermission.ts
-import { prisma } from "@/prisma/prisma-client";
-import { USER_ROLE } from "@/shared/constants";
-import { OrgRole } from "@prisma/client";
 
-type EmployeeActionType = "CREATE" | "UPDATE" | "DELETE";
+import { OrgRole } from "@prisma/client"
+import { prisma } from "@/prisma/prisma-client"
+import { USER_ROLE } from "@/shared/constants"
+
+type EmployeeActionType = "CREATE" | "UPDATE" | "DELETE"
 
 export const EMPLOYEE_MANAGE_ACTIONS = {
   CREATE: "CREATE",
   UPDATE: "UPDATE",
   DELETE: "DELETE",
-} as const;
+} as const
 
 interface CheckPermissionParams {
-  user: { id: string; role: string };
-  organizationId: string;
-  targetEmployeeId?: string;
-  actionType: EmployeeActionType;
+  user: { id: string; role: string }
+  organizationId: string
+  targetEmployeeId?: string
+  actionType: EmployeeActionType
 }
 
 export const hasEmployeeManagePermission = async ({
@@ -24,10 +25,10 @@ export const hasEmployeeManagePermission = async ({
   targetEmployeeId,
   actionType,
 }: CheckPermissionParams): Promise<{
-  allowed: boolean;
-  error: string | null;
+  allowed: boolean
+  error: string | null
 }> => {
-  if (user.role === USER_ROLE.ADMIN) return { allowed: true, error: null };
+  if (user.role === USER_ROLE.ADMIN) return { allowed: true, error: null }
 
   // Ищем профиль текущего менеджера, проверяем, что он вообще работает в этой компании
   const currentMember = await prisma.organizationMember.findFirst({
@@ -35,13 +36,13 @@ export const hasEmployeeManagePermission = async ({
       organizationId,
       profile: { userId: user.id },
     },
-  });
+  })
 
   if (!currentMember) {
     return {
       allowed: false,
       error: "Вы не являетесь сотрудником этой организации",
-    };
+    }
   }
 
   // 3. Жесткий барьер: Если юзер не имеет статус RESPONSIBLE — ему закрыты вообще любые админ-действия
@@ -50,7 +51,7 @@ export const hasEmployeeManagePermission = async ({
       allowed: false,
       error:
         "Недостаточно прав. Управлять командой может только ответственный сотрудник (RESPONSIBLE).",
-    };
+    }
   }
 
   // =========================================================================
@@ -59,7 +60,7 @@ export const hasEmployeeManagePermission = async ({
 
   // 🟢 СЦЕНАРИЙ А: Добавление нового человека в компанию (CREATE)
   if (actionType === EMPLOYEE_MANAGE_ACTIONS.CREATE) {
-    return { allowed: true, error: null };
+    return { allowed: true, error: null }
   }
 
   // 🔴 СЦЕНАРИЙ Б: Полное удаление/деактивация из компании (DELETE)
@@ -68,7 +69,7 @@ export const hasEmployeeManagePermission = async ({
       return {
         allowed: false,
         error: "Не указан идентификатор сотрудника для удаления",
-      };
+      }
     }
 
     // ❌ ПРАВИЛО 1: Защита от самоудаления. Никто (ни MEMBER, ни RESPONSIBLE) не может удалить сам себя!
@@ -77,19 +78,19 @@ export const hasEmployeeManagePermission = async ({
         allowed: false,
         error:
           "Вы не можете самостоятельно удалить свой профиль или покинуть организацию. Обратитесь к суперадминистратору системы.",
-      };
+      }
     }
 
     // 🎯 Ищем целевую карточку того, кого этот RESPONSIBLE пытается удалить прямо сейчас
     const targetMember = await prisma.organizationMember.findUnique({
       where: { id: targetEmployeeId },
-    });
+    })
 
     if (!targetMember) {
       return {
         allowed: false,
         error: "Удаляемый сотрудник не найден в базе данных",
-      };
+      }
     }
 
     // ❌ ПРАВИЛО 2: RESPONSIBLE может удалять только рядовых рабочих (MEMBER).
@@ -99,10 +100,10 @@ export const hasEmployeeManagePermission = async ({
         allowed: false,
         error:
           "Запрещено. Менеджер не может удалить другого ответственного сотрудника (RESPONSIBLE). Это действие доступно только суперадминистратору.",
-      };
+      }
     }
 
-    return { allowed: true, error: null };
+    return { allowed: true, error: null }
   }
 
   // 🔵 СЦЕНАРИЙ В: Редактирование карточки (UPDATE)
@@ -111,12 +112,12 @@ export const hasEmployeeManagePermission = async ({
       return {
         allowed: false,
         error: "Не указан идентификатор сотрудника для обновления",
-      };
+      }
     }
 
     // Ограничение полей (что менять можно только должность) у нас запечатано на уровне Zod .pick() в самом экшене!
-    return { allowed: true, error: null };
+    return { allowed: true, error: null }
   }
 
-  return { allowed: false, error: "Неизвестный тип операции" };
-};
+  return { allowed: false, error: "Неизвестный тип операции" }
+}

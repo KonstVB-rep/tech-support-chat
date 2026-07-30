@@ -1,5 +1,8 @@
-"use client";
+"use client"
 
+import type { ReactNode } from "react"
+import { cn } from "@/shared/lib/utils"
+import { Button } from "../components/button"
 import {
   Drawer,
   DrawerClose,
@@ -9,25 +12,21 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "../drawer";
-import { Button } from "../button";
-import { useMediaQuery } from "@/shared/lib/hooks/useMediaQuery";
-import { cn } from "@/shared/lib/utils";
-import { ReactNode } from "react";
+} from "../components/drawer"
 
 // Твой файл с компонентом DrawerComponent.tsx
 type DrawerComponentProps = {
-  trigger?: ReactNode;
-  open?: boolean; // 🎯 Добавили контролируемый стейт
-  onOpenChange?: (open: boolean) => void; // 🎯 Добавили колбэк изменения
-  title?: string;
-  description?: string;
-  children: React.ReactNode;
-  submitText?: string;
-  side: "top" | "right" | "left" | "bottom";
-  showFooter?: boolean;
-  className?: string;
-};
+  trigger?: ReactNode
+  open?: boolean // 🎯 Добавили контролируемый стейт
+  onOpenChange?: (open: boolean) => void // 🎯 Добавили колбэк изменения
+  title?: string
+  description?: string
+  children: React.ReactNode
+  submitText?: string
+  side: "top" | "right" | "left" | "bottom"
+  showFooter?: boolean
+  className?: string
+}
 
 export const DrawerComponent = ({
   trigger,
@@ -42,7 +41,7 @@ export const DrawerComponent = ({
   className,
 }: DrawerComponentProps) => {
   return (
-    <Drawer direction={side} open={open} onOpenChange={onOpenChange}>
+    <Drawer direction={side} onOpenChange={onOpenChange} open={open}>
       {trigger && <DrawerTrigger asChild>{trigger}</DrawerTrigger>}
       <DrawerContent
         className={cn(
@@ -53,9 +52,7 @@ export const DrawerComponent = ({
         {(title || description) && (
           <DrawerHeader>
             <DrawerTitle>{title}</DrawerTitle>
-            <DrawerDescription className="sr-only">
-              {description}
-            </DrawerDescription>
+            <DrawerDescription className="sr-only">{description}</DrawerDescription>
           </DrawerHeader>
         )}
         {children}
@@ -69,5 +66,5 @@ export const DrawerComponent = ({
         )}
       </DrawerContent>
     </Drawer>
-  );
-};
+  )
+}

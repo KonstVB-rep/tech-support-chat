@@ -1,6 +1,7 @@
 // src/features/create-topic/api/useGetOrganizationsList.ts
-import { getOrganizations } from "@/entities/organization";
-import { useQuery } from "@tanstack/react-query";
+
+import { useQuery } from "@tanstack/react-query"
+import { getOrganizations } from "@/entities/organization"
 
 export function useGetOrganizationsList(isOpen: boolean) {
   return useQuery({
@@ -8,5 +9,5 @@ export function useGetOrganizationsList(isOpen: boolean) {
     queryFn: () => getOrganizations(),
     enabled: isOpen,
     staleTime: 1000 * 60 * 5,
-  });
+  })
 }

@@ -1,6 +1,9 @@
 // src/features/manage-support-engineer/ui/UpdateSupportEngineerDialog.tsx
-"use client";
-import { useState } from "react";
+"use client"
+import { useState } from "react"
+import { Pencil } from "lucide-react"
+import type { SupportEngineerWithProfile } from "@/entities/support-engineer"
+import { Button } from "@/shared/ui/components/button"
 import {
   Dialog,
   DialogContent,
@@ -8,28 +11,25 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/shared/ui/dialog";
-import { Button } from "@/shared/ui/button";
-import { Pencil } from "lucide-react";
-import { UpdateSupportEngineerForm } from "./UpdateSupportEngineerForm";
-import { SupportEngineerWithProfile } from "@/entities/support-engineer";
+} from "@/shared/ui/components/dialog"
+import { UpdateSupportEngineerForm } from "./UpdateSupportEngineerForm"
 
 export const UpdateSupportEngineerDialog = ({
   engineer,
 }: {
-  engineer: SupportEngineerWithProfile;
+  engineer: SupportEngineerWithProfile
 }) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false)
 
   return (
-    <Dialog open={open} onOpenChange={(open) => setOpen(open)}>
+    <Dialog onOpenChange={(open) => setOpen(open)} open={open}>
       <DialogTrigger asChild>
         <Button
-          variant="ghost"
+          className="flex items-center justify-start gap-2"
           title="Редактировать инженера"
-          className="flex justify-start items-center gap-2"
+          variant="ghost"
         >
-          <Pencil className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+          <Pencil className="h-4 w-4 text-muted-foreground transition-colors hover:text-primary" />
           Редактировать
         </Button>
       </DialogTrigger>
@@ -37,16 +37,11 @@ export const UpdateSupportEngineerDialog = ({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Редактировать инженера</DialogTitle>
-          <DialogDescription>
-            Измените данные инженера {engineer.profile?.name}
-          </DialogDescription>
+          <DialogDescription>Измените данные инженера {engineer.profile?.name}</DialogDescription>
         </DialogHeader>
 
-        <UpdateSupportEngineerForm
-          engineer={engineer}
-          onSuccess={() => setOpen(false)}
-        />
+        <UpdateSupportEngineerForm engineer={engineer} onSuccess={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}

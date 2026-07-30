@@ -1,39 +1,39 @@
 // src/shared/lib/hooks/useDataTable.ts
-"use client";
+"use client"
 
-import { useState, useMemo, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react"
 import {
-  useReactTable,
-  getCoreRowModel,
-  getSortedRowModel,
-  getFilteredRowModel,
   type ColumnDef,
-  type SortingState,
-  type VisibilityState,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
   type RowSelectionState,
-} from "@tanstack/react-table";
+  type SortingState,
+  useReactTable,
+  type VisibilityState,
+} from "@tanstack/react-table"
 
 interface UseDataTableOptions<TData extends { id: string }> {
-  data: TData[];
-  columns: ColumnDef<TData, any>[];
+  data: TData[]
+  columns: ColumnDef<TData, unknown>[]
 }
 
 export const useDataTable = <TData extends { id: string }>({
   data,
   columns,
 }: UseDataTableOptions<TData>) => {
-  const [isMounted, setIsMounted] = useState(false);
+  const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
+    setIsMounted(true)
+  }, [])
 
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [globalFilter, setGlobalFilter] = useState<string>("");
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+  const [globalFilter, setGlobalFilter] = useState<string>("")
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     role: false,
-  });
+  })
 
   // Инициализируем таблицу
   const table = useReactTable({
@@ -53,22 +53,20 @@ export const useDataTable = <TData extends { id: string }>({
       columnVisibility,
     },
     defaultColumn: { maxSize: 800 },
-  });
+  })
 
   // Расчет выбранных строк
-  const selectedRows = table.getFilteredSelectedRowModel().rows;
+  const selectedRows = table.getFilteredSelectedRowModel().rows
   const selectedIds = useMemo(() => {
-    return selectedRows
-      .map((row) => row.original?.id as string)
-      .filter(Boolean);
-  }, [selectedRows]);
+    return selectedRows.map((row) => row.original?.id as string).filter(Boolean)
+  }, [selectedRows])
 
-  const hasSelection = selectedIds.length > 0;
-  const selectedCount = selectedIds.length;
+  const hasSelection = selectedIds.length > 0
+  const selectedCount = selectedIds.length
 
   const resetSelection = () => {
-    table.resetRowSelection();
-  };
+    table.resetRowSelection()
+  }
 
   if (!isMounted) {
     return {
@@ -84,7 +82,7 @@ export const useDataTable = <TData extends { id: string }>({
       selectedCount: 0,
       resetSelection,
       isMounted: false,
-    };
+    }
   }
 
   return {
@@ -100,5 +98,5 @@ export const useDataTable = <TData extends { id: string }>({
     selectedCount,
     resetSelection,
     isMounted: true,
-  };
-};
+  }
+}

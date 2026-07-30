@@ -1,26 +1,22 @@
-"use client";
+"use client"
 
-import type React from "react";
+import type React from "react"
+import { Suspense } from "react"
+import dynamic from "next/dynamic"
+import { Toaster } from "sonner"
+import { ThemeProvider } from "@/app/providers/theme-provider"
+import { UserUpdatesListener } from "@/shared/lib/UserUpdatesListener"
+import { PushPermissionGate } from "@/widgets/push-permission/PushPermissionGate"
+import { BetterUiProviders } from "./betterui-provider"
+import QueryProvider from "./query-provider"
+import { SocketInitializer } from "./socket-Initializer"
 
-import { Toaster } from "sonner";
-import { BetterUiProviders } from "./betterui-provider";
-import QueryProvider from "./query-provider";
-import dynamic from "next/dynamic";
-import { SocketInitializer } from "./socket-Initializer";
-import { PushPermissionGate } from "@/widgets/push-permission/PushPermissionGate";
-import { Suspense } from "react";
-import { UserUpdatesListener } from "@/shared/lib/UserUpdatesListener";
-import { ThemeProvider } from "@/app/providers/theme-provider";
-
-const ReactQueryDevtools = dynamic(
-  () =>
-    import("@tanstack/react-query-devtools").then(
-      (mod) => mod.ReactQueryDevtools,
-    ),
+const _ReactQueryDevtools = dynamic(
+  () => import("@tanstack/react-query-devtools").then((mod) => mod.ReactQueryDevtools),
   {
     ssr: false,
   },
-);
+)
 
 const RootProvider = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -36,7 +32,7 @@ const RootProvider = ({ children }: { children: React.ReactNode }) => {
           {/* {process.env.NODE_ENV === "development" && (
             <ReactQueryDevtools initialIsOpen={false} />
           )} */}
-          <Toaster position="top-center" richColors closeButton />
+          <Toaster closeButton position="top-center" richColors />
           <SocketInitializer />
           <Suspense>
             <PushPermissionGate />
@@ -46,7 +42,7 @@ const RootProvider = ({ children }: { children: React.ReactNode }) => {
         </QueryProvider>
       </BetterUiProviders>
     </ThemeProvider>
-  );
-};
+  )
+}
 
-export default RootProvider;
+export default RootProvider

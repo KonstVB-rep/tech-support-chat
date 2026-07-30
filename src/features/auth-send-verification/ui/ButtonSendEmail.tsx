@@ -1,12 +1,11 @@
-"use client";
-import { sendVerificationEmail } from "@/app/actions/auth";
-import ButtonSubmitForm from "@/shared/ui/custom/ButtonSubmitForm";
-
-import { useActionState } from "react";
+"use client"
+import { useActionState } from "react"
+import { sendVerificationEmail } from "@/app/actions/auth"
+import ButtonSubmitForm from "@/shared/ui/custom/ButtonSubmitForm"
 
 const ButtonSendEmail = ({ email }: { email: string }) => {
   // state здесь пригодится для вывода ошибок или успеха
-  const [state, formAction] = useActionState(sendVerificationEmail, undefined);
+  const [state, formAction] = useActionState(sendVerificationEmail, undefined)
 
   return (
     <form action={formAction}>
@@ -15,11 +14,9 @@ const ButtonSendEmail = ({ email }: { email: string }) => {
       <ButtonSubmitForm text="Повторно отправить подтверждение" />
 
       {state?.error && <p className="text-red-500 text-sm">{state.error}</p>}
-      {state?.success && (
-        <p className="text-green-500 text-sm">Письмо отправлено!</p>
-      )}
+      {state?.success && <p className="text-green-500 text-sm">Письмо отправлено!</p>}
     </form>
-  );
-};
+  )
+}
 
-export default ButtonSendEmail;
+export default ButtonSendEmail

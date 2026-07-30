@@ -1,6 +1,7 @@
-"use client";
+"use client"
 
-import { Button } from "@/shared/ui/button";
+import { Plus } from "lucide-react"
+import { Button } from "@/shared/ui/components/button"
 import {
   Dialog,
   DialogContent,
@@ -8,21 +9,18 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/shared/ui/dialog";
-import { Plus } from "lucide-react";
-import { AddEmployeeForm } from "./AddEmployeeForm";
+} from "@/shared/ui/components/dialog"
+import { AddEmployeeForm } from "./AddEmployeeForm"
 
 interface AddEmployeeDialogProps {
-  organizationId: string;
+  organizationId: string
 }
 
-export const AddEmployeeDialog = ({
-  organizationId,
-}: AddEmployeeDialogProps) => {
+export const AddEmployeeDialog = ({ organizationId }: AddEmployeeDialogProps) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="icon" title="Добавить сотрудника">
+        <Button size="icon" title="Добавить сотрудника" variant="outline">
           <Plus />
         </Button>
       </DialogTrigger>
@@ -30,13 +28,11 @@ export const AddEmployeeDialog = ({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Добавить сотрудника</DialogTitle>
-          <DialogDescription>
-            Заполните данные нового сотрудника организации
-          </DialogDescription>
+          <DialogDescription>Заполните данные нового сотрудника организации</DialogDescription>
         </DialogHeader>
 
         <AddEmployeeForm organizationId={organizationId} />
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}

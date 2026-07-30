@@ -1,1 +1,1 @@
-export { default as PwaInstallBanner } from "./ui/PwaInstallBanner";
+export { default as PwaInstallBanner } from "./ui/PwaInstallBanner"

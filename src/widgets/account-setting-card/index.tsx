@@ -1,1 +1,1 @@
-export { default as AccountClientContent } from "./ui/AccountClientContent";
+export { default as AccountClientContent } from "./ui/AccountClientContent"

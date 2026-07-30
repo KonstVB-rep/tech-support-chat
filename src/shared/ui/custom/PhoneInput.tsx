@@ -1,20 +1,21 @@
 // src/shared/ui/custom/PhoneInput.tsx
-import { cn } from "@/shared/lib/utils";
-import { IMaskInput } from "react-imask";
-import { useEffect, useRef } from "react";
-import type { InputMask } from "imask";
+
+import { useEffect, useRef } from "react"
+import type { InputMask } from "imask"
+import { IMaskInput } from "react-imask"
+import { cn } from "@/shared/lib/utils"
 
 interface PhoneInputProps {
-  mask?: string;
-  className?: string;
-  onAccept?: (value: string) => void;
-  value?: string;
-  placeholder?: string;
-  required?: boolean;
-  error?: boolean;
-  disabled?: boolean;
-  name?: string;
-  onBlur?: () => void;
+  mask?: string
+  className?: string
+  onAccept?: (value: string) => void
+  value?: string
+  placeholder?: string
+  required?: boolean
+  error?: boolean
+  disabled?: boolean
+  name?: string
+  onBlur?: () => void
 }
 
 const PhoneInput = ({
@@ -29,16 +30,16 @@ const PhoneInput = ({
   name,
   onBlur,
 }: PhoneInputProps) => {
-  const maskRef = useRef<InputMask | null>(null);
+  const maskRef = useRef<InputMask | null>(null)
 
   useEffect(() => {
     if (maskRef.current && value !== undefined) {
-      const currentValue = maskRef.current.value;
+      const currentValue = maskRef.current.value
       if (currentValue !== value) {
-        maskRef.current.value = value;
+        maskRef.current.value = value
       }
     }
-  }, [value]);
+  }, [value])
 
   return (
     <IMaskInput
@@ -47,22 +48,22 @@ const PhoneInput = ({
         error && "border-destructive focus-visible:ring-destructive",
         className,
       )}
-      mask={mask}
       defaultValue={value ?? ""}
-      onAccept={onAccept}
-      onBlur={onBlur}
-      name={name}
-      placeholder={placeholder}
-      required={required}
       disabled={disabled}
-      unmask={false}
       inputRef={(el) => {
         if (el) {
-          maskRef.current = (el as unknown as { mask: InputMask }).mask ?? null;
+          maskRef.current = (el as unknown as { mask: InputMask }).mask ?? null
         }
       }}
+      mask={mask}
+      name={name}
+      onAccept={onAccept}
+      onBlur={onBlur}
+      placeholder={placeholder}
+      required={required}
+      unmask={false}
     />
-  );
-};
+  )
+}
 
-export default PhoneInput;
+export default PhoneInput

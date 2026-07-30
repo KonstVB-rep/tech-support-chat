@@ -1,31 +1,18 @@
-import {
-  LaptopMinimalCheck,
-  PaintbrushVertical,
-  Trash,
-  User,
-} from "lucide-react";
+import { LaptopMinimalCheck, PaintbrushVertical, Trash, User } from "lucide-react"
 
 export const ACTIVE_SCREEN = {
   profile: "Профиль",
   session: "Сессии",
   decoration: "Оформление",
   accountDel: "Удаление аккаунта",
-} as const;
+} as const
 
 export type ActiveScreenDataItem = {
-  key: ActiveScreenKeys;
-  title: string;
-  icon: React.ReactNode;
-  variant:
-    | "outline"
-    | "destructive"
-    | "link"
-    | "default"
-    | "secondary"
-    | "ghost"
-    | null
-    | undefined;
-};
+  key: ActiveScreenKeys
+  title: string
+  icon: React.ReactNode
+  variant: "outline" | "destructive" | "link" | "default" | "secondary" | "ghost" | null | undefined
+}
 
 export const ACTIVE_SCREEN_DATA: ActiveScreenDataItem[] = [
   {
@@ -52,6 +39,6 @@ export const ACTIVE_SCREEN_DATA: ActiveScreenDataItem[] = [
     icon: <Trash className="h-4 w-4 text-primary" />,
     variant: "destructive",
   },
-];
+]
 
-export type ActiveScreenKeys = keyof typeof ACTIVE_SCREEN;
+export type ActiveScreenKeys = keyof typeof ACTIVE_SCREEN

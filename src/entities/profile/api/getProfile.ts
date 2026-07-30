@@ -1,14 +1,14 @@
-"use server";
+"use server"
 
-import { prisma } from "@/prisma/prisma-client";
-import { cacheTag } from "next/cache";
+import { cacheTag } from "next/cache"
+import { prisma } from "@/prisma/prisma-client"
 
 export const getProfile = async (id: string) => {
-  "use cache";
-  cacheTag(`profile-${id}`);
+  "use cache"
+  cacheTag(`profile-${id}`)
 
   if (!id) {
-    return null;
+    return null
   }
 
   try {
@@ -27,15 +27,15 @@ export const getProfile = async (id: string) => {
           },
         },
       },
-    });
+    })
 
     if (!profile) {
-      return null;
+      return null
     }
 
-    return profile;
+    return profile
   } catch (error) {
-    console.error("Failed to fetch profile:", error);
-    throw new Error("Не удалось загрузить профиль");
+    console.error("Failed to fetch profile:", error)
+    throw new Error("Не удалось загрузить профиль")
   }
-};
+}

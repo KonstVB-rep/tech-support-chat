@@ -1,7 +1,9 @@
-"use client";
+"use client"
 
-import { useState, useTransition } from "react";
-import { Button } from "@/shared/ui/button";
+import { useState, useTransition } from "react"
+import { Trash2 } from "lucide-react"
+import { toast } from "sonner"
+import { Button } from "@/shared/ui/components/button"
 import {
   Dialog,
   DialogContent,
@@ -10,61 +12,59 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/shared/ui/dialog";
-import { Trash2 } from "lucide-react";
-import { deleteSupportEngineerAction } from "../actions/delete";
-import { toast } from "sonner";
+} from "@/shared/ui/components/dialog"
+import { deleteSupportEngineerAction } from "../actions/delete"
 
 type DeleteSupportEngineerDialogProps = {
-  engineerIds: string | string[];
-  engineerName?: string;
-  onAfterDelete?: () => void;
-};
+  engineerIds: string | string[]
+  engineerName?: string
+  onAfterDelete?: () => void
+}
 
 export const DeleteSupportEngineerDialog = ({
   engineerIds: ids,
   engineerName,
   onAfterDelete,
 }: DeleteSupportEngineerDialogProps) => {
-  const [isPending, startDeleteTransition] = useTransition();
-  const [open, setOpen] = useState(false);
+  const [isPending, startDeleteTransition] = useTransition()
+  const [open, setOpen] = useState(false)
 
-  const idsArray = Array.isArray(ids) ? ids : [ids];
-  const isMultiple = idsArray.length > 1;
+  const idsArray = Array.isArray(ids) ? ids : [ids]
+  const isMultiple = idsArray.length > 1
 
   const title = isMultiple
     ? `Будут удалены инженероы: ${idsArray.length}?`
     : engineerName
       ? `Удалить инженера "${engineerName}"?`
-      : "Удалить выбранного инженера?";
+      : "Удалить выбранного инженера?"
 
   const description = isMultiple
     ? `Выбранные инженеры больше не смогут войти приложение, а все их активные сессии будут мгновенно аннулированы.`
-    : `${engineerName} больше не сможет войти в приложение, а все его активные сессии будут мгновенно аннулированы.`;
+    : `${engineerName} больше не сможет войти в приложение, а все его активные сессии будут мгновенно аннулированы.`
 
   const handleDelete = (e: React.MouseEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     startDeleteTransition(async () => {
-      const res = await deleteSupportEngineerAction(ids);
+      const res = await deleteSupportEngineerAction(ids)
 
       if (res.success) {
-        toast.success(`Инженера ${engineerName} успешно удален`);
-        onAfterDelete?.();
-        setOpen(false);
+        toast.success(`Инженера ${engineerName} успешно удален`)
+        onAfterDelete?.()
+        setOpen(false)
       } else {
-        toast.error(res.error || "Не удалось отключить аккаунт сотрудника");
+        toast.error(res.error || "Не удалось отключить аккаунт сотрудника")
       }
-    });
-  };
+    })
+  }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
         <Button
-          variant="destructive"
-          className="disabled:opacity-50 shrink-0 w-full flex justify-start items-center gap-2 field-height"
+          className="field-height flex w-full shrink-0 items-center justify-start gap-2 disabled:opacity-50"
           title="Деактивировать инженера"
+          variant="destructive"
         >
           <Trash2 className="h-4 w-4" /> Удалить
         </Button>
@@ -79,22 +79,14 @@ export const DeleteSupportEngineerDialog = ({
         </DialogHeader>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => setOpen(false)}
-            disabled={isPending}
-          >
+          <Button disabled={isPending} onClick={() => setOpen(false)} variant="outline">
             Отменить
           </Button>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={isPending}
-          >
+          <Button disabled={isPending} onClick={handleDelete} variant="destructive">
             {isPending ? "Удаление..." : "Удалить"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}

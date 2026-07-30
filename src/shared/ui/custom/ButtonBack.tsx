@@ -1,22 +1,22 @@
-"use client";
+"use client"
 
-import { Button } from "@/shared/ui/button";
-import { ChevronLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { ChevronLeft } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/shared/ui/components/button"
 
 const ButtonBack = () => {
-  const router = useRouter();
+  const router = useRouter()
   return (
     <Button
-      variant="ghost"
-      size="icon"
       className="shrink-0"
-      type="button"
       onClick={() => router.back()}
+      size="icon"
+      type="button"
+      variant="ghost"
     >
       <ChevronLeft className="h-5 w-5" />
     </Button>
-  );
-};
+  )
+}
 
-export default ButtonBack;
+export default ButtonBack

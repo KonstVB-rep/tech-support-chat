@@ -1,37 +1,35 @@
-"use client";
+"use client"
 
-import { ColumnDef } from "@tanstack/react-table";
-
-import { DeleteSupportEngineerDialog } from "@/features/manage-support-engineer";
-import { SupportEngineerWithProfile } from "@/entities/support-engineer";
-import { Eye } from "lucide-react";
-import { Checkbox } from "@/shared/ui/checkbox";
-import { PushSettingsToggle } from "@/features/pwa-push/ui/PushSettingsToggle";
-import { UpdateSupportEngineerForm } from "@/features/manage-support-engineer/ui/UpdateSupportEngineerForm";
-import { DrawerComponent } from "@/shared/ui/custom/DrawerComponent";
-import { Button } from "@/shared/ui/button";
+import type { ColumnDef } from "@tanstack/react-table"
+import { Eye } from "lucide-react"
+import type { SupportEngineerWithProfile } from "@/entities/support-engineer"
+import { DeleteSupportEngineerDialog } from "@/features/manage-support-engineer"
+import { UpdateSupportEngineerForm } from "@/features/manage-support-engineer/ui/UpdateSupportEngineerForm"
+import { PushSettingsToggle } from "@/features/pwa-push/ui/PushSettingsToggle"
+import { Button } from "@/shared/ui/components/button"
+import { Checkbox } from "@/shared/ui/components/checkbox"
+import { DrawerComponent } from "@/shared/ui/custom/DrawerComponent"
 
 export const columns: ColumnDef<SupportEngineerWithProfile>[] = [
   {
     id: "select",
     header: ({ table }) => (
       <Checkbox
+        aria-label="Select all"
         checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
+          table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
       />
     ),
     cell: ({ row }) => {
       return (
         <Checkbox
+          aria-label="Select row"
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
         />
-      );
+      )
     },
     enableSorting: false,
     enableHiding: false,
@@ -55,25 +53,25 @@ export const columns: ColumnDef<SupportEngineerWithProfile>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      const engineer = row.original;
+      const engineer = row.original
 
       return (
         <DrawerComponent
+          className="px-3"
+          side="right"
           trigger={
-            <Button variant="ghost" size="icon">
+            <Button size="icon" variant="ghost">
               <span className="sr-only">Открыть меню</span>
               <Eye className="h-4 w-4" />
             </Button>
           }
-          side="right"
-          className="px-3"
         >
           <UpdateSupportEngineerForm engineer={engineer} />
           <PushSettingsToggle
-            profileId={engineer.profileId}
             isSupportEngineer={false}
-            pushEnabled={engineer.profile.pushEnabled}
             isViewedByAdmin={true}
+            profileId={engineer.profileId}
+            pushEnabled={engineer.profile.pushEnabled}
             source="admin-staff"
           />
           <DeleteSupportEngineerDialog
@@ -81,9 +79,9 @@ export const columns: ColumnDef<SupportEngineerWithProfile>[] = [
             engineerName={engineer.profile?.name}
           />
         </DrawerComponent>
-      );
+      )
     },
     size: 80,
     maxSize: 80,
   },
-];
+]

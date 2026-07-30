@@ -1,37 +1,31 @@
-import { OrgRole, ChatRole } from "@prisma/client";
-import {
-  MessagesSquare,
-  Settings,
-  Users,
-  UserRoundCog,
-  Building2,
-} from "lucide-react";
+import { ChatRole, OrgRole } from "@prisma/client"
+import { Building2, MessagesSquare, Settings, UserRoundCog, Users } from "lucide-react"
 
 export const ORG_ROLE_LABELS: Record<OrgRole, string> = {
   [OrgRole.RESPONSIBLE]: "Ответственное лицо",
   [OrgRole.MEMBER]: "Сотрудник",
-};
+}
 
-export type UserRoleKey = "ADMIN" | "USER";
-export type UserRoleValue = "admin" | "user";
+export type UserRoleKey = "ADMIN" | "USER"
+export type UserRoleValue = "admin" | "user"
 
 export const USER_ROLE: Record<UserRoleKey, UserRoleValue> = {
   ADMIN: "admin",
   USER: "user",
-} as const;
+} as const
 
 export const CHAT_ROLE_LABELS: Record<ChatRole, string> = {
   [ChatRole.ADMIN]: "Администратор",
   [ChatRole.MEMBER]: "Участник",
-};
+}
 
 export type NavigationLink = {
-  href: string;
-  title: string;
-  icon: React.ReactNode;
-  isAdminOnly?: boolean;
-  isResponsibleOnly?: boolean;
-};
+  href: string
+  title: string
+  icon: React.ReactNode
+  isAdminOnly?: boolean
+  isResponsibleOnly?: boolean
+}
 
 export const LINKS_NAV: NavigationLink[] = [
   {
@@ -62,4 +56,4 @@ export const LINKS_NAV: NavigationLink[] = [
     title: "Настройки",
     icon: <Settings className="size-5" />,
   },
-];
+]

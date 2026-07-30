@@ -1,8 +1,7 @@
-import { Sidebar } from "@/widgets/sidebar";
-import React from "react";
+import type React from "react"
 
 const AccountLayout = ({ children }: { children: React.ReactNode }) => {
-  return <>{children}</>;
-};
+  return <>{children}</>
+}
 
-export default AccountLayout;
+export default AccountLayout

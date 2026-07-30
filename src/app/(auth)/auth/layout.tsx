@@ -1,17 +1,17 @@
-import React from "react";
+import type React from "react"
 
 interface PageLayoutProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 const AuthPageLayout = async ({ children }: PageLayoutProps) => {
   return (
     <div className="flex min-h-screen w-full">
-      <div className="flex flex-col md:flex-row w-full overflow-hidden bg-auth_layout">
+      <div className="flex w-full flex-col overflow-hidden bg-auth_layout md:flex-row">
         {children}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default AuthPageLayout;
+export default AuthPageLayout

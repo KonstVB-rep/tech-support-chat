@@ -1,15 +1,15 @@
-"use server";
+"use server"
 
-import { prisma } from "@/prisma/prisma-client";
-import { getSession } from "@/shared/lib/server-current-user";
-import { OrgRole } from "@prisma/client";
-import { cacheTag } from "next/cache";
-import { EmployeeWithProfile } from "../model";
+import { OrgRole } from "@prisma/client"
+import { cacheTag } from "next/cache"
+import { prisma } from "@/prisma/prisma-client"
+import { getSession } from "@/shared/lib/server-current-user"
+import type { EmployeeWithProfile } from "../model"
 
 export const fetchEmployeesByOrgId = async (orgId: string) => {
-  "use cache";
-  cacheTag(`employees-${orgId}`);
-  if (!orgId) return null;
+  "use cache"
+  cacheTag(`employees-${orgId}`)
+  if (!orgId) return null
   return await prisma.organizationMember.findMany({
     where: {
       organizationId: orgId,
@@ -33,21 +33,19 @@ export const fetchEmployeesByOrgId = async (orgId: string) => {
       },
     },
     orderBy: { createdAt: "asc" },
-  });
-};
+  })
+}
 
-export const getEmployeesByOrgId = async (
-  orgId: string,
-): Promise<EmployeeWithProfile[]> => {
-  const session = await getSession();
-  if (!session?.user) throw new Error("Не авторизован");
+export const getEmployeesByOrgId = async (orgId: string): Promise<EmployeeWithProfile[]> => {
+  const session = await getSession()
+  if (!session?.user) throw new Error("Не авторизован")
 
   const organization = await prisma.organization.findUnique({
     where: { id: orgId },
-  });
+  })
 
   if (!organization) {
-    throw new Error("Организация не найдена");
+    throw new Error("Организация не найдена")
   }
 
   const isResponsible = await prisma.organizationMember.findFirst({
@@ -58,17 +56,15 @@ export const getEmployeesByOrgId = async (
         userId: session.user.id,
       },
     },
-  });
+  })
 
-  const isGlobalAdmin = session.user.role === "admin";
+  const isGlobalAdmin = session.user.role === "admin"
 
   if (!isGlobalAdmin && !isResponsible) {
-    throw new Error(
-      "Forbidden: Недостаточно прав для просмотра списка сотрудников",
-    );
+    throw new Error("Forbidden: Недостаточно прав для просмотра списка сотрудников")
   }
 
-  const employees = await fetchEmployeesByOrgId(orgId);
+  const employees = await fetchEmployeesByOrgId(orgId)
 
-  return employees ?? [];
-};
+  return employees ?? []
+}

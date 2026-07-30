@@ -1,51 +1,43 @@
-"use client";
+"use client"
 
+import { startTransition, useActionState, useEffect } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Controller, type UseFormReturn, useForm } from "react-hook-form"
+import { toast } from "sonner"
 import {
-  EmployeeWithProfile,
+  type EmployeeWithProfile,
+  type UpdateEmployeeFormValues,
   updateEmployeeFormSchema,
-  UpdateEmployeeFormValues,
-} from "@/entities/employee";
-import { USER_ROLE } from "@/shared/constants";
-import { useCurrentUser } from "@/shared/lib/hooks/useCurrentUser";
-import { ActionState } from "@/shared/lib/types";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardFooter } from "@/shared/ui/card";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
+} from "@/entities/employee"
+import { USER_ROLE } from "@/shared/constants"
+import { useCurrentUser } from "@/shared/lib/hooks/useCurrentUser"
+import type { ActionState } from "@/shared/lib/types"
+import { Button } from "@/shared/ui/components/button"
+import { Card, CardContent, CardFooter } from "@/shared/ui/components/card"
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/components/field"
+import { Input } from "@/shared/ui/components/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/ui/select";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { startTransition, useActionState, useEffect } from "react";
-import { Controller, useForm, UseFormReturn } from "react-hook-form";
-import { toast } from "sonner";
-import { updateEmployeeAction } from "../actions/update";
+} from "@/shared/ui/components/select"
+import { updateEmployeeAction } from "../actions/update"
 
 interface UpdateEmployeeProps {
-  employee: EmployeeWithProfile;
-  onSuccess?: () => void;
-  onCancel?: () => void;
+  employee: EmployeeWithProfile
+  onSuccess?: () => void
 }
 
 const initialState: ActionState = {
   success: false,
   message: null,
   error: null,
-};
+}
 
-export const UpdateEmployee = ({
-  employee,
-  onSuccess,
-  onCancel,
-}: UpdateEmployeeProps) => {
-  const [state, formAction, isPending] = useActionState(
-    updateEmployeeAction,
-    initialState,
-  );
+export const UpdateEmployee = ({ employee, onSuccess }: UpdateEmployeeProps) => {
+  const [state, formAction, isPending] = useActionState(updateEmployeeAction, initialState)
 
   const form = useForm<UpdateEmployeeFormValues>({
     resolver: zodResolver(updateEmployeeFormSchema),
@@ -56,17 +48,17 @@ export const UpdateEmployee = ({
       position: employee.position ?? "",
       role: employee.role,
     },
-  });
+  })
 
   useEffect(() => {
     if (state.success && state.message) {
-      toast.success(state.message);
-      onSuccess?.();
+      toast.success(state.message)
+      onSuccess?.()
     }
     if (state.error) {
-      toast.error(state.error);
+      toast.error(state.error)
     }
-  }, [state, onSuccess]);
+  }, [state, onSuccess])
 
   useEffect(() => {
     if (employee) {
@@ -76,38 +68,31 @@ export const UpdateEmployee = ({
         phone: employee.profile.phone ?? "",
         position: employee.position ?? "",
         role: employee.role,
-      });
+      })
     }
-  }, [employee, form]);
+  }, [employee, form])
 
-  // Перехватываем FormData, чтобы привязать её к ID текущей компании
   const handleFormAction = async (formData: FormData) => {
-    const isValid = await form.trigger();
-    if (!isValid) return;
+    const isValid = await form.trigger()
+    if (!isValid) return
 
-    formData.append("employeeId", employee.id);
-    formData.append("organizationId", employee.organizationId);
+    formData.append("employeeId", employee.id)
+    formData.append("organizationId", employee.organizationId)
 
     startTransition(() => {
-      formAction(formData);
-    });
-  };
+      formAction(formData)
+    })
+  }
 
-  return (
-    <UpdateEmployeeForm
-      formAction={handleFormAction}
-      form={form}
-      isPending={isPending}
-    />
-  );
-};
+  return <UpdateEmployeeForm form={form} formAction={handleFormAction} isPending={isPending} />
+}
 
 type UpdateEmployeeFormProps = {
-  form: UseFormReturn<UpdateEmployeeFormValues>;
-  formAction: (formData: FormData) => void;
-  isPending?: boolean;
-  submitText?: string;
-};
+  form: UseFormReturn<UpdateEmployeeFormValues>
+  formAction: (formData: FormData) => void
+  isPending?: boolean
+  submitText?: string
+}
 
 const UpdateEmployeeForm = ({
   form,
@@ -115,91 +100,81 @@ const UpdateEmployeeForm = ({
   isPending = false,
   submitText = "Сохранить",
 }: UpdateEmployeeFormProps) => {
-  const { role } = useCurrentUser();
+  const { role } = useCurrentUser()
 
   return (
-    <div className="flex items-center justify-center w-full">
-      <Card className="w-full max-w-3xl min-w-2xs h-fit bg-transparent shadow-none ring-0">
-        <form id="employee-form" action={formAction}>
+    <div className="flex w-full items-center justify-center">
+      <Card className="h-fit w-full min-w-2xs max-w-3xl bg-transparent shadow-none ring-0">
+        <form action={formAction} id="employee-form">
           <CardContent>
             <FieldGroup>
               <div className="grid gap-1">
                 <span>Email:</span>
-                <span className="field-height flex items-center dark:bg-muted rounded-lg p-2 bg-ring/20">
+                <span className="field-height flex items-center rounded-lg bg-ring/20 p-2 dark:bg-muted">
                   {form.getValues("email")}
                 </span>
               </div>
 
               <div className="grid gap-1">
                 <span>Имя:</span>
-                <span className="field-height flex items-center bg-muted rounded-lg p-2 bg-ring/20">
+                <span className="field-height flex items-center rounded-lg bg-muted bg-ring/20 p-2">
                   {form.getValues("name")}
                 </span>
               </div>
 
               <div className="grid gap-1">
                 <span>Телефон:</span>
-                <span className="field-height flex items-center bg-muted rounded-lg p-2 bg-ring/20">
+                <span className="field-height flex items-center rounded-lg bg-muted bg-ring/20 p-2">
                   {form.getValues("phone")}
                 </span>
               </div>
 
               <Controller
-                name="position"
                 control={form.control}
+                name="position"
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="position">Должность</FieldLabel>
                     <Input
                       {...field}
-                      value={field.value ?? ""}
-                      id="position"
                       aria-invalid={fieldState.invalid}
                       autoComplete="off"
-                      placeholder="Разработчик"
                       className="field-height"
+                      id="position"
+                      placeholder="Разработчик"
+                      value={field.value ?? ""}
                     />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
               />
 
               {role === USER_ROLE.ADMIN && (
                 <Controller
-                  name="role"
                   control={form.control}
+                  name="role"
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel>Роль</FieldLabel>
                       <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
                         aria-invalid={fieldState.invalid}
                         name="role"
+                        onValueChange={field.onChange}
+                        value={field.value}
                       >
-                        <SelectTrigger
-                          aria-invalid={fieldState.invalid}
-                          className="field-height"
-                        >
+                        <SelectTrigger aria-invalid={fieldState.invalid} className="field-height">
                           <SelectValue placeholder="Выберите роль" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="MEMBER" className="field-height">
+                          <SelectItem className="field-height" value="MEMBER">
                             Сотрудник
                           </SelectItem>
-                          <SelectItem
-                            value="RESPONSIBLE"
-                            className="field-height"
-                          >
+                          <SelectItem className="field-height" value="RESPONSIBLE">
                             Ответственное лицо
                           </SelectItem>
                         </SelectContent>
                       </Select>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                     </Field>
                   )}
                 />
@@ -210,14 +185,14 @@ const UpdateEmployeeForm = ({
           <CardFooter className="border-none bg-transparent">
             <Field orientation="horizontal">
               <Button
+                disabled={isPending}
+                onClick={() => form.reset()}
                 type="button"
                 variant="outline"
-                onClick={() => form.reset()}
-                disabled={isPending}
               >
                 Сбросить
               </Button>
-              <Button type="submit" form="employee-form" disabled={isPending}>
+              <Button disabled={isPending} form="employee-form" type="submit">
                 {isPending ? "Сохранение..." : submitText}
               </Button>
             </Field>
@@ -225,5 +200,5 @@ const UpdateEmployeeForm = ({
         </form>
       </Card>
     </div>
-  );
-};
+  )
+}

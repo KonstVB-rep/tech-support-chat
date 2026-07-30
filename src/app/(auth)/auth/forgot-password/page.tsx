@@ -1,25 +1,22 @@
-"use client";
+"use client"
 
-import { resetPasswordAction } from "@/app/actions/auth";
-import ButtonSubmitForm from "@/shared/ui/custom/ButtonSubmitForm";
-import { Field, FieldError } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { MailCheck } from "lucide-react";
-import Link from "next/link";
-import { useActionState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import {
-  type SchemaPropsResetPassword,
-  validationSchemaResetPassword,
-} from "../model/schema"; // ← добавь схему
+import { useActionState } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { MailCheck } from "lucide-react"
+import Link from "next/link"
+import { Controller, useForm } from "react-hook-form"
+import { resetPasswordAction } from "@/app/actions/auth"
+import { Field, FieldError } from "@/shared/ui/components/field"
+import { Input } from "@/shared/ui/components/input"
+import ButtonSubmitForm from "@/shared/ui/custom/ButtonSubmitForm"
+import { type SchemaPropsResetPassword, validationSchemaResetPassword } from "../model/schema" // ← добавь схему
 
 const initialState = {
   email: "",
-};
+}
 
 export default function ResetPasswordPage() {
-  const [state, formAction] = useActionState(resetPasswordAction, undefined);
+  const [state, formAction] = useActionState(resetPasswordAction, undefined)
 
   const form = useForm<SchemaPropsResetPassword>({
     resolver: zodResolver(validationSchemaResetPassword),
@@ -27,28 +24,26 @@ export default function ResetPasswordPage() {
     resetOptions: {
       keepDefaultValues: true,
     },
-  });
+  })
 
   const onSubmit = (formData: FormData) => {
-    formAction(formData);
-  };
+    formAction(formData)
+  }
 
-  const errorMessage = state?.error;
+  const errorMessage = state?.error
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen gap-4">
-      <h1 className="text-2xl font-bold">Восстановление пароля</h1>
+    <div className="flex h-screen flex-col items-center justify-center gap-4">
+      <h1 className="font-bold text-2xl">Восстановление пароля</h1>
 
       {state?.success && (
         <div className="flex items-center gap-2">
           <MailCheck />
-          <span>
-            Ссылка для сброса пароля отправлена на вашу электронную почту
-          </span>
+          <span>Ссылка для сброса пароля отправлена на вашу электронную почту</span>
         </div>
       )}
       {!state?.success && (
-        <form action={onSubmit} className="flex flex-col gap-3 w-64 p-4">
+        <form action={onSubmit} className="flex w-64 flex-col gap-3 p-4">
           <Controller
             control={form.control}
             name="email"
@@ -58,37 +53,33 @@ export default function ResetPasswordPage() {
                   {...field}
                   aria-invalid={fieldState.invalid}
                   autoComplete="off"
+                  className="bg-card"
                   id="form-email"
                   name="email"
                   placeholder="example@email.ru"
                   required
                   type="email"
-                  className="bg-card"
                 />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
           />
 
           <ButtonSubmitForm
             aria-label="Отправить ссылку"
-            title="Отправить ссылку для восстановления"
             className="h-auto whitespace-break-spaces"
+            title="Отправить ссылку для восстановления"
           />
 
           <div className="grid justify-center gap-2 text-center">
-            <Link className="text-sm hover:underline " href="/auth/sign-in">
+            <Link className="text-sm hover:underline" href="/auth/sign-in">
               Вернуться к входу
             </Link>
           </div>
 
-          {errorMessage && (
-            <p className="text-red-500 text-center">{errorMessage}</p>
-          )}
+          {errorMessage && <p className="text-center text-red-500">{errorMessage}</p>}
         </form>
       )}
     </div>
-  );
+  )
 }

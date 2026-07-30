@@ -1,17 +1,18 @@
-"use client";
+"use client"
 
+import { useState } from "react"
 import {
-  ColumnDef,
+  type ColumnDef,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
-  Row,
-  SortingState,
+  type Row,
+  type SortingState,
   useReactTable,
-} from "@tanstack/react-table";
-
-import { Input } from "@/shared/ui/input";
+} from "@tanstack/react-table"
+import { cn } from "@/shared/lib/utils"
+import { Input } from "@/shared/ui/components/input"
 import {
   Table,
   TableBody,
@@ -19,20 +20,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/shared/ui/table";
-import { useState } from "react";
-import { cn } from "@/shared/lib/utils";
+} from "@/shared/ui/components/table"
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
-  getRowClassName?: (row: TData) => string;
-  actionsButtonsFixed?: (
-    dataIds: string[],
-    resetSelection: () => void,
-  ) => React.ReactNode;
-  className?: string;
-  colsHidden?: string[];
+  columns: ColumnDef<TData, TValue>[]
+  data: TData[]
+  getRowClassName?: (row: TData) => string
+  actionsButtonsFixed?: (dataIds: string[], resetSelection: () => void) => React.ReactNode
+  className?: string
+  colsHidden?: string[]
 }
 
 export const DataTable = <TData extends { id: string }, TValue>({
@@ -42,10 +38,10 @@ export const DataTable = <TData extends { id: string }, TValue>({
   actionsButtonsFixed,
   className,
 }: DataTableProps<TData, TValue>) => {
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([])
 
-  const [rowSelection, setRowSelection] = useState({});
-  const [globalFilter, setGlobalFilter] = useState<string>("");
+  const [rowSelection, setRowSelection] = useState({})
+  const [globalFilter, setGlobalFilter] = useState<string>("")
 
   const table = useReactTable({
     data,
@@ -67,54 +63,54 @@ export const DataTable = <TData extends { id: string }, TValue>({
     defaultColumn: {
       maxSize: 800,
     },
-  });
+  })
 
-  const selectedRows = table.getFilteredSelectedRowModel().rows;
+  const selectedRows = table.getFilteredSelectedRowModel().rows
 
   const selectedIds = selectedRows
     .map((row: Row<TData>) => row.original?.id as string)
-    .filter(Boolean);
+    .filter(Boolean)
 
-  const hasSelection = selectedIds.length > 0;
+  const hasSelection = selectedIds.length > 0
   const resetSelection = () => {
-    table.resetRowSelection();
-  };
+    table.resetRowSelection()
+  }
 
   return (
     <>
-      <div className="flex flex-col w-full h-full p-2 gap-2">
-        <div className="flex items-center justify-between gap-2 flex-wrap w-full px-2 shrink-0">
+      <div className="flex h-full w-full flex-col gap-2 p-2">
+        <div className="flex w-full shrink-0 flex-wrap items-center justify-between gap-2 px-2">
           <div className="flex items-center py-2">
             <Input
+              className="max-w-sm"
+              onChange={(event) => setGlobalFilter(event.target.value)}
               placeholder="Поиск..."
               value={globalFilter as string}
-              onChange={(event) => setGlobalFilter(event.target.value)}
-              className="max-w-sm"
             />
           </div>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-muted-foreground text-sm">
             Выбрано {table.getFilteredSelectedRowModel().rows.length} из{" "}
             {table.getFilteredRowModel().rows.length} строк
           </div>
         </div>
         <div
           className={cn(
-            "flex-1 min-h-0 overflow-auto rounded-md border w-full relative",
+            "relative min-h-0 w-full flex-1 overflow-auto rounded-md border",
             className,
           )}
         >
           <Table>
-            <TableHeader className="sticky top-0 z-10 bg-zinc-300 dark:bg-zinc-800 border-b border-border/60 shadow-xl">
+            <TableHeader className="sticky top-0 z-10 border-border/60 border-b bg-zinc-300 shadow-xl dark:bg-zinc-800">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow
+                  className="bg-zinc-300 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-800"
                   key={headerGroup.id}
-                  className="bg-zinc-300 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-800"
                 >
                   {headerGroup.headers.map((header) => {
                     return (
                       <TableHead
+                        className="whitespace-break-spaces p-2 text-center"
                         key={header.id}
-                        className="whitespace-break-spaces text-center p-2"
                         style={{
                           width: header.getSize(),
                           minWidth: header.column.columnDef.minSize,
@@ -123,12 +119,9 @@ export const DataTable = <TData extends { id: string }, TValue>({
                       >
                         {header.isPlaceholder
                           ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
+                          : flexRender(header.column.columnDef.header, header.getContext())}
                       </TableHead>
-                    );
+                    )
                   })}
                 </TableRow>
               ))}
@@ -137,34 +130,28 @@ export const DataTable = <TData extends { id: string }, TValue>({
               {table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
                   <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
                     className={cn("bg-card", getRowClassName?.(row.original))}
+                    data-state={row.getIsSelected() && "selected"}
+                    key={row.id}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
-                        key={cell.id}
                         className="whitespace-break-spaces text-center"
+                        key={cell.id}
                         style={{
                           width: cell.column.getSize(),
                           minWidth: cell.column.columnDef.minSize,
                           maxWidth: cell.column.columnDef.maxSize,
                         }}
                       >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     ))}
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
+                  <TableCell className="h-24 text-center" colSpan={columns.length}>
                     Нет данных
                   </TableCell>
                 </TableRow>
@@ -175,5 +162,5 @@ export const DataTable = <TData extends { id: string }, TValue>({
       </div>
       {hasSelection && actionsButtonsFixed?.(selectedIds, resetSelection)}
     </>
-  );
-};
+  )
+}

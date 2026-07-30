@@ -1,6 +1,7 @@
-"use client";
+"use client"
 
-import { Button } from "@/shared/ui/button";
+import { Plus } from "lucide-react"
+import { Button } from "@/shared/ui/components/button"
 import {
   Dialog,
   DialogContent,
@@ -8,15 +9,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/shared/ui/dialog";
-import { Plus } from "lucide-react";
-import { AddSupportEngineerForm } from "./AddSupportEngineerForm";
+} from "@/shared/ui/components/dialog"
+import { AddSupportEngineerForm } from "./AddSupportEngineerForm"
 
 export const AddSupportEngineerDialog = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="icon" title="Добавить инженера">
+        <Button size="icon" title="Добавить инженера" variant="outline">
           <Plus />
         </Button>
       </DialogTrigger>
@@ -24,13 +24,11 @@ export const AddSupportEngineerDialog = () => {
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Добавить инженера техподдержки</DialogTitle>
-          <DialogDescription>
-            Создайте аккаунт нового инженера поддержки
-          </DialogDescription>
+          <DialogDescription>Создайте аккаунт нового инженера поддержки</DialogDescription>
         </DialogHeader>
 
         <AddSupportEngineerForm />
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}

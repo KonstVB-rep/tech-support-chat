@@ -1,40 +1,37 @@
 // src/shared/lib/server-auth.ts
-"use server";
-import { auth } from "@/app/lib/auth";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { cache } from "react";
-import { connection } from "next/server";
+"use server"
+import { cache } from "react"
+import { headers } from "next/headers"
+import { redirect } from "next/navigation"
+import { connection } from "next/server"
+import { auth } from "@/app/lib/auth"
 
 export const getSession = cache(async () => {
-  await connection();
+  await connection()
 
   const session = await auth.api.getSession({
     headers: await headers(),
-  });
-  return session;
-});
+  })
+  return session
+})
 
 export const getCurrentUser = cache(async () => {
-  const session = await getSession();
-  return session?.user ?? null;
-});
+  const session = await getSession()
+  return session?.user ?? null
+})
 
 export const requireAuth = async (redirectUrl = "/auth/sign-in") => {
-  const user = await getCurrentUser();
+  const user = await getCurrentUser()
   if (!user) {
-    redirect(redirectUrl);
+    redirect(redirectUrl)
   }
-  return user;
-};
+  return user
+}
 
-export const requireRole = async (
-  allowedRoles: string[],
-  redirectUrl = "/",
-) => {
-  const user = await requireAuth(redirectUrl);
+export const requireRole = async (allowedRoles: string[], redirectUrl = "/") => {
+  const user = await requireAuth(redirectUrl)
   if (!allowedRoles.includes(user.role)) {
-    redirect(redirectUrl);
+    redirect(redirectUrl)
   }
-  return user;
-};
+  return user
+}

@@ -3,7 +3,7 @@ import { cpSync, existsSync } from "fs";
 import path from "path";
 
 const FIXTURES_DIR = path.resolve("tests/fixtures");
-const UPLOADS_DIR = path.resolve("uploads/media/chats/_demo");
+const UPLOADS_DIR = path.resolve("/uploads/media/chats/_demo");
 
 if (!existsSync(FIXTURES_DIR)) {
   console.log("⏭️  Нет тестовых фикстур, пропускаю seed");

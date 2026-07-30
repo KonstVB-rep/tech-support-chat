@@ -1,33 +1,27 @@
-import { AvatarUser } from "@/entities/user";
-import { ProtectByRole } from "@/shared/lib/ProtectByRole";
-import { Badge } from "@/shared/ui/badge";
+import { OrgRole } from "@prisma/client"
+import Link from "next/link"
+import { AvatarUser } from "@/entities/user"
+import { ProtectByRole } from "@/shared/lib/ProtectByRole"
+import type { getCurrentUser } from "@/shared/lib/server-current-user"
+import { Badge } from "@/shared/ui/components/badge"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/shared/ui/card";
-import Link from "next/link";
-import { OrgRole } from "@prisma/client";
-import { getProfile } from "../api";
-import { getCurrentUser } from "@/shared/lib/server-current-user";
+} from "@/shared/ui/components/card"
+import type { getProfile } from "../api"
 
-export type ProfileData = NonNullable<Awaited<ReturnType<typeof getProfile>>>;
-type UserType = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
+export type ProfileData = NonNullable<Awaited<ReturnType<typeof getProfile>>>
+type UserType = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
 
-const ProfileCard = ({
-  profile,
-  user,
-}: {
-  profile: ProfileData;
-  user: UserType;
-}) => {
-  const memberships = profile.organizationMembers || [];
+const ProfileCard = ({ profile, user }: { profile: ProfileData; user: UserType }) => {
+  const memberships = profile.organizationMembers || []
   return (
-    <Card className="w-full mx-auto sm:max-w-lg h-max p-4 border-none shadow-none ring-1 bg-card">
+    <Card className="mx-auto h-max w-full border-none bg-card p-4 shadow-none ring-1 sm:max-w-lg">
       <CardHeader>
-        <CardTitle className="flex items-center justify-start gap-2 text-center uppercase font-bold tracking-wider">
+        <CardTitle className="flex items-center justify-start gap-2 text-center font-bold uppercase tracking-wider">
           <AvatarUser />
           Профиль
         </CardTitle>
@@ -37,54 +31,48 @@ const ProfileCard = ({
       <CardContent>
         <div className="space-y-3">
           <div className="space-y-1">
-            <div className="text-sm font-medium text-muted-foreground">Имя</div>
-            <div className="text-base font-medium text-foreground">
-              {profile.name ?? "—"}
-            </div>
+            <div className="font-medium text-muted-foreground text-sm">Имя</div>
+            <div className="font-medium text-base text-foreground">{profile.name ?? "—"}</div>
           </div>
 
           <div className="space-y-2">
-            <div className="text-sm font-medium text-muted-foreground">
-              Организации и Должности
-            </div>
+            <div className="font-medium text-muted-foreground text-sm">Организации и Должности</div>
             {memberships.length === 0 ? (
               <div className="text-base text-muted-foreground italic">
                 Нет привязанных организаций
               </div>
             ) : (
-              <div className="space-y-3 bg-muted/30 border border-border p-3 rounded-xl">
-                {memberships.map((member: any) => (
+              <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-3">
+                {memberships.map((member) => (
                   <div
+                    className="flex items-start justify-between gap-4 border-border/50 border-b pb-2 last:border-0 last:pb-0"
                     key={member.id}
-                    className="flex items-start justify-between gap-4 border-b border-border/50 last:border-0 pb-2 last:pb-0"
                   >
                     <div className="flex flex-col">
                       {member.role === OrgRole.RESPONSIBLE ? (
                         <Link
+                          className="font-medium text-foreground text-sm hover:underline"
                           href={`/organization/${member.organization.id}`}
-                          className="text-sm font-medium text-foreground hover:underline"
                         >
                           {member.organization.name}
                         </Link>
                       ) : (
-                        <span className="text-sm font-medium text-foreground">
+                        <span className="font-medium text-foreground text-sm">
                           {member.organization.name}
                         </span>
                       )}
-                      <span className="text-xs text-muted-foreground mt-0.5">
+                      <span className="mt-0.5 text-muted-foreground text-xs">
                         Должность:{" "}
-                        <span className="text-foreground/80 font-medium">
+                        <span className="font-medium text-foreground/80">
                           {member.position || "Не указана"}
                         </span>
                       </span>
                     </div>
                     <Badge
+                      className="px-2 py-0.5 font-semibold text-[10px] uppercase tracking-wider"
                       variant="secondary"
-                      className="text-[10px] font-semibold px-2 py-0.5 uppercase tracking-wider"
                     >
-                      {member.role === "RESPONSIBLE"
-                        ? "Ответственный"
-                        : "Сотрудник"}
+                      {member.role === "RESPONSIBLE" ? "Ответственный" : "Сотрудник"}
                     </Badge>
                   </div>
                 ))}
@@ -94,30 +82,20 @@ const ProfileCard = ({
 
           {/* Телефон */}
           <div className="space-y-1">
-            <div className="text-sm font-medium text-muted-foreground">
-              Телефон
-            </div>
-            <div className="text-base text-foreground">
-              {profile.phone ?? "—"}
-            </div>
+            <div className="font-medium text-muted-foreground text-sm">Телефон</div>
+            <div className="text-base text-foreground">{profile.phone ?? "—"}</div>
           </div>
 
           {/* Email */}
           <div className="space-y-1">
-            <div className="text-sm font-medium text-muted-foreground">
-              Электронная почта
-            </div>
-            <div className="text-base text-foreground">
-              {profile.email ?? user?.email ?? "—"}
-            </div>
+            <div className="font-medium text-muted-foreground text-sm">Электронная почта</div>
+            <div className="text-base text-foreground">{profile.email ?? user?.email ?? "—"}</div>
           </div>
 
           {/* Глобальная роль на портале */}
           <ProtectByRole>
             <div className="space-y-1">
-              <div className="text-sm font-medium text-muted-foreground">
-                Глобальная роль
-              </div>
+              <div className="font-medium text-muted-foreground text-sm">Глобальная роль</div>
               <div className="text-base text-foreground">
                 {user.role === "admin" ? "Администратор системы" : user.role}
               </div>
@@ -126,7 +104,7 @@ const ProfileCard = ({
         </div>
       </CardContent>
     </Card>
-  );
-};
+  )
+}
 
-export default ProfileCard;
+export default ProfileCard

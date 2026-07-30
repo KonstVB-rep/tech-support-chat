@@ -1,21 +1,21 @@
-import { USER_ROLE } from "@/shared/constants";
+import type { USER_ROLE } from "@/shared/constants"
 
 export type ActionState = {
-  success: boolean;
-  message: string | null;
-  error: string | null;
-};
+  success: boolean
+  message: string | null
+  error: string | null
+}
 
 export type ActionStateWithData<T> = {
-  success: boolean;
-  data: T | null;
-  error: string | null;
-};
+  success: boolean
+  data: T | null
+  error: string | null
+}
 
 export type DeleteActionState = {
-  success: boolean;
-  deletedCount?: number;
-  error: string | null;
-};
+  success: boolean
+  deletedCount?: number
+  error: string | null
+}
 
-export type UserRoleTypes = (typeof USER_ROLE)[keyof typeof USER_ROLE];
+export type UserRoleTypes = (typeof USER_ROLE)[keyof typeof USER_ROLE]
