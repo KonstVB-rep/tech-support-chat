@@ -35,60 +35,64 @@ export const MessageInput = ({ overrideTicketId }: { overrideTicketId?: string |
   const isPending = isUploading || isSending
   const hasFiles = pendingFiles.length > 0
 
-  const processFiles = async (fileList: FileList | File[]) => {
-    const newFiles: PendingFile[] = []
+const processFiles = async (fileList: FileList | File[]) => {
+  const files = Array.from(fileList).filter((f): f is File => f instanceof File)
 
-    const files = Array.from(fileList).filter((f): f is File => f instanceof File)
+  for (const file of files) {
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error(
+        `Файл "${file.name}" слишком большой (${(file.size / 1024 / 1024).toFixed(1)}MB). Максимум ${MAX_FILE_SIZE / 1024 / 1024}MB.`,
+      )
+      continue
+    }
 
-    for (const file of files) {
-      if (file.size > MAX_FILE_SIZE) {
-        toast.error(
-          `Файл "${file.name}" слишком большой (${(file.size / 1024 / 1024).toFixed(1)}MB). Максимум ${MAX_FILE_SIZE / 1024 / 1024}MB.`,
-        )
-        continue
-      }
+    const tempId = crypto.randomUUID()
 
-      const tempId = crypto.randomUUID()
+    // ✅ Сначала добавляем в state с isCompressing=true
+    setPendingFiles((prev) => [
+      ...prev,
+      { id: tempId, file, preview: null, isCompressing: true },
+    ])
+
+    try {
       let processedFile = file
       let preview: string | null = null
-      let isCompressing = false
 
       if (file.type.startsWith("image/")) {
-        isCompressing = true
+        // ✅ Компрессия И чтение — последовательно
         try {
           processedFile = await compressImage(file)
         } catch {
           processedFile = file
         }
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          setPendingFiles((prev) =>
-            prev.map((pf) =>
-              pf.id === tempId
-                ? {
-                    ...pf,
-                    preview: e.target?.result as string,
-                    isCompressing: false,
-                  }
-                : pf,
-            ),
-          )
-        }
-        reader.readAsDataURL(processedFile)
+
+        preview = await new Promise<string>((resolve) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.onerror = () => resolve("")
+          reader.readAsDataURL(processedFile)
+        })
       } else if (file.type.startsWith("video/")) {
         preview = URL.createObjectURL(file)
       }
 
-      newFiles.push({
-        id: tempId,
-        file: processedFile,
-        preview,
-        isCompressing,
-      })
+      // ✅ Обновляем только когда ВСЁ готово
+      setPendingFiles((prev) =>
+        prev.map((pf) =>
+          pf.id === tempId
+            ? { ...pf, file: processedFile, preview, isCompressing: false }
+            : pf,
+        ),
+      )
+    } catch {
+      setPendingFiles((prev) =>
+        prev.map((pf) =>
+          pf.id === tempId ? { ...pf, isCompressing: false } : pf,
+        ),
+      )
     }
-
-    setPendingFiles((prev) => [...prev, ...newFiles])
   }
+}
 
   const removeFile = (id: string) => {
     setPendingFiles((prev) => {
@@ -127,7 +131,7 @@ export const MessageInput = ({ overrideTicketId }: { overrideTicketId?: string |
   if (!activeTicketId) return null
 
   return (
-    <div className="mx-auto w-full max-w-2xl rounded-2xl border-border border-t bg-background/50 p-3 backdrop-blur-xs md:p-4">
+    <div className="mx-auto w-full max-w-2xl rounded-2xl border-border border-t bg-background/50 backdrop-blur-xs">
       <AttachMenu
         isOpen={showAttachMenu}
         onClose={() => setShowAttachMenu(false)}
@@ -136,22 +140,22 @@ export const MessageInput = ({ overrideTicketId }: { overrideTicketId?: string |
 
       {/* Сетка превью прикреплённых файлов */}
       {hasFiles && (
-        <div className="no-scrollbar mb-3 flex max-h-[160px] flex-wrap gap-2 overflow-y-auto">
+        <div className="no-scrollbar flex max-h-[160px] flex-wrap gap-2 overflow-y-auto px-2 pt-2">
           {pendingFiles.map((pf) => (
             <div className="group relative" key={pf.id}>
               {pf.preview && pf.file.type.startsWith("image/") ? (
-                <div className="relative h-16 w-16 overflow-hidden rounded-lg border border-border md:h-20 md:w-20">
+                <div className="relative overflow-hidden rounded-lg border border-border h-12 w-12">
                   <Image alt="" className="object-cover" fill src={pf.preview} unoptimized />
                 </div>
               ) : pf.preview && pf.file.type.startsWith("video/") ? (
                 <video
-                  className="h-16 w-16 rounded-lg border border-border object-cover md:h-20 md:w-20"
+                  className="h-12 w-12 rounded-lg border border-border object-cover"
                   src={pf.preview}
                 >
                   <track default kind="captions" label="Без субтитров" srcLang="ru" />
                 </video>
               ) : (
-                <div className="flex h-16 w-16 flex-col items-center justify-center rounded-lg border border-border bg-muted px-1 md:h-20 md:w-20">
+                <div className="flex flex-col items-center justify-center rounded-lg border border-border bg-muted px-1 h-12 w-12">
                   <span className="text-lg">📎</span>
                   <span className="w-full truncate px-0.5 text-center text-[9px]">
                     {pf.file.name}
@@ -178,7 +182,7 @@ export const MessageInput = ({ overrideTicketId }: { overrideTicketId?: string |
       )}
 
       {/* Форма отправки */}
-      <form className="flex items-center gap-2" onSubmit={handleSubmit}>
+      <form className="flex items-center gap-2 p-2" onSubmit={handleSubmit}>
         <Button
           className="shrink-0 rounded-xl"
           disabled={isPending}

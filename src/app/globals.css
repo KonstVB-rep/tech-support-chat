@@ -254,11 +254,11 @@ button {
 	cursor: pointer;
 }
 
-.bg-messege_incoming {
+.bg-message_incoming {
 	background: linear-gradient(90deg, #ababab, #d0d0d0, #c6c6c6);
 }
 
-.dark .bg-messege_incoming {
+.dark .bg-message_incoming {
 	background: linear-gradient(90deg, #222120, #312e26, #45423a);
 }
 

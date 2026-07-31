@@ -115,31 +115,35 @@ export const deleteEmployeeAction = async (
     }
 
     // 4. Удаляем аватары с диска + блокировка входа
-    const requestHeaders = await headers()
-    for (const member of membersData) {
-      const profile = member.profile
-      if (!profile) continue
+      const uploadDir = process.env.UPLOAD_DIR || "/opt/chat-app/uploads"
+      const requestHeaders = await headers()
 
-      if (
-        profile.imageUrl &&
-        typeof profile.imageUrl === "string" &&
-        profile.imageUrl.startsWith("/uploads/")
-      ) {
-        const filePath = path.join(process.cwd(), "public", profile.imageUrl)
+      for (const member of membersData) {
+        const profile = member.profile
+        if (!profile) continue
+
+        if (
+          profile.imageUrl &&
+          typeof profile.imageUrl === "string" &&
+          profile.imageUrl.startsWith("/uploads/")
+        ) {
+          const normalizedUrl = profile.imageUrl.replace(/^\/uploads\//, "").replace(/\\/g, "/")
+          const filePath = path.join(uploadDir, normalizedUrl)
+
+          try {
+            await unlink(filePath)
+          } catch {}
+        }
+
         try {
-          await unlink(filePath)
-        } catch {}
+          await auth.api.banUser({
+            body: { userId: profile.userId },
+            headers: requestHeaders,
+          })
+        } catch (e) {
+          console.error(`⚠️ Не удалось заблокировать аккаунт ${profile.userId}:`, e)
+        }
       }
-
-      try {
-        await auth.api.banUser({
-          body: { userId: profile.userId },
-          headers: requestHeaders,
-        })
-      } catch (e) {
-        console.error(`⚠️ Не удалось заблокировать аккаунт ${profile.userId}:`, e)
-      }
-    }
 
     // 5. Инвалидация серверного кэша
     for (const id of validIds) {

@@ -199,9 +199,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     const attachments: AttachmentMeta[] = []
 
-    for (const file of files) {
+   for (const file of files) {
       const ext = path.extname(file.name)
       const fileName = `${crypto.randomUUID()}${ext}`
+
       const relativePath = path.join("media", "chats", chatId, fileName)
       const fullPath = path.join(UPLOAD_DIR, relativePath)
 
@@ -209,13 +210,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       const buffer = Buffer.from(await file.arrayBuffer())
       await fs.writeFile(fullPath, buffer)
 
+      const dbUrl = `/uploads/media/chats/${chatId}/${fileName}`
+
       attachments.push({
-        url: `/uploads/${relativePath}`,
+        url: dbUrl,
         name: file.name,
         type: file.type || guessMimeType(file.name),
         size: file.size,
       })
     }
+
 
     const message = await prisma.message.create({
       data: {

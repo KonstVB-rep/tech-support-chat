@@ -104,7 +104,9 @@ export const deleteSupportEngineerAction = async (
       await prisma.$transaction(updateOperations)
     }
 
+    const uploadDir = process.env.UPLOAD_DIR || "/opt/chat-app/uploads"
     const requestHeaders = await headers()
+
     for (const engineer of engineersData) {
       const profile = engineer.profile
       if (!profile) continue
@@ -114,7 +116,9 @@ export const deleteSupportEngineerAction = async (
         typeof profile.imageUrl === "string" &&
         profile.imageUrl.startsWith("/uploads/")
       ) {
-        const filePath = path.join(process.cwd(), "public", profile.imageUrl)
+        const relativePath = profile.imageUrl.replace(/^\/uploads\//, "").replace(/\\/g, "/")
+        const filePath = path.join(uploadDir, relativePath)
+
         try {
           await unlink(filePath)
         } catch {}

@@ -60,14 +60,17 @@ const deleteAccountAction = async (password: string): Promise<void> => {
     throw new Error("Неверный пароль")
   }
 
-  // Удаляем аватар с диска (User.image + Profile.imageUrl)
+ // Удаляем аватар с диска (User.image + Profile.imageUrl)
+  const uploadDir = process.env.UPLOAD_DIR || "/opt/chat-app/uploads"
+
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { image: true },
   })
 
   if (user?.image && typeof user.image === "string" && user.image.startsWith("/uploads/")) {
-    const filePath = path.join(process.cwd(), "public", user.image)
+    const relativePath = user.image.replace(/^\/uploads\//, "").replace(/\\/g, "/")
+    const filePath = path.join(uploadDir, relativePath)
     try {
       await unlink(filePath)
     } catch {}
@@ -78,7 +81,8 @@ const deleteAccountAction = async (password: string): Promise<void> => {
     typeof currentProfile.imageUrl === "string" &&
     currentProfile.imageUrl.startsWith("/uploads/")
   ) {
-    const filePath = path.join(process.cwd(), "public", currentProfile.imageUrl)
+    const relativePath = currentProfile.imageUrl.replace(/^\/uploads\//, "").replace(/\\/g, "/")
+    const filePath = path.join(uploadDir, relativePath)
     try {
       await unlink(filePath)
     } catch {}
