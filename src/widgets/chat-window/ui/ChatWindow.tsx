@@ -1,10 +1,6 @@
 // src/widgets/chat-window/ui/ChatWindow.tsx
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
-import { useQueryClient } from "@tanstack/react-query"
-import { ChevronLeft, Pencil, PenOff, Save } from "lucide-react"
-import Image from "next/image"
 import { authClient } from "@/app/lib/auth-client"
 import type { AttachmentMeta, Chat, Message, MessagesResponse } from "@/entities/chat/api/types"
 import { useGetCurrentMemberRole } from "@/entities/employee/api/useGetCurrentMemberRole"
@@ -25,6 +21,10 @@ import { useActiveTicketId, useClearChat } from "@/store/useChatStore"
 import { ChatHeaderActions } from "@/widgets/chat-window/ui/ChatHeaderActions"
 import DropdownChatActions from "@/widgets/chat-window/ui/DropdownChatActions"
 import { useGetChatById } from "@/widgets/sidebar/api/useGetChatById"
+import { useQueryClient } from "@tanstack/react-query"
+import { ChevronDown, ChevronLeft, Pencil, PenOff, Save } from "lucide-react"
+import Image from "next/image"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useGetMessages } from "../api/useGetMessages"
 
 export const ChatWindow = () => {
@@ -34,18 +34,21 @@ export const ChatWindow = () => {
   const { play } = useNotificationSound()
 
   const { data: session } = authClient.useSession()
-
   const { data: chat } = useGetChatById({ chatId: activeTicketId })
-
   const { data: messagesData, isLoading, error } = useGetMessages(activeTicketId)
-
   const { mutate: renameChat, isPending: isRenaming } = useUpdateChatTitle()
-
   const socketStatus = useSocketStatus()
 
   const [prevId, setPrevId] = useState(activeTicketId)
   const [newTitle, setNewTitle] = useState("")
   const [isEditing, setIsEditMode] = useState(false)
+  const [showScrollDown, setShowScrollDown] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  const prevTicketIdRef = useRef<string | null>(null)
+  const hasScrolledRef = useRef(false)
+  const scrollViewportRef = useRef<HTMLDivElement | null>(null)
+  const isAtBottomRef = useRef(true)
 
   if (activeTicketId !== prevId) {
     setPrevId(activeTicketId)
@@ -56,19 +59,62 @@ export const ChatWindow = () => {
   const chatInfo = messagesData?.chat || null
   const chatDisplayTitle = chatInfo?.title || "Загрузка чата..."
 
-  const setScrollContainerRef = useCallback((node: HTMLDivElement | null) => {
-    if (!node) return
+  const setScrollContainerRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (!node || !activeTicketId) return
 
-    const viewport = node.querySelector("[data-radix-scroll-area-viewport]")
-    if (viewport) {
-      requestAnimationFrame(() => {
-        viewport.scrollTo({
-          top: viewport.scrollHeight,
-          behavior: "smooth",
+      const viewport = node.querySelector(
+        "[data-radix-scroll-area-viewport]",
+      ) as HTMLDivElement | null
+      if (!viewport) return
+
+      // Cleanup предыдущего listener
+      const prevCleanup = (node as any).__scrollCleanup
+      if (prevCleanup) prevCleanup()
+
+      scrollViewportRef.current = viewport
+
+      // Сброс при смене чата
+      if (prevTicketIdRef.current !== activeTicketId) {
+        prevTicketIdRef.current = activeTicketId
+        hasScrolledRef.current = false
+        setUnreadCount(0)
+        isAtBottomRef.current = true
+        setShowScrollDown(false)
+      }
+
+      // Автоскролл при первой загрузке / смене чата
+      if (!hasScrolledRef.current && !isLoading && serverMessages.length > 0) {
+        requestAnimationFrame(() => {
+          viewport.scrollTo({ top: viewport.scrollHeight, behavior: "auto" })
+          hasScrolledRef.current = true
         })
-      })
-    }
-  }, [])
+      }
+
+      // Отслеживание позиции скролла
+      const handleScroll = () => {
+        const threshold = 100
+        const distanceFromBottom =
+          viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight
+        const nearBottom = distanceFromBottom < threshold
+
+        isAtBottomRef.current = nearBottom
+        setShowScrollDown(!nearBottom)
+
+        if (nearBottom) {
+          setUnreadCount(0)
+        }
+      }
+
+      viewport.addEventListener("scroll", handleScroll, { passive: true })
+      handleScroll()
+
+      ;(node as any).__scrollCleanup = () => {
+        viewport.removeEventListener("scroll", handleScroll)
+      }
+    },
+    [activeTicketId, isLoading, serverMessages.length],
+  )
 
   useEffect(() => {
     if (!isEditing && chat?.title) {
@@ -80,7 +126,7 @@ export const ChatWindow = () => {
     const socket = getSocket()
 
     const handleNewMessageSound = (message: Message) => {
-      const isOwnMessage = message.profileId === session?.user?.id
+      const isOwnMessage = message.profile?.userId === session?.user?.id
       const isCurrentChat = message.chatId === activeTicketId
       const isPageVisible = document.visibilityState === "visible"
 
@@ -102,6 +148,21 @@ export const ChatWindow = () => {
         if (messages.some((m) => m.id === message.id)) return old
         return { messages: [...messages, message], chat: old?.chat || null }
       })
+
+      const isOwnMessage = message.profile?.userId === session?.user?.id
+
+      if (isAtBottomRef.current) {
+        // Пользователь внизу — автоскролл
+        requestAnimationFrame(() => {
+          scrollViewportRef.current?.scrollTo({
+            top: scrollViewportRef.current.scrollHeight,
+            behavior: "smooth",
+          })
+        })
+      } else if (!isOwnMessage) {
+        // Пользователь выше — увеличиваем счётчик непрочитанных
+        setUnreadCount((prev) => prev + 1)
+      }
 
       queryClient.setQueryData<Chat[]>(["chats"], (old) =>
         old?.map((c) =>
@@ -168,7 +229,7 @@ export const ChatWindow = () => {
             </Button>
 
             <RenameChatField
-              chatDisplayTitle={chatDisplayTitle}
+              chatDisplayTitle={chatInfo?.title}
               handleRenameSubmit={handleRenameSubmit}
               isEditing={isEditing}
               isRenaming={isRenaming}
@@ -186,9 +247,9 @@ export const ChatWindow = () => {
         </div>
       </WrapperHeaderScreen>
 
-      <div className="mx-auto flex min-h-0 w-full flex-1 flex-col">
+      <div className="relative mx-auto flex min-h-0 w-full flex-1 flex-col">
         <ScrollArea className="h-full w-full px-4" ref={setScrollContainerRef}>
-          <div className="mx-auto w-full max-w-2xl p-3 backdrop-blur-[1px]">
+          <div className="mx-auto w-full max-w-2xl p-3">
             {!messagesData && isLoading && (
               <div className="animate-pulse py-4 text-center text-muted-foreground text-xs">
                 Загрузка переписки...
@@ -247,16 +308,44 @@ export const ChatWindow = () => {
                     </span>
                   </div>
                   <MessageItem
+                    id={msg.id}
                     attachments={(msg.attachments as AttachmentMeta[]) ?? []}
                     sender={isMe ? "user" : "support"}
+                    senderName={msg.profile?.name || "Участник"}
                     text={msg.text}
                     timestamp={time}
+                    replyTo={msg.replyTo ?? null}
                   />
                 </div>
               )
             })}
           </div>
         </ScrollArea>
+
+        {/* Кнопка скролла вниз с счётчиком непрочитанных */}
+        {showScrollDown && (
+          <button
+            type="button"
+            onClick={() => {
+              scrollViewportRef.current?.scrollTo({
+                top: scrollViewportRef.current.scrollHeight,
+                behavior: "smooth",
+              })
+              setUnreadCount(0)
+            }}
+            className="absolute bottom-4 right-6 z-10 flex items-center gap-1 rounded-full border border-border bg-background shadow-lg text-foreground transition-all hover:bg-muted animate-in fade-in slide-in-from-bottom-2 duration-200"
+            title="К последнему сообщению"
+          >
+            <div className="flex size-10 items-center justify-center">
+              <ChevronDown className="size-5" />
+            </div>
+            {unreadCount > 0 && (
+              <span className="mr-2 flex min-w-[20px] items-center justify-center rounded-full bg-primary px-1.5 py-0.5 font-medium text-[10px] text-primary-foreground">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
+          </button>
+        )}
       </div>
 
       {socketStatus !== "connected" && (
@@ -289,7 +378,7 @@ const RenameChatField = ({
   handleRenameSubmit,
 }: {
   isEditing: boolean
-  chatDisplayTitle: string | null
+  chatDisplayTitle: string | null | undefined
   isRenaming: boolean
   setIsEditMode: (isEditing: boolean) => void
   newTitle: string
@@ -321,17 +410,19 @@ const RenameChatField = ({
             <Save className="size-4" />
           </Button>
         )}
-        <ProtectByRole requiredRole={USER_ROLE.ADMIN}>
-          <Button
-            className="flex h-10 w-10 items-center justify-center gap-2 rounded-md text-primary hover:bg-primary/30 focus-visible:bg-primary/30"
-            onClick={() => setIsEditMode(!isEditing)}
-            size="icon"
-            title="Переименовать"
-            variant="ghost"
-          >
-            {!isEditing ? <Pencil className="size-5" /> : <PenOff className="size-5" />}
-          </Button>
-        </ProtectByRole>
+        {chatDisplayTitle && (
+          <ProtectByRole requiredRole={USER_ROLE.ADMIN}>
+            <Button
+              className="flex h-10 w-10 items-center justify-center gap-2 rounded-md text-primary hover:bg-primary/30 focus-visible:bg-primary/30"
+              onClick={() => setIsEditMode(!isEditing)}
+              size="icon"
+              title="Переименовать"
+              variant="ghost"
+            >
+              {!isEditing ? <Pencil className="size-5" /> : <PenOff className="size-5" />}
+            </Button>
+          </ProtectByRole>
+        )}
       </div>
     </ProtectByRole>
   )

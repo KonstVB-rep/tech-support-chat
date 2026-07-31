@@ -12,22 +12,31 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/shared/ui/components/carousel"
-import { X } from "lucide-react"
+import { useChatStore } from "@/store/useChatStore"
+import { MessageCircleReply, X } from "lucide-react"
 import Image from "next/image"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 
-type MessageProps = {
+type ReplyToData = {
+  id: string
   text: string | null
-  sender: "user" | "support" | "admin"
-  timestamp: string
-  attachments?: AttachmentMeta[]
+  senderName: string
+  attachments: AttachmentMeta[]
 }
 
+type MessageProps = {
+  id: string
+  text: string | null
+  sender: "user" | "support" | "admin"
+  senderName: string
+  timestamp: string
+  attachments?: AttachmentMeta[]
+  replyTo?: ReplyToData | null
+}
 const GRID_COLS = 3
 
 function getGridSpan(index: number, total: number): string {
-  // ✅ Первый элемент всегда на всю ширину
   if (index === 0) return "col-span-3 row-span-2"
 
   const lastRowCount = (total - 1) % GRID_COLS || GRID_COLS
@@ -35,7 +44,6 @@ function getGridSpan(index: number, total: number): string {
 
   if (index < firstIndexInLastRow) return ""
 
-  // Последний ряд неполный — растягиваем
   if (lastRowCount === 1) return "col-span-3 row-span-2"
   if (lastRowCount === 2) {
     return index === firstIndexInLastRow ? "col-span-2" : "col-span-1"
@@ -44,8 +52,17 @@ function getGridSpan(index: number, total: number): string {
   return ""
 }
 
-export const MessageItem = ({ text, sender, timestamp, attachments = [] }: MessageProps) => {
+export const MessageItem = ({
+  id,
+  text,
+  sender,
+  senderName,
+  timestamp,
+  attachments = [],
+  replyTo,
+}: MessageProps) => {
   const isUser = sender === "user"
+  const setReplyTo = useChatStore((s) => s.setReplyTo)
 
   const images = attachments.filter((a) => a.type.startsWith("image"))
   const videos = attachments.filter((a) => a.type.startsWith("video"))
@@ -53,10 +70,34 @@ export const MessageItem = ({ text, sender, timestamp, attachments = [] }: Messa
     (a) => !a.type.startsWith("image") && !a.type.startsWith("video"),
   )
 
-  // ✅ Единый массив медиа для сетки
   const mediaItems = [...images, ...videos]
 
   const [lightbox, setLightbox] = useState<{ index: number } | null>(null)
+
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleReply = useCallback(() => {
+    setReplyTo({
+      id,
+      text: text || null,
+      senderName: isUser ? "Вы" : senderName,
+      attachments,
+    })
+  }, [id, text, senderName, isUser, attachments, setReplyTo])
+
+  const handlePointerDown = () => {
+    longPressTimer.current = setTimeout(() => {
+      handleReply()
+      if (navigator.vibrate) navigator.vibrate(30)
+    }, 500)
+  }
+
+  const handlePointerUp = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+  }
 
   const openLightbox = useCallback((index: number) => {
     setLightbox({ index })
@@ -68,11 +109,18 @@ export const MessageItem = ({ text, sender, timestamp, attachments = [] }: Messa
 
   return (
     <>
-      <div className={`mb-1 flex w-full ${isUser ? "justify-end" : "justify-start"}`}>
+      <div className={`mb-1 min-w-20 flex w-full ${isUser ? "justify-end" : "justify-start"}`} id={id}>
+
         <div
-          className={`flex min-w-[80px] max-w-[75%] select-text flex-col rounded-2xl p-0.5 shadow-sm`}
+          className={`relative group flex min-w-[80px] max-w-[75%] select-text flex-col rounded-2xl p-0.5 shadow-sm`}
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerUp}
         >
-          {/* ✅ Единая сетка для всех медиа */}
+          {/* ✅ Блок цитаты */}
+          {replyTo && <ReplyToBlock replyTo={replyTo} />}
+
+          {/* Медиа-сетка */}
           {mediaItems.length > 0 && (
             <div className="mb-2 grid w-[400px] max-w-full auto-rows-[100px] grid-cols-3 gap-0.5 overflow-hidden rounded-xl">
               {mediaItems.map((item, i) => {
@@ -112,11 +160,10 @@ export const MessageItem = ({ text, sender, timestamp, attachments = [] }: Messa
           {/* Документы */}
           {docs.map((doc, i) => (
             <a
-              className={`mb-1 flex items-center gap-2 rounded-lg px-3 py-2 transition-colors ${
-                isUser
-                  ? "bg-white/10 text-white hover:bg-white/20"
-                  : "bg-background/50 text-foreground hover:bg-background/80"
-              }`}
+              className={`mb-1 flex items-center gap-2 rounded-lg px-3 py-2 transition-colors ${isUser
+                ? "bg-white/10 text-white hover:bg-white/20"
+                : "bg-background/50 text-foreground hover:bg-background/80"
+                }`}
               href={doc.url.replace(/\\/g, "/")}
               key={`doc-${i}`}
               rel="noopener noreferrer"
@@ -127,36 +174,63 @@ export const MessageItem = ({ text, sender, timestamp, attachments = [] }: Messa
             </a>
           ))}
 
-          {/* Текст */}
+          {/* Текст + кнопка ответа */}
           {text ? (
             <div
-              className={`flex flex-col w-fit items-end rounded-md bg-messege_outcoming ${
-                isUser
-                  ? "rounded-br-none bg-message_outcoming text-white ml-auto"
-                  : "rounded-bl-none border border-border/60 bg-message_incoming text-foreground mr-auto"
-              }`}
+              className={`flex relative flex-col w-fit items-end rounded-md bg-messege_outcoming ${isUser
+                ? "rounded-br-none bg-message_outcoming text-white ml-auto"
+                : "rounded-bl-none border border-border/60 bg-message_incoming text-foreground mr-auto"
+                }`}
             >
-              <p className="whitespace-pre-wrap break-words px-3 text-sm leading-relaxed">
+             <div className="flex gap-2 p-2 w-full justify-between">
+               <p className={cn("whitespace-pre-wrap break-words text-sm leading-relaxed self-start")}>
                 {text}
               </p>
 
+                <span
+                  className="select-none font-medium text-[10px] leading-none tracking-wide content-end"
+
+                >
+                  {timestamp}
+                </span>
+             </div>
+
+               <Button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleReply()
+                  }}
+                  size="icon"
+                  className={cn("absolute bottom-0 shrink-0 rounded-full bg-blue-700 p-1 transition-colors hover:bg-blue-800 focus-visible:bg-blue-800 opacity-0 group-hover:opacity-100 focus-visible:opacity-100", isUser ? "-left-10" : "-right-10")}
+                  title="Ответить"
+                >
+                  <MessageCircleReply className="h-3.5 w-3.5 text-white" />
+                </Button>
+
+            </div>
+          ) : (
+            <div className="flex items-center justify-end s-full relative">
               <span
-                className={`mt-1 select-none self-end pr-2 pb-2 font-medium text-[9px] leading-none tracking-wide ${
-                  isUser ? "text-blue-200/90" : "text-muted-foreground/80"
-                }`}
+                className="select-none rounded-xl bg-zinc-600 px-2 py-1 font-medium text-[10px] leading-none tracking-wide"
+                 
               >
                 {timestamp}
               </span>
+
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleReply()
+                }}
+                size="icon"
+                className={cn("absolute bottom-0 shrink-0 rounded-full bg-blue-700 p-1 transition-colors hover:bg-blue-800 focus-visible:bg-blue-800 opacity-0 group-hover:opacity-100 focus-visible:opacity-100", isUser ? "-left-10" : "-right-10")}
+                title="Ответить"
+              >
+                <MessageCircleReply className="h-3.5 w-3.5 text-white" />
+              </Button>
             </div>
-          ) : (
-            <span
-              className={`select-none self-end rounded-xl bg-zinc-600 px-2 py-1 font-medium text-[9px] leading-none tracking-wide ${
-                isUser ? "text-blue-200/90" : "text-muted-foreground/80"
-              }`}
-            >
-              {timestamp}
-            </span>
           )}
+
         </div>
       </div>
 
@@ -174,7 +248,64 @@ export const MessageItem = ({ text, sender, timestamp, attachments = [] }: Messa
   )
 }
 
-// ✅ Лайтбокс определяет тип по элементу, а не по пропсу
+
+const ReplyToBlock = ({ replyTo }: { replyTo: ReplyToData }) => {
+  if (!replyTo) return null
+
+  const hasText = !!replyTo.text
+  const hasAttachments = replyTo.attachments.length > 0
+
+  return (
+    <a
+      href={`#${replyTo.id}`} className="mb-1 border-l-2 border-primary/60 py-2 px-3 rounded-r bg-muted cursor-pointer hover:bg-white/10 transition-colors">
+
+      <p className="text-[10px] font-medium text-primary/80 truncate">
+        {replyTo.senderName}
+      </p>
+
+      {hasText ? (
+        <p className="text-[10px] text-muted-foreground truncate">
+          {replyTo.text}
+        </p>
+      ) : hasAttachments ? (
+        <div className="flex items-center gap-1 mt-0.5">
+          <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded">
+            {replyTo.attachments[0].type.startsWith("video") ? (
+              <>
+                <video
+                  className="h-full w-full object-cover pointer-events-none"
+                  preload="metadata"
+                  src={replyTo.attachments[0].url.replace(/\\/g, "/")}
+                />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                  <span className="text-white text-[8px]">▶</span>
+                </div>
+              </>
+            ) : (
+              <Image
+                alt=""
+                className="h-full w-full object-cover"
+                fill
+                sizes="32px"
+                src={replyTo.attachments[0].url.replace(/\\/g, "/")}
+              />
+            )}
+          </div>
+
+          {replyTo.attachments.length > 1 && (
+            <span className="text-[10px] text-muted-foreground">
+              +{replyTo.attachments.length - 1}
+            </span>
+          )}
+        </div>
+      ) : (
+        <p className="text-[10px] text-muted-foreground italic">Сообщение</p>
+      )}
+    </a>
+  )
+}
+
+
 function MediaLightbox({
   items,
   initialIndex,
@@ -267,6 +398,7 @@ function MediaLightbox({
   )
 }
 
+
 const ImageWithPreview = ({
   src,
   alt,
@@ -285,9 +417,8 @@ const ImageWithPreview = ({
     return (
       <div className="absolute inset-0">
         {!isLoaded && <div className="absolute inset-0 animate-pulse bg-muted/30" />}
-            // biome-ignore lint/a11y/useAltText: preview-only image, alt provided by parent context
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: not used here
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+        {/* biome-ignore lint/a11y/useAltText: preview-only image, alt provided by parent context */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           alt={alt}
           className={cn(

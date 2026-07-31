@@ -39,7 +39,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: "Нет доступа к этому чату" }, { status: 403 })
     }
 
-    const { fileUrl, fileType, fileName, fileSize, text } = await req.json()
+    const { fileUrl, fileType, fileName, fileSize, text, replyToId } = await req.json()
 
     if (!fileUrl || !fileType) {
       return NextResponse.json(
@@ -71,6 +71,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             imageUrl: true,
           },
         },
+         replyTo: {
+          select: {
+            id: true,
+            text: true,
+            attachments: true,
+            profile: { select: { name: true } },
+          },
+        },
       },
     })
 
@@ -84,10 +92,24 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       select: { organizationId: true },
     })
 
-    await triggerSocketEvent("srv:message:new", {
-      message,
-      organizationId: chatInfo?.organizationId || null,
-    })
+   const mappedMessage = {
+  ...message,
+  createdAt: message.createdAt.toISOString(),
+  attachments: message.attachments || [],
+  replyTo: message.replyTo
+    ? {
+        id: message.replyTo.id,
+        text: message.replyTo.text,
+        senderName: message.replyTo.profile?.name || "Участник",
+        attachments: message.replyTo.attachments || [],
+      }
+    : null,
+}
+
+await triggerSocketEvent("srv:message:new", {
+  message: mappedMessage,
+  organizationId: chatInfo?.organizationId || null,
+})
 
     return NextResponse.json({ message })
   } catch (error) {

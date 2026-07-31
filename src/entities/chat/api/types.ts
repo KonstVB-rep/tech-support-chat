@@ -60,22 +60,31 @@ export type ChatsListItem = {
   chats: Chat & { isContractActive: boolean }[]
 }
 
+export type ReplyToData = {
+  id: string
+  text: string | null
+  senderName: string
+  attachments: AttachmentMeta[]
+}
+
 export type Message = {
   id: string
   text: string | null
   chatId: string
   profileId: string
   createdAt: string
+  sender: "user" | "support"
+  senderName: string
+  timestamp: string
   attachments: AttachmentMeta[]
-  profile: {
+  replyTo: ReplyToData | null
+  profile: {                        
     id: string
     name: string
     userId: string
     imageUrl: string | null
-    user?: { role: string }
   }
 }
-
 export type MessagesResponse = {
   messages: Message[]
   chat: {

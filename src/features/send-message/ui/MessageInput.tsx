@@ -1,16 +1,16 @@
 // src/features/send-message/ui/MessageInput.tsx
 "use client"
 
-import { useState } from "react"
-import { Plus, Send, Upload, X } from "lucide-react"
-import Image from "next/image"
-import { toast } from "sonner"
 import { useSendMessage, useUploadMutation } from "@/features/send-message"
 import AttachMenu from "@/features/send-message/ui/AttachMenu"
 import { compressImage } from "@/shared/lib/image-compressor"
 import { Button } from "@/shared/ui/components/button"
 import { Input } from "@/shared/ui/components/input"
-import { useActiveTicketId } from "@/store/useChatStore"
+import { useActiveTicketId, useChatStore } from "@/store/useChatStore"
+import { Plus, Send, Upload, X } from "lucide-react"
+import Image from "next/image"
+import { useEffect, useRef, useState } from "react"
+import { toast } from "sonner"
 
 type PendingFile = {
   id: string
@@ -29,70 +29,78 @@ export const MessageInput = ({ overrideTicketId }: { overrideTicketId?: string |
   const globalTicketId = useActiveTicketId()
   const activeTicketId = overrideTicketId ?? globalTicketId
 
+  const replyTo = useChatStore((s) => s.replyTo)
+  const clearReply = useChatStore((s) => s.clearReply)
+
   const { mutate: uploadMutate, isPending: isUploading } = useUploadMutation(activeTicketId)
   const { mutate: sendMessageMutate, isPending: isSending } = useSendMessage(activeTicketId)
 
   const isPending = isUploading || isSending
   const hasFiles = pendingFiles.length > 0
 
-const processFiles = async (fileList: FileList | File[]) => {
-  const files = Array.from(fileList).filter((f): f is File => f instanceof File)
+  const inputRef = useRef<HTMLInputElement>(null)
 
-  for (const file of files) {
-    if (file.size > MAX_FILE_SIZE) {
-      toast.error(
-        `Файл "${file.name}" слишком большой (${(file.size / 1024 / 1024).toFixed(1)}MB). Максимум ${MAX_FILE_SIZE / 1024 / 1024}MB.`,
-      )
-      continue
+  useEffect(() => {
+    if (replyTo) {
+      inputRef.current?.focus()
     }
+  }, [replyTo])
 
-    const tempId = crypto.randomUUID()
+  const processFiles = async (fileList: FileList | File[]) => {
+    const files = Array.from(fileList).filter((f): f is File => f instanceof File)
 
-    // ✅ Сначала добавляем в state с isCompressing=true
-    setPendingFiles((prev) => [
-      ...prev,
-      { id: tempId, file, preview: null, isCompressing: true },
-    ])
-
-    try {
-      let processedFile = file
-      let preview: string | null = null
-
-      if (file.type.startsWith("image/")) {
-        // ✅ Компрессия И чтение — последовательно
-        try {
-          processedFile = await compressImage(file)
-        } catch {
-          processedFile = file
-        }
-
-        preview = await new Promise<string>((resolve) => {
-          const reader = new FileReader()
-          reader.onload = () => resolve(reader.result as string)
-          reader.onerror = () => resolve("")
-          reader.readAsDataURL(processedFile)
-        })
-      } else if (file.type.startsWith("video/")) {
-        preview = URL.createObjectURL(file)
+    for (const file of files) {
+      if (file.size > MAX_FILE_SIZE) {
+        toast.error(
+          `Файл "${file.name}" слишком большой (${(file.size / 1024 / 1024).toFixed(1)}MB). Максимум ${MAX_FILE_SIZE / 1024 / 1024}MB.`,
+        )
+        continue
       }
 
-      // ✅ Обновляем только когда ВСЁ готово
-      setPendingFiles((prev) =>
-        prev.map((pf) =>
-          pf.id === tempId
-            ? { ...pf, file: processedFile, preview, isCompressing: false }
-            : pf,
-        ),
-      )
-    } catch {
-      setPendingFiles((prev) =>
-        prev.map((pf) =>
-          pf.id === tempId ? { ...pf, isCompressing: false } : pf,
-        ),
-      )
+      const tempId = crypto.randomUUID()
+
+      setPendingFiles((prev) => [
+        ...prev,
+        { id: tempId, file, preview: null, isCompressing: true },
+      ])
+
+      try {
+        let processedFile = file
+        let preview: string | null = null
+
+        if (file.type.startsWith("image/")) {
+          try {
+            processedFile = await compressImage(file)
+          } catch {
+            processedFile = file
+          }
+
+          preview = await new Promise<string>((resolve) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve(reader.result as string)
+            reader.onerror = () => resolve("")
+            reader.readAsDataURL(processedFile)
+          })
+        } else if (file.type.startsWith("video/")) {
+          preview = URL.createObjectURL(file)
+        }
+
+        setPendingFiles((prev) =>
+          prev.map((pf) =>
+            pf.id === tempId
+              ? { ...pf, file: processedFile, preview, isCompressing: false }
+              : pf,
+          ),
+        )
+      } catch {
+        setPendingFiles((prev) =>
+          prev.map((pf) =>
+            pf.id === tempId ? { ...pf, isCompressing: false } : pf,
+          ),
+        )
+      }
     }
   }
-}
 
   const removeFile = (id: string) => {
     setPendingFiles((prev) => {
@@ -118,13 +126,28 @@ const processFiles = async (fileList: FileList | File[]) => {
         {
           files: pendingFiles.map((pf) => pf.file),
           text: text.trim() || undefined,
+          replyToId: replyTo?.id ?? undefined,
         },
-        { onSuccess: clearAll },
+        {
+          onSuccess: () => {
+            clearAll()
+            clearReply()
+          },
+        },
       )
     } else if (text.trim()) {
       sendMessageMutate(
-        { chatId: activeTicketId, text: text.trim() },
-        { onSuccess: () => setText("") },
+        {
+          chatId: activeTicketId,
+          text: text.trim(),
+          replyToId: replyTo?.id ?? undefined,
+        },
+        {
+          onSuccess: () => {
+            setText("")
+            clearReply() // ✅ Добавить
+          },
+        },
       )
     }
   }
@@ -181,6 +204,60 @@ const processFiles = async (fileList: FileList | File[]) => {
         </div>
       )}
 
+      {replyTo && (
+        <div className="flex items-center gap-2 border-l-2 border-primary px-3 py-1.5 mx-2 mt-1 bg-muted/30 rounded-r-lg animate-in slide-in-from-bottom-1 duration-150">
+          {replyTo.attachments.length > 0 && !replyTo.text && (
+            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded border border-border">
+              {replyTo.attachments[0].type.startsWith("video") ? (
+                <>
+                  <video
+                    className="h-full w-full object-cover pointer-events-none"
+                    preload="metadata"
+                    src={replyTo.attachments[0].url.replace(/\\/g, "/")}
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                    <span className="text-white text-[10px]">▶</span>
+                  </div>
+                </>
+              ) : replyTo.attachments[0].type.startsWith("image") ? (
+                <Image
+                  alt=""
+                  className="h-full w-full object-cover"
+                  fill
+                  sizes="40px"
+                  src={replyTo.attachments[0].url.replace(/\\/g, "/")}
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-muted">
+                  <span className="text-lg">📄</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-primary truncate">
+              {replyTo.senderName}
+            </p>
+            <p className="text-xs text-muted-foreground truncate">
+              {replyTo.text || (
+                replyTo.attachments.length > 0
+                  ? `${replyTo.attachments[0].type.startsWith("video") ? "Видео" : replyTo.attachments[0].type.startsWith("image") ? "Фото" : "Файл"}${replyTo.attachments.length > 1 ? ` +${replyTo.attachments.length - 1}` : ""}`
+                  : "Сообщение"
+              )}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={clearReply}
+            className="shrink-0 p-0.5 rounded hover:bg-muted transition-colors"
+          >
+            <X className="h-3.5 w-3.5 text-muted-foreground" />
+          </button>
+        </div>
+      )}
+
       {/* Форма отправки */}
       <form className="flex items-center gap-2 p-2" onSubmit={handleSubmit}>
         <Button
@@ -195,6 +272,7 @@ const processFiles = async (fileList: FileList | File[]) => {
         </Button>
 
         <Input
+          ref={inputRef}
           autoComplete="off"
           className="h-10 flex-1 rounded-xl border-muted-foreground/20 focus-visible:ring-primary"
           disabled={isPending}

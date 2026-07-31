@@ -3,6 +3,21 @@
 import type { OrgRole } from "@prisma/client"
 import { persist } from "zustand/middleware"
 import { create } from "@/shared/lib/zustand"
+import { AttachmentMeta } from "@/entities/chat/api/types"
+
+type ReplyToData = {
+  id: string
+  text: string | null
+  senderName: string
+  attachments: AttachmentMeta[]
+}
+
+interface ChatState {
+  activeTicketId: string | null
+  replyTo: ReplyToData | null
+  setReplyTo: (data: ReplyToData) => void
+  clearReply: () => void
+}
 
 interface ChatState {
   activeTicketId: string | null
@@ -12,13 +27,19 @@ interface ChatState {
   currentOrganizationId: string | null
   currentMemberRole: OrgRole | null
   setCurrentOrganization: (id: string | null, role: OrgRole | null) => void
-  clearOrganization: () => void
+  clearOrganization: () => void,
+  replyTo: ReplyToData | null,
+  setReplyTo: (data: ReplyToData) => void,
+  clearReply: () => void
 }
 
 export const useChatStore = create<ChatState>()(
   persist(
     (set) => ({
       activeTicketId: null,
+      replyTo: null,
+      setReplyTo: (data) => set({ replyTo: data }),
+      clearReply: () => set({ replyTo: null }),
       setActiveTicketId: (id) => {
         set({ activeTicketId: id })
         console.log(`[Zustand] Активный тикет переключен на: ${id}`)

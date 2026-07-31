@@ -4,14 +4,15 @@ import type { Chat, Message, MessagesResponse } from "@/entities/chat/api/types"
 
 interface UploadParams {
   files: File[]
-  text?: string
+  text?: string,
+  replyToId?: string
 }
 
 export const useUploadMutation = (activeTicketId: string | null) => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ files, text }: UploadParams) => {
+    mutationFn: async ({ files, text,replyToId }: UploadParams) => {
       if (!activeTicketId) throw new Error("Chat ID is required")
 
       const formData = new FormData()
@@ -20,7 +21,10 @@ export const useUploadMutation = (activeTicketId: string | null) => {
       })
       if (text) formData.append("text", text)
 
-      // ✅ Единый эндпоинт для текста и вложений
+        if (replyToId){
+        formData.append("replyToId", replyToId)
+        }
+
       const res = await fetch(`/api/chats/${activeTicketId}/messages`, {
         method: "POST",
         body: formData,

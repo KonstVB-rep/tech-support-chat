@@ -137,6 +137,16 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
             imageUrl: true,
           },
         },
+        replyTo: {
+          select: {
+            id: true,
+            text: true,
+            attachments: true,
+            profile: {
+              select: { name: true },
+            },
+          },
+        },
       },
     })
 
@@ -150,8 +160,24 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       },
     })
 
+     const mappedMessages = messages.map((msg) => ({
+          ...msg,
+          sender: msg.profile.userId === session.user.id ? "user" : "support", // ✅ Определяем роль
+          senderName: msg.profile.name || "Участник",
+          timestamp: msg.createdAt.toISOString(),
+          attachments: msg.attachments || [],
+          replyTo: msg.replyTo
+            ? {
+                id: msg.replyTo.id,
+                text: msg.replyTo.text,
+                senderName: msg.replyTo.profile?.name || "Участник",
+                attachments: msg.replyTo.attachments || [],
+              }
+            : null,
+        }))
+
     return NextResponse.json({
-      messages: messages || [],
+      messages: mappedMessages || [],
       chat: chatInfo,
     })
   } catch (error) {
@@ -187,6 +213,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const formData = await req.formData()
     const text = formData.get("text") as string | null
     const files = formData.getAll("files") as File[]
+    const replyToId = (formData.get("replyToId") as string) || null
 
     if ((!text || !text.trim()) && files.length === 0) {
       return NextResponse.json({ error: "Сообщение пустое" }, { status: 400 })
@@ -227,6 +254,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         chatId,
         profileId: userProfile.id,
         attachments: attachments as unknown as Prisma.InputJsonValue,
+        replyToId,
       },
       include: {
         profile: {
@@ -237,6 +265,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             imageUrl: true,
           },
         },
+        replyTo: { 
+          select: {
+            id: true,
+            text: true,
+            attachments: true,
+            profile: { select: { name: true } },
+          },
+        },
       },
     })
 
@@ -245,8 +281,22 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       data: { updatedAt: new Date() },
     })
 
+   const mappedMessage = {
+      ...message,
+      createdAt: message.createdAt.toISOString(),
+      attachments: message.attachments || [],
+      replyTo: message.replyTo
+        ? {
+            id: message.replyTo.id,
+            text: message.replyTo.text,
+            senderName: message.replyTo.profile?.name || "Участник",
+            attachments: message.replyTo.attachments || [],
+          }
+        : null,
+    }
+
     await triggerSocketEvent("srv:message:new", {
-      message,
+      message: mappedMessage, // ✅ Было: message
       organizationId: chatInfo?.organizationId || null,
     })
 

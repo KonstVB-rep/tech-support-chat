@@ -112,6 +112,14 @@ export const POST = async (request: Request) => {
       },
       include: {
         profile: { select: { name: true, imageUrl: true } },
+          replyTo: {
+            select: {
+              id: true,
+              text: true,
+              attachments: true,
+              profile: { select: { name: true } },
+            },
+          },
       },
     })
 

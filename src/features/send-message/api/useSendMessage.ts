@@ -4,16 +4,20 @@ import type { Chat, Message, MessagesResponse } from "@/entities/chat/api/types"
 
 type SendMessageParams = {
   chatId: string
-  text: string
+  text: string,
+  replyToId?: string
 }
 
 export const useSendMessage = (activeTicketId: string | null) => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ chatId, text }: SendMessageParams) => {
+    mutationFn: async ({ chatId, text, replyToId }: SendMessageParams) => {
       const formData = new FormData()
       formData.append("text", text)
+      if (replyToId){
+      formData.append("replyToId", replyToId)
+      }
 
       const res = await fetch(`/api/chats/${chatId}/messages`, {
         method: "POST",
