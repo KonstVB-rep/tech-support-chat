@@ -8,6 +8,7 @@ import { headers } from "next/headers"
 import { type NextRequest, NextResponse } from "next/server"
 import { auth } from "@/app/lib/auth"
 import { prisma } from "@/prisma/prisma-client"
+import { checkChatAccess } from "@/shared/lib/checkChatAccess"
 import { triggerSocketEvent } from "@/shared/lib/socket-trigger"
 
 const UPLOAD_DIR = process.env.UPLOAD_DIR || "/opt/chat-app/uploads"
@@ -44,68 +45,16 @@ interface AttachmentMeta {
   size: number
 }
 
-async function checkChatAccess(
-  chatId: string,
-  session: { user: { role: string; id: string } },
-  userProfileId: string,
-  options: { checkContract: boolean } = { checkContract: true },
-) {
-  const isGlobalAdmin = session.user.role.toLowerCase() === "admin"
-  if (isGlobalAdmin) return { allowed: true }
-
-  const isSupportEngineer = await prisma.supportEngineer.findUnique({
-    where: { profileId: userProfileId },
-  })
-  if (isSupportEngineer) return { allowed: true }
-
-  const chat = await prisma.chat.findUnique({
-    where: { id: chatId },
-    include: { organization: true },
-  })
-
-  if (!chat) return { allowed: false, error: "Чат не найден", status: 404 }
-
-  // ✅ Проверка договора только когда явно запрошена
-  if (options.checkContract && chat.organization) {
-    const now = new Date()
-    if (now < chat.organization.contractStart || now > chat.organization.contractEnd) {
-      return { allowed: false, error: "Договор не активен", status: 403 }
-    }
-  }
-
-  if (chat.organizationId) {
-    const orgMembership = await prisma.organizationMember.findUnique({
-      where: {
-        organizationId_profileId: {
-          organizationId: chat.organizationId,
-          profileId: userProfileId,
-        },
-      },
-      select: { role: true },
-    })
-    if (orgMembership && orgMembership.role === "RESPONSIBLE") {
-      return { allowed: true }
-    }
-  }
-
-  const isChatMember = await prisma.chatMember.findUnique({
-    where: { chatId_profileId: { chatId, profileId: userProfileId } },
-  })
-  if (isChatMember) return { allowed: true }
-
-  return {
-    allowed: false,
-    error: "Доступ к этому чату заблокирован. Вы не являетесь его участником.",
-    status: 403,
-  }
-}
-export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: chatId } = await params
+    const { searchParams } = new URL(req.url)
+
+    // Cursor-based пагинация (для бесконечного скролла вверх)
+    const cursor = searchParams.get("cursor") // ID последнего загруженного сообщения
+    const limit = Math.min(Number(searchParams.get("limit")) || 50, 100) // Макс 100 за раз
 
     const session = await auth.api.getSession({ headers: await headers() })
-
-    console.log("[messages/route] session:", session?.user?.id ?? "NULL")
     if (!session?.user) {
       return NextResponse.json({ error: "Не авторизован" }, { status: 401 })
     }
@@ -125,30 +74,36 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: access.error }, { status: access.status ?? 403 })
     }
 
+    // Пагинация с cursor
     const messages = await prisma.message.findMany({
       where: { chatId },
-      orderBy: { createdAt: "asc" },
+      orderBy: { createdAt: "desc" }, // Сначала новые
+      take: limit + 1, // Берем на 1 больше, чтобы понять, есть ли следующая страница
+      ...(cursor && {
+        cursor: { id: cursor },
+        skip: 1, // Пропускаем сам cursor
+      }),
       include: {
         profile: {
-          select: {
-            id: true,
-            name: true,
-            userId: true,
-            imageUrl: true,
-          },
+          select: { id: true, name: true, userId: true, imageUrl: true },
         },
         replyTo: {
           select: {
             id: true,
             text: true,
             attachments: true,
-            profile: {
-              select: { name: true },
-            },
+            profile: { select: { name: true } },
           },
         },
       },
     })
+
+    // Определяем, есть ли еще сообщения
+    const hasMore = messages.length > limit
+    const paginatedMessages = hasMore ? messages.slice(0, limit) : messages
+
+    // Разворачиваем в хронологическом порядке (старые → новые)
+    paginatedMessages.reverse()
 
     const chatInfo = await prisma.chat.findUnique({
       where: { id: chatId },
@@ -160,25 +115,27 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       },
     })
 
-     const mappedMessages = messages.map((msg) => ({
-          ...msg,
-          sender: msg.profile.userId === session.user.id ? "user" : "support", // ✅ Определяем роль
-          senderName: msg.profile.name || "Участник",
-          timestamp: msg.createdAt.toISOString(),
-          attachments: msg.attachments || [],
-          replyTo: msg.replyTo
-            ? {
-                id: msg.replyTo.id,
-                text: msg.replyTo.text,
-                senderName: msg.replyTo.profile?.name || "Участник",
-                attachments: msg.replyTo.attachments || [],
-              }
-            : null,
-        }))
+    const mappedMessages = paginatedMessages.map((msg) => ({
+      ...msg,
+      sender: msg.profile.userId === session.user.id ? "user" : "support",
+      senderName: msg.profile.name || "Участник",
+      timestamp: msg.createdAt.toISOString(),
+      attachments: msg.attachments || [],
+      replyTo: msg.replyTo
+        ? {
+            id: msg.replyTo.id,
+            text: msg.replyTo.text,
+            senderName: msg.replyTo.profile?.name || "Участник",
+            attachments: msg.replyTo.attachments || [],
+          }
+        : null,
+    }))
 
     return NextResponse.json({
-      messages: mappedMessages || [],
+      messages: mappedMessages,
       chat: chatInfo,
+      hasMore,
+      nextCursor: hasMore ? paginatedMessages[0]?.id : null, // Cursor для следующего запроса
     })
   } catch (error) {
     console.error("Ошибка загрузки messages:", error)
@@ -213,20 +170,36 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const formData = await req.formData()
     const text = formData.get("text") as string | null
     const files = formData.getAll("files") as File[]
-    const replyToId = (formData.get("replyToId") as string) || null
+    const rawReplyToId = formData.get("replyToId") as string | null
 
     if ((!text || !text.trim()) && files.length === 0) {
       return NextResponse.json({ error: "Сообщение пустое" }, { status: 400 })
     }
 
-    const chatInfo = await prisma.chat.findUnique({
-      where: { id: chatId },
-      select: { organizationId: true },
-    })
+    // Проверка replyToId (безопасность)
+    let validReplyToId: string | null = null
+    if (rawReplyToId) {
+      const parentMessage = await prisma.message.findUnique({
+        where: { id: rawReplyToId },
+        select: { chatId: true },
+      })
+      if (parentMessage && parentMessage.chatId === chatId) {
+        validReplyToId = rawReplyToId
+      }
+    }
 
+    // Ограничение размера файлов (те же 50MB что и в media-upload)
+    const MAX_FILE_SIZE = 50 * 1024 * 1024
     const attachments: AttachmentMeta[] = []
 
-   for (const file of files) {
+    for (const file of files) {
+      if (file.size > MAX_FILE_SIZE) {
+        return NextResponse.json(
+          { error: `Файл ${file.name} превышает лимит 50MB` },
+          { status: 400 },
+        )
+      }
+
       const ext = path.extname(file.name)
       const fileName = `${crypto.randomUUID()}${ext}`
 
@@ -247,41 +220,38 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       })
     }
 
-
-    const message = await prisma.message.create({
-      data: {
-        text: text?.trim() || "",
-        chatId,
-        profileId: userProfile.id,
-        attachments: attachments as unknown as Prisma.InputJsonValue,
-        replyToId,
-      },
-      include: {
-        profile: {
-          select: {
-            id: true,
-            name: true,
-            userId: true,
-            imageUrl: true,
+    // Транзакция: создание сообщения + обновление чата
+    const [message, chatInfo] = await prisma.$transaction([
+      prisma.message.create({
+        data: {
+          text: text?.trim() || "",
+          chatId,
+          profileId: userProfile.id,
+          attachments: attachments as unknown as Prisma.InputJsonValue,
+          replyToId: validReplyToId,
+        },
+        include: {
+          profile: {
+            select: { id: true, name: true, userId: true, imageUrl: true },
+          },
+          replyTo: {
+            select: {
+              id: true,
+              text: true,
+              attachments: true,
+              profile: { select: { name: true } },
+            },
           },
         },
-        replyTo: { 
-          select: {
-            id: true,
-            text: true,
-            attachments: true,
-            profile: { select: { name: true } },
-          },
-        },
-      },
-    })
+      }),
+      prisma.chat.update({
+        where: { id: chatId },
+        data: { updatedAt: new Date() },
+        select: { organizationId: true },
+      }),
+    ])
 
-    await prisma.chat.update({
-      where: { id: chatId },
-      data: { updatedAt: new Date() },
-    })
-
-   const mappedMessage = {
+    const mappedMessage = {
       ...message,
       createdAt: message.createdAt.toISOString(),
       attachments: message.attachments || [],
@@ -296,7 +266,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     await triggerSocketEvent("srv:message:new", {
-      message: mappedMessage, // ✅ Было: message
+      message: mappedMessage,
       organizationId: chatInfo?.organizationId || null,
     })
 

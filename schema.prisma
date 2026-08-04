@@ -23,8 +23,8 @@ enum ChatRole {
 
 model User {
   id               String    @id @default(cuid())  // ✅
-  name             String    @db.Text
-  email            String    @unique
+  name             String    @db.VarChar(255) 
+  email            String    @unique @db.VarChar(255)
   emailVerified    Boolean   @default(false)
   image            String?   @db.Text
   role             String    @default("user")
@@ -111,9 +111,9 @@ model Profile {
   userId    String   @unique
   name      String
   imageUrl  String?  @db.Text
-  email     String   @unique
+  email     String  @unique @db.VarChar(255)
   phone     String?  @db.Text 
-  username  String?  @unique
+  username  String?  
   lastSeen  DateTime @default(now())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -145,7 +145,7 @@ model SupportEngineer {
 }
 
 model Organization {
-  id              String   @id @default(cuid())  // ✅ ИЗМЕНЕНО с uuid() на cuid()
+  id              String   @id @default(cuid())
   name            String   @db.Text
   inn             String   @unique
   contractNumber  String   @unique
@@ -156,6 +156,7 @@ model Organization {
   description     String?  @db.Text
   legalAddress    String   @db.Text
   actualAddress   String?  @db.Text
+  isActive       Boolean   @default(true) 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
@@ -179,14 +180,14 @@ model OrganizationMember {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   profile      Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  @@unique([organizationId, profileId]) // 🚀 ГАРАНТИЯ: Защита от дублирования человека в одной фирме
-  @@index([organizationId])
+  @@unique([organizationId, profileId]) 
   @@index([organizationId, role])
+  @@index([profileId]) 
   @@map("organization_member")
 }
 
 model Chat {
-  id             String   @id @default(cuid())  // ✅ ИЗМЕНЕНО с uuid() на cuid()
+  id             String   @id @default(cuid()) 
   title          String?
   imageUrl       String?  @db.Text
   type           ChatType @default(GROUP)
@@ -218,7 +219,8 @@ model ChatMember {
 
   @@unique([chatId, profileId])
   @@index([chatId])
-  @@index([profileId])
+  @@index([profileId])              
+  @@index([profileId, lastReadAt]) 
   @@map("chat_member")
 }
 
@@ -234,12 +236,13 @@ model Message {
   replyTo   Message?  @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
   replies   Message[] @relation("MessageReplies")
 
-  attachments Json?     @default("[]")
+  attachments Json? 
 
   chat    Chat    @relation(fields: [chatId], references: [id], onDelete: Cascade)
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Restrict)
 
-  @@index([chatId])
+  @@index([chatId, createdAt]) 
   @@index([profileId])
+  @@index([replyToId]) 
   @@map("message")
 }

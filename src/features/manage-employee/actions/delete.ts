@@ -115,35 +115,35 @@ export const deleteEmployeeAction = async (
     }
 
     // 4. Удаляем аватары с диска + блокировка входа
-      const uploadDir = process.env.UPLOAD_DIR || "/opt/chat-app/uploads"
-      const requestHeaders = await headers()
+    const uploadDir = process.env.UPLOAD_DIR || "/opt/chat-app/uploads"
+    const requestHeaders = await headers()
 
-      for (const member of membersData) {
-        const profile = member.profile
-        if (!profile) continue
+    for (const member of membersData) {
+      const profile = member.profile
+      if (!profile) continue
 
-        if (
-          profile.imageUrl &&
-          typeof profile.imageUrl === "string" &&
-          profile.imageUrl.startsWith("/uploads/")
-        ) {
-          const normalizedUrl = profile.imageUrl.replace(/^\/uploads\//, "").replace(/\\/g, "/")
-          const filePath = path.join(uploadDir, normalizedUrl)
-
-          try {
-            await unlink(filePath)
-          } catch {}
-        }
+      if (
+        profile.imageUrl &&
+        typeof profile.imageUrl === "string" &&
+        profile.imageUrl.startsWith("/uploads/")
+      ) {
+        const normalizedUrl = profile.imageUrl.replace(/^\/uploads\//, "").replace(/\\/g, "/")
+        const filePath = path.join(uploadDir, normalizedUrl)
 
         try {
-          await auth.api.banUser({
-            body: { userId: profile.userId },
-            headers: requestHeaders,
-          })
-        } catch (e) {
-          console.error(`⚠️ Не удалось заблокировать аккаунт ${profile.userId}:`, e)
-        }
+          await unlink(filePath)
+        } catch {}
       }
+
+      try {
+        await auth.api.banUser({
+          body: { userId: profile.userId },
+          headers: requestHeaders,
+        })
+      } catch (e) {
+        console.error(`⚠️ Не удалось заблокировать аккаунт ${profile.userId}:`, e)
+      }
+    }
 
     // 5. Инвалидация серверного кэша
     for (const id of validIds) {

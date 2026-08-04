@@ -1,18 +1,19 @@
 // src/features/send-message/api/useUploadMutation.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import type { Chat, Message, MessagesResponse } from "@/entities/chat/api/types"
+import type { Message } from "@/entities/chat/api/types"
+import { addMessageToCache, resetUnreadCount } from "@/shared/lib/updateMessagesCache"
 
 interface UploadParams {
   files: File[]
-  text?: string,
+  text?: string
   replyToId?: string
 }
 
-export const useUploadMutation = (activeTicketId: string | null) => {
+export const useUploadMutation = (activeTicketId: string | null | undefined) => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ files, text,replyToId }: UploadParams) => {
+    mutationFn: async ({ files, text, replyToId }: UploadParams) => {
       if (!activeTicketId) throw new Error("Chat ID is required")
 
       const formData = new FormData()
@@ -21,9 +22,9 @@ export const useUploadMutation = (activeTicketId: string | null) => {
       })
       if (text) formData.append("text", text)
 
-        if (replyToId){
+      if (replyToId) {
         formData.append("replyToId", replyToId)
-        }
+      }
 
       const res = await fetch(`/api/chats/${activeTicketId}/messages`, {
         method: "POST",
@@ -40,24 +41,8 @@ export const useUploadMutation = (activeTicketId: string | null) => {
     onSuccess: (data) => {
       if (!activeTicketId || !data?.message) return
 
-      queryClient.setQueryData<MessagesResponse>(["messages", activeTicketId], (old) => {
-        if (!old) return { messages: [data.message], chat: null }
-
-        if (old.messages.some((m) => m.id === data.message.id)) {
-          return old
-        }
-
-        return { ...old, messages: [...old.messages, data.message] }
-      })
-
-      queryClient.setQueryData<Chat[]>(["chats"], (old) => {
-        if (!old) return old
-        return old.map((chat) =>
-          chat.id === activeTicketId
-            ? { ...chat, unreadCount: 0, lastReadAt: new Date().toISOString() }
-            : chat,
-        )
-      })
+      addMessageToCache(queryClient, activeTicketId, data.message)
+      resetUnreadCount(queryClient, activeTicketId)
     },
   })
 }

@@ -47,7 +47,7 @@ const AttachMenu = ({ isOpen, onClose, onFileSelect }: AttachMenuProps) => {
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 items-stretch">
+        <div className="grid grid-cols-2 items-stretch gap-2">
           {/* 📷 Камера — БЕЗ multiple (камера всегда снимает один кадр) */}
           <Button
             className="flex h-auto flex-col items-center gap-2 rounded-lg p-4 transition-colors hover:bg-muted"

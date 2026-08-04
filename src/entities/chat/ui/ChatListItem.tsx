@@ -58,7 +58,7 @@ const ChatListItem = ({ chat, isActive, onSelect, onPrefetch }: ChatListItemProp
     <div className="relative rounded-lg">
       {!chat.isContractActive && (
         <Link
-          className="absolute top-5 left-4 z-10 rounded-full bg-primary/30 p-2 text-white text-xs md:hover:bg-primary/15"
+          className="absolute right-2 bottom-1 z-10 rounded-full p-2 text-white text-xs md:hover:bg-primary/15"
           href={
             profile?.user?.role === "admin"
               ? LinkPath.admin(chat?.organization?.id || "")

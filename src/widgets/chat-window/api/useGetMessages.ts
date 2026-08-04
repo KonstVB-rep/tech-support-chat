@@ -2,31 +2,71 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { type InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query"
 import { authClient } from "@/app/lib/auth-client"
 import { fetchMessages } from "@/entities/chat/api/fetchClient"
 import type { Message, MessagesResponse } from "@/entities/chat/api/types"
 import { getSocket } from "@/shared/lib/socket"
+import { addMessageToCache, updateChatTitleInCache } from "@/shared/lib/updateMessagesCache"
 
-export function useGetMessages(ticketId: string | null) {
+export function useGetMessages(ticketId: string | null | undefined) {
   const queryClient = useQueryClient()
   const { data: session } = authClient.useSession()
   const isMountedRef = useRef(true)
 
-  const query = useQuery<MessagesResponse>({
-    queryKey: ["messages", ticketId],
-    queryFn: async () => {
-      if (!ticketId) throw new Error("ticketId is required")
-      return fetchMessages(ticketId)
+  const safeTicketId = ticketId ?? null
+
+  const query = useInfiniteQuery<
+    MessagesResponse,
+    Error,
+    InfiniteData<MessagesResponse, string | null>,
+    [string, string | null],
+    string | null
+  >({
+    queryKey: ["messages", safeTicketId],
+    queryFn: async ({ pageParam }) => {
+      if (!safeTicketId) throw new Error("ticketId is required")
+
+      const params = new URLSearchParams({ limit: "50" })
+      if (pageParam) params.set("cursor", pageParam)
+
+      const response = await fetchMessages(safeTicketId, params)
+
+      return {
+        messages: Array.isArray(response.messages) ? response.messages : [],
+        chat: response.chat ?? null,
+        hasMore: response.hasMore ?? false,
+        nextCursor: response.nextCursor ?? null,
+      }
     },
-    enabled: !!ticketId,
+    enabled: Boolean(safeTicketId) && Boolean(session?.user?.id),
     staleTime: 0,
+    initialPageParam: null,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage || typeof lastPage !== "object") return undefined
+      return lastPage.nextCursor ?? undefined
+    },
   })
+
+  const allMessages =
+    query.data?.pages && Array.isArray(query.data.pages)
+      ? query.data.pages
+          .slice()
+          .reverse()
+          .flatMap((page) => {
+            if (!page || !Array.isArray(page.messages)) return []
+            return page.messages
+          })
+      : []
+
+  const chatInfo =
+    query.data?.pages && Array.isArray(query.data.pages) && query.data.pages[0]
+      ? (query.data.pages[0].chat ?? null)
+      : null
 
   useEffect(() => {
     isMountedRef.current = true
-
-    if (!ticketId || !session?.user?.id) return
+    if (!safeTicketId || !session?.user?.id) return
 
     const socket = getSocket()
     let hasJoined = false
@@ -34,38 +74,20 @@ export function useGetMessages(ticketId: string | null) {
     const joinChat = () => {
       if (!isMountedRef.current || hasJoined) return
       hasJoined = true
-      socket.emit("chat:join", ticketId)
-      console.log(`📌 [CLIENT] Присоединился к chat:${ticketId}`)
+      socket.emit("chat:join", safeTicketId)
     }
 
-    if (socket.connected) {
-      joinChat()
-    } else {
-      socket.once("connect", joinChat)
-    }
+    if (socket.connected) joinChat()
+    else socket.once("connect", joinChat)
 
     const handleNewMessage = (msg: Message) => {
-      console.log(`💬 [CLIENT] Получил message:new для chat:${msg.chatId}`)
-
-      if (msg.chatId === ticketId) {
-        queryClient.setQueryData<MessagesResponse>(["messages", ticketId], (old) => {
-          if (!old) return { messages: [msg], chat: null }
-          if (old.messages.some((m) => m.id === msg.id)) return old
-          return {
-            ...old,
-            messages: [...old.messages, msg],
-          }
-        })
-      }
+      if (msg.chatId !== safeTicketId) return
+      addMessageToCache(queryClient, safeTicketId, msg)
     }
 
     const handleChatRenamed = (data: { chatId: string; newTitle: string }) => {
-      if (data.chatId === ticketId) {
-        queryClient.setQueryData<MessagesResponse>(["messages", ticketId], (old) => {
-          if (!old || !old.chat) return old
-          return { ...old, chat: { ...old.chat, title: data.newTitle } }
-        })
-      }
+      if (data.chatId !== safeTicketId) return
+      updateChatTitleInCache(queryClient, safeTicketId, data.newTitle)
     }
 
     socket.on("message:new", handleNewMessage)
@@ -76,13 +98,20 @@ export function useGetMessages(ticketId: string | null) {
       socket.off("message:new", handleNewMessage)
       socket.off("chat:renamed", handleChatRenamed)
       socket.off("connect", joinChat)
-
       if (socket.connected && hasJoined) {
-        socket.emit("chat:leave", ticketId)
-        console.log(`📤 [CLIENT] Покинул chat:${ticketId}`)
+        socket.emit("chat:leave", safeTicketId)
       }
     }
-  }, [ticketId, queryClient, session?.user?.id])
+  }, [safeTicketId, queryClient, session?.user?.id])
 
-  return query
+  return {
+    messages: allMessages,
+    chat: chatInfo,
+    isLoading: query.isLoading,
+    isFetchingNextPage: query.isFetchingNextPage,
+    hasNextPage: query.hasNextPage ?? false,
+    fetchNextPage: query.fetchNextPage,
+    refetch: query.refetch,
+    error: query.error,
+  }
 }

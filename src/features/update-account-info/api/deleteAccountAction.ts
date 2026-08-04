@@ -60,7 +60,7 @@ const deleteAccountAction = async (password: string): Promise<void> => {
     throw new Error("Неверный пароль")
   }
 
- // Удаляем аватар с диска (User.image + Profile.imageUrl)
+  // Удаляем аватар с диска (User.image + Profile.imageUrl)
   const uploadDir = process.env.UPLOAD_DIR || "/opt/chat-app/uploads"
 
   const user = await prisma.user.findUnique({

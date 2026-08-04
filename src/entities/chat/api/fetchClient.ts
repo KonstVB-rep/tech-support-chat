@@ -32,8 +32,11 @@ export const fetchChatInfo = async (chatId: string): Promise<ChatItem> => {
   return data.chat
 }
 
-export const fetchMessages = async (chatId: string): Promise<MessagesResponse> => {
-  const res = await fetch(`/api/chats/${chatId}/messages`)
+export const fetchMessages = async (
+  chatId: string,
+  params: URLSearchParams = new URLSearchParams({ limit: "50" }), // ← Дефолт
+): Promise<MessagesResponse> => {
+  const res = await fetch(`/api/chats/${chatId}/messages/?${params.toString()}`)
 
   if (!res.ok) throw new Error("Ошибка загрузки сообщений")
   return await res.json()

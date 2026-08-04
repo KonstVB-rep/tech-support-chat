@@ -18,9 +18,28 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: [
+      // ✅ ВСЕ HTTPS домены (для продакшена)
       {
         protocol: "https",
         hostname: "**",
+      },
+      // ✅ Локальная разработка (HTTP localhost)
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "3000",
+        pathname: "/uploads/**",
+      },
+      // ✅ Для LAN доступа (если открываешь с телефона)
+      {
+        protocol: "http",
+        hostname: "192.168.*.*",
+        pathname: "/uploads/**",
+      },
+      {
+        protocol: "http",
+        hostname: "10.*.*.*",
+        pathname: "/uploads/**",
       },
     ],
   },

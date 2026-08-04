@@ -136,7 +136,7 @@ const AccountClientContent = ({ profile }: { profile: ProfileData }) => {
         <div className="relative flex h-full flex-col gap-3 bg-background md:px-4">
           <div className="-translate-y-1/2 absolute top-1/2 right-0 h-3/12 w-2 rounded-s-md bg-chart-2" />
           <ScreenSettings
-            activeScreen={localMobileScreen} // Оставляем локальный экран для плавной анимации закрытия
+            activeScreen={localMobileScreen}
             className="flex md:hidden"
             isSupport={isSupport}
             profile={profile}

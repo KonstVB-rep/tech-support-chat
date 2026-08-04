@@ -2,8 +2,8 @@
 
 import type { OrgRole } from "@prisma/client"
 import { persist } from "zustand/middleware"
+import type { AttachmentMeta } from "@/entities/chat/api/types"
 import { create } from "@/shared/lib/zustand"
-import { AttachmentMeta } from "@/entities/chat/api/types"
 
 type ReplyToData = {
   id: string
@@ -14,22 +14,15 @@ type ReplyToData = {
 
 interface ChatState {
   activeTicketId: string | null
-  replyTo: ReplyToData | null
-  setReplyTo: (data: ReplyToData) => void
-  clearReply: () => void
-}
-
-interface ChatState {
-  activeTicketId: string | null
   setActiveTicketId: (id: string | null) => void
   clearChat: () => void
 
   currentOrganizationId: string | null
   currentMemberRole: OrgRole | null
   setCurrentOrganization: (id: string | null, role: OrgRole | null) => void
-  clearOrganization: () => void,
-  replyTo: ReplyToData | null,
-  setReplyTo: (data: ReplyToData) => void,
+  clearOrganization: () => void
+  replyTo: ReplyToData | null
+  setReplyTo: (data: ReplyToData) => void
   clearReply: () => void
 }
 

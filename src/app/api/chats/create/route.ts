@@ -1,8 +1,16 @@
-// src/app/api/chats/route.ts
+// src/app/api/chats/create/route.ts
+
+import type { ChatRole } from "@prisma/client"
 import { NextResponse } from "next/server"
+import { z } from "zod"
 import { auth } from "@/app/lib/auth"
 import { prisma } from "@/prisma/prisma-client"
 import { triggerSocketEvent } from "@/shared/lib/socket-trigger"
+
+const createChatSchema = z.object({
+  title: z.string().min(1, "Название темы обязательно").max(200),
+  organizationId: z.string().cuid("Некорректный ID организации"),
+})
 
 export const POST = async (request: Request) => {
   try {
@@ -10,25 +18,22 @@ export const POST = async (request: Request) => {
 
     if (!session?.user || session.user.role.toLowerCase() !== "admin") {
       return NextResponse.json(
-        {
-          error: "Доступ запрещен. Только администратор системы может создавать новые темы.",
-        },
+        { error: "Доступ запрещен. Только администратор системы может создавать новые темы." },
         { status: 403 },
       )
     }
 
-    const { title, organizationId } = await request.json()
+    const body = await request.json()
+    const validation = createChatSchema.safeParse(body)
 
-    if (!title || !title.trim()) {
-      return NextResponse.json({ error: "Название темы обязательно" }, { status: 400 })
-    }
-
-    if (!organizationId) {
+    if (!validation.success) {
       return NextResponse.json(
-        { error: "Не указан идентификатор организации клиента" },
+        { error: "Невалидные данные", details: validation.error.format() },
         { status: 400 },
       )
     }
+
+    const { title, organizationId } = validation.data
 
     const adminProfile = await prisma.profile.findUnique({
       where: { userId: session.user.id },
@@ -38,78 +43,108 @@ export const POST = async (request: Request) => {
       return NextResponse.json({ error: "Профиль администратора не найден" }, { status: 404 })
     }
 
-    const newTopic = await prisma.chat.create({
-      data: {
-        title: title.trim(),
-        type: "GROUP", // Нативный Prisma энум ChatType
-        creatorId: adminProfile.id,
-        organizationId,
+    const organization = await prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: {
+        id: true,
+        name: true,
+        isActive: true,
+        contractStart: true,
+        contractEnd: true,
       },
     })
 
-    // Находим профили всех АКТИВНЫХ инженеров техподдержки платформы Beget
-    const activeEngineers = await prisma.supportEngineer.findMany({
-      where: {
-        profile: {
-          user: {
-            isActive: true, // Исключаем уволенных инженеров софт-блока
+    if (!organization) {
+      return NextResponse.json({ error: "Организация не найдена" }, { status: 404 })
+    }
+
+    if (!organization.isActive) {
+      return NextResponse.json(
+        { error: "Обслуживание организации временно приостановлено" },
+        { status: 403 },
+      )
+    }
+
+    const now = new Date()
+    if (now < organization.contractStart || now > organization.contractEnd) {
+      return NextResponse.json({ error: "Договор с организацией не активен" }, { status: 403 })
+    }
+
+    const newChat = await prisma.$transaction(async (tx) => {
+      const chat = await tx.chat.create({
+        data: {
+          title: title.trim(),
+          type: "GROUP",
+          creatorId: adminProfile.id,
+          organizationId,
+        },
+      })
+
+      const activeEngineers = await tx.supportEngineer.findMany({
+        where: {
+          profile: {
+            user: { isActive: true },
           },
         },
+        select: { profileId: true },
+      })
+
+      const clientMembers = await tx.organizationMember.findMany({
+        where: {
+          organizationId,
+          role: "RESPONSIBLE",
+        },
+        select: { profileId: true },
+      })
+
+      const engineerProfileIds = new Set(activeEngineers.map((e) => e.profileId))
+
+      const allUniqueProfileIds = Array.from(
+        new Set([adminProfile.id, ...engineerProfileIds, ...clientMembers.map((m) => m.profileId)]),
+      )
+
+      const membersData = allUniqueProfileIds.map((profileId) => ({
+        chatId: chat.id,
+        profileId,
+        role: (engineerProfileIds.has(profileId) || profileId === adminProfile.id
+          ? "ADMIN"
+          : "MEMBER") as ChatRole,
+      }))
+
+      await tx.chatMember.createMany({
+        data: membersData,
+      })
+
+      return chat
+    })
+
+    const chatResponse = {
+      ...newChat,
+      _count: { messages: 0 },
+      organization: {
+        id: organization.id,
+        name: organization.name,
       },
-      select: { profileId: true },
-    })
-
-    // Находим профили всех сотрудников компании-клиента, для которой создается тикет
-    // Рядовые сотрудники (MEMBER) сюда НЕ попадут и чат при создании НЕ увидят.
-    const clientMembers = await prisma.organizationMember.findMany({
-      where: {
-        organizationId: organizationId,
-        role: "RESPONSIBLE",
+      creator: {
+        id: adminProfile.id,
+        name: adminProfile.name,
+        imageUrl: adminProfile.imageUrl,
       },
-      select: { profileId: true },
-    })
+    }
 
-    // Собираем все ID профилей саппортов
-    const engineerProfileIds = activeEngineers.map((eng) => eng.profileId)
-
-    // Собираем все ID профилей сотрудников завода
-    const clientProfileIds = clientMembers.map((m) => m.profileId)
-
-    // Объединяем всех участников в один чистый массив уникальных ID (включая тебя, админа)
-    const allUniqueProfileIds = Array.from(
-      new Set([adminProfile.id, ...engineerProfileIds, ...clientProfileIds]),
-    )
-
-    // 🎯 Шаг 5: Формируем записи для таблицы-моста ChatMember строго по твоим энумам ChatRole
-    const allMembersRecords = allUniqueProfileIds.map((profileId) => {
-      // Логика элементарна: ты и инженеры саппорта — ADMIN. Клиенты завода — MEMBER.
-      const isStaff = profileId === adminProfile.id || engineerProfileIds.includes(profileId)
-
-      return {
-        chatId: newTopic.id,
-        profileId: profileId,
-        role: isStaff ? ("ADMIN" as const) : ("MEMBER" as const),
-      }
-    })
-
-    // Записываем пакет участников в MySQL Beget одним монолитным запросом
-    await prisma.chatMember.createMany({
-      data: allMembersRecords,
-    })
-
-    triggerSocketEvent("srv:chat:new", {
-      chat: {
-        ...newTopic,
-        // Прокидываем пустые или дефолтные счетчики, чтобы у фронтенда useGetChats не было undefined
-        _count: { messages: 0 },
-        organization: { id: organizationId, name: "Компания" },
-      },
+    await triggerSocketEvent("srv:chat:new", {
+      chat: chatResponse,
       organizationId,
     })
 
-    return NextResponse.json(newTopic)
+    return NextResponse.json(chatResponse)
   } catch (error) {
     console.error("Ошибка при создании темы техподдержки:", error)
+
+    if (error instanceof Error && error.message.includes("Unique constraint")) {
+      return NextResponse.json({ error: "Чат с таким названием уже существует" }, { status: 409 })
+    }
+
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 })
   }
 }

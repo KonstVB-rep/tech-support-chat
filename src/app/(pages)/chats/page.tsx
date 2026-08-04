@@ -1,9 +1,10 @@
 // src/app/(pages)/chats/page.tsx
 
-import { Suspense } from "react" // ✅ Добавляем импорт
-import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query"
+import { Suspense } from "react"
+import { dehydrate, HydrationBoundary, type InfiniteData, QueryClient } from "@tanstack/react-query"
 import { redirect } from "next/navigation"
-import { fetchChatsServer, fetchMessagesServer } from "@/entities/chat/api/fetchServer"
+import { fetchChatsServer, fetchMessagesServerInfinite } from "@/entities/chat/api/fetchServer"
+import type { MessagesResponse } from "@/entities/chat/api/types"
 import { getSession } from "@/shared/lib/server-current-user"
 import { Sidebar } from "@/widgets/sidebar"
 import ScreenByType from "../ui/ScreenByType"
@@ -43,11 +44,22 @@ async function ChatsContent({ searchParams }: ChatsPageProps) {
     })
   } catch {}
 
+  // ✅ ИСПРАВЛЕНО: prefetchInfiniteQuery для useInfiniteQuery
   if (chatIdFromUrl) {
     try {
-      await queryClient.prefetchQuery({
+      await queryClient.prefetchInfiniteQuery<
+        MessagesResponse,
+        Error,
+        InfiniteData<MessagesResponse, string | null>,
+        [string, string],
+        string | null
+      >({
         queryKey: ["messages", chatIdFromUrl],
-        queryFn: () => fetchMessagesServer(chatIdFromUrl),
+        queryFn: async ({ pageParam }) => {
+          return await fetchMessagesServerInfinite(chatIdFromUrl, pageParam)
+        },
+        initialPageParam: null,
+        getNextPageParam: (lastPage: MessagesResponse) => lastPage.nextCursor ?? undefined,
         staleTime: 60_000,
       })
     } catch {}

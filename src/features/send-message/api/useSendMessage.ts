@@ -1,22 +1,23 @@
 // src/features/send-message/api/useSendMessage.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import type { Chat, Message, MessagesResponse } from "@/entities/chat/api/types"
+import type { Message } from "@/entities/chat/api/types"
+import { addMessageToCache, resetUnreadCount } from "@/shared/lib/updateMessagesCache"
 
 type SendMessageParams = {
   chatId: string
-  text: string,
+  text: string
   replyToId?: string
 }
 
-export const useSendMessage = (activeTicketId: string | null) => {
+export const useSendMessage = (activeTicketId: string | null | undefined) => {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async ({ chatId, text, replyToId }: SendMessageParams) => {
       const formData = new FormData()
       formData.append("text", text)
-      if (replyToId){
-      formData.append("replyToId", replyToId)
+      if (replyToId) {
+        formData.append("replyToId", replyToId)
       }
 
       const res = await fetch(`/api/chats/${chatId}/messages`, {
@@ -35,25 +36,9 @@ export const useSendMessage = (activeTicketId: string | null) => {
       const chatId = data?.message?.chatId ?? activeTicketId
 
       if (chatId && data?.message) {
-        queryClient.setQueryData<MessagesResponse>(["messages", chatId], (old) => {
-          if (!old) return { messages: [data.message], chat: null }
-          if (old.messages.some((m) => m.id === data.message.id)) return old
-          return {
-            ...old,
-            messages: [...old.messages, data.message],
-          }
-        })
+        addMessageToCache(queryClient, chatId, data.message)
+        resetUnreadCount(queryClient, chatId)
       }
-
-      // ✅ Сброс unreadCount при отправке собственного сообщения
-      queryClient.setQueryData<Chat[]>(["chats"], (old) => {
-        if (!old) return old
-        return old.map((chat) =>
-          chat.id === chatId
-            ? { ...chat, unreadCount: 0, lastReadAt: new Date().toISOString() }
-            : chat,
-        )
-      })
     },
   })
 }

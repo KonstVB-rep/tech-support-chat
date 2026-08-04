@@ -1,8 +1,20 @@
 // src/widgets/chat-window/ui/ChatWindow.tsx
 "use client"
 
+import { useCallback, useEffect, useRef, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
+import {
+  AlertCircle,
+  ChevronDown,
+  ChevronLeft,
+  Pencil,
+  PenOff,
+  RefreshCw,
+  Save,
+} from "lucide-react"
+import Image from "next/image"
 import { authClient } from "@/app/lib/auth-client"
-import type { AttachmentMeta, Chat, Message, MessagesResponse } from "@/entities/chat/api/types"
+import type { AttachmentMeta, Message } from "@/entities/chat/api/types"
 import { useGetCurrentMemberRole } from "@/entities/employee/api/useGetCurrentMemberRole"
 import { MessageItem } from "@/entities/message"
 import { useUpdateChatTitle } from "@/features/manage-chat-members"
@@ -11,6 +23,7 @@ import { USER_ROLE } from "@/shared/constants"
 import { useSocketStatus } from "@/shared/lib/hooks/useSocketStatus"
 import { ProtectByRole } from "@/shared/lib/ProtectByRole"
 import { getSocket } from "@/shared/lib/socket"
+import { addMessageToCache, resetUnreadCount } from "@/shared/lib/updateMessagesCache"
 import { useNotificationSound } from "@/shared/lib/useNotificationSound"
 import { Button } from "@/shared/ui/components/button"
 import { Input } from "@/shared/ui/components/input"
@@ -21,11 +34,9 @@ import { useActiveTicketId, useClearChat } from "@/store/useChatStore"
 import { ChatHeaderActions } from "@/widgets/chat-window/ui/ChatHeaderActions"
 import DropdownChatActions from "@/widgets/chat-window/ui/DropdownChatActions"
 import { useGetChatById } from "@/widgets/sidebar/api/useGetChatById"
-import { useQueryClient } from "@tanstack/react-query"
-import { ChevronDown, ChevronLeft, Pencil, PenOff, Save } from "lucide-react"
-import Image from "next/image"
-import { useCallback, useEffect, useRef, useState } from "react"
 import { useGetMessages } from "../api/useGetMessages"
+
+const scrollCleanupMap = new WeakMap<HTMLDivElement, () => void>()
 
 export const ChatWindow = () => {
   const clearChat = useClearChat()
@@ -35,30 +46,63 @@ export const ChatWindow = () => {
 
   const { data: session } = authClient.useSession()
   const { data: chat } = useGetChatById({ chatId: activeTicketId })
-  const { data: messagesData, isLoading, error } = useGetMessages(activeTicketId)
+  const {
+    messages: serverMessages,
+    chat: chatInfo,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    refetch,
+    error,
+  } = useGetMessages(activeTicketId)
+
   const { mutate: renameChat, isPending: isRenaming } = useUpdateChatTitle()
   const socketStatus = useSocketStatus()
 
-  const [prevId, setPrevId] = useState(activeTicketId)
   const [newTitle, setNewTitle] = useState("")
   const [isEditing, setIsEditMode] = useState(false)
   const [showScrollDown, setShowScrollDown] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
 
   const prevTicketIdRef = useRef<string | null>(null)
-  const hasScrolledRef = useRef(false)
   const scrollViewportRef = useRef<HTMLDivElement | null>(null)
   const isAtBottomRef = useRef(true)
 
-  if (activeTicketId !== prevId) {
-    setPrevId(activeTicketId)
-    setIsEditMode(false)
-  }
+  const bottomAnchorRef = useRef<HTMLDivElement>(null)
 
-  const serverMessages = messagesData?.messages || []
-  const chatInfo = messagesData?.chat || null
+  useEffect(() => {
+    setIsEditMode(false)
+    setNewTitle("")
+    setUnreadCount(0)
+    setShowScrollDown(false)
+    isAtBottomRef.current = true
+  }, [])
+
+  useEffect(() => {
+    if (!isLoading && serverMessages.length > 0) {
+      const timeoutId = setTimeout(() => {
+        bottomAnchorRef.current?.scrollIntoView({
+          behavior: "instant",
+          block: "end",
+        })
+      }, 100)
+
+      return () => clearTimeout(timeoutId)
+    }
+  }, [isLoading, serverMessages.length])
+
+  const scrollToBottom = useCallback((smooth = true) => {
+    bottomAnchorRef.current?.scrollIntoView({
+      behavior: smooth ? "smooth" : "instant",
+      block: "end",
+    })
+    setUnreadCount(0)
+  }, [])
+
   const chatDisplayTitle = chatInfo?.title || "Загрузка чата..."
 
+  // Обработчик скролла для отслеживания и подгрузки
   const setScrollContainerRef = useCallback(
     (node: HTMLDivElement | null) => {
       if (!node || !activeTicketId) return
@@ -68,31 +112,18 @@ export const ChatWindow = () => {
       ) as HTMLDivElement | null
       if (!viewport) return
 
-      // Cleanup предыдущего listener
-      const prevCleanup = (node as any).__scrollCleanup
+      // Cleanup предыдущего обработчика
+      const prevCleanup = scrollCleanupMap.get(node)
       if (prevCleanup) prevCleanup()
 
       scrollViewportRef.current = viewport
 
-      // Сброс при смене чата
       if (prevTicketIdRef.current !== activeTicketId) {
         prevTicketIdRef.current = activeTicketId
-        hasScrolledRef.current = false
-        setUnreadCount(0)
-        isAtBottomRef.current = true
-        setShowScrollDown(false)
       }
 
-      // Автоскролл при первой загрузке / смене чата
-      if (!hasScrolledRef.current && !isLoading && serverMessages.length > 0) {
-        requestAnimationFrame(() => {
-          viewport.scrollTo({ top: viewport.scrollHeight, behavior: "auto" })
-          hasScrolledRef.current = true
-        })
-      }
-
-      // Отслеживание позиции скролла
       const handleScroll = () => {
+        //  Отслеживание позиции пользователя
         const threshold = 100
         const distanceFromBottom =
           viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight
@@ -101,19 +132,42 @@ export const ChatWindow = () => {
         isAtBottomRef.current = nearBottom
         setShowScrollDown(!nearBottom)
 
-        if (nearBottom) {
-          setUnreadCount(0)
+        if (nearBottom) setUnreadCount(0)
+
+        // Подгрузка старых сообщений при скролле вверх
+        if (
+          viewport.scrollTop < 150 &&
+          hasNextPage === true &&
+          !isFetchingNextPage &&
+          typeof fetchNextPage === "function"
+        ) {
+          // Запоминаем высоту ДО подгрузки
+          const prevScrollHeight = viewport.scrollHeight
+
+          fetchNextPage()
+            .then(() => {
+              requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                  // Компенсируем сдвиг, чтобы не прыгало
+                  const newScrollHeight = viewport.scrollHeight
+                  viewport.scrollTop = newScrollHeight - prevScrollHeight
+                })
+              })
+            })
+            .catch((err: unknown) => {
+              console.error("Ошибка подгрузки старых сообщений:", err)
+            })
         }
       }
 
       viewport.addEventListener("scroll", handleScroll, { passive: true })
       handleScroll()
 
-      ;(node as any).__scrollCleanup = () => {
+      scrollCleanupMap.set(node, () => {
         viewport.removeEventListener("scroll", handleScroll)
-      }
+      })
     },
-    [activeTicketId, isLoading, serverMessages.length],
+    [activeTicketId, hasNextPage, isFetchingNextPage, fetchNextPage],
   )
 
   useEffect(() => {
@@ -122,6 +176,7 @@ export const ChatWindow = () => {
     }
   }, [chat?.title, isEditing])
 
+  // WebSocket обработчики
   useEffect(() => {
     const socket = getSocket()
 
@@ -136,43 +191,29 @@ export const ChatWindow = () => {
     }
 
     if (activeTicketId) {
-      socket.emit("chat:join", activeTicketId)
       fetch(`/api/chats/${activeTicketId}/read`, { method: "POST" }).catch(() => {})
     }
 
     const handleNewMessage = (message: Message) => {
       if (message.chatId !== activeTicketId) return
 
-      queryClient.setQueryData<MessagesResponse>(["messages", activeTicketId], (old) => {
-        const messages = old?.messages || []
-        if (messages.some((m) => m.id === message.id)) return old
-        return { messages: [...messages, message], chat: old?.chat || null }
-      })
+      // Используем утилиту вместо большого блока setQueryData
+      if (activeTicketId) {
+        addMessageToCache(queryClient, activeTicketId, message)
+      }
 
       const isOwnMessage = message.profile?.userId === session?.user?.id
 
       if (isAtBottomRef.current) {
-        // Пользователь внизу — автоскролл
         requestAnimationFrame(() => {
-          scrollViewportRef.current?.scrollTo({
-            top: scrollViewportRef.current.scrollHeight,
-            behavior: "smooth",
-          })
+          scrollToBottom(true)
         })
       } else if (!isOwnMessage) {
-        // Пользователь выше — увеличиваем счётчик непрочитанных
         setUnreadCount((prev) => prev + 1)
       }
 
-      queryClient.setQueryData<Chat[]>(["chats"], (old) =>
-        old?.map((c) =>
-          c.id === activeTicketId
-            ? { ...c, unreadCount: 0, lastReadAt: new Date().toISOString() }
-            : c,
-        ),
-      )
-
-      fetch(`/api/chats/${activeTicketId}/read`, { method: "POST" }).catch(() => {})
+      // ✅ Сброс unreadCount через утилиту
+      resetUnreadCount(queryClient, activeTicketId)
     }
 
     const handleChatRemoved = (data: { chatId: string }) => {
@@ -187,9 +228,8 @@ export const ChatWindow = () => {
       socket.off("message:new", handleNewMessageSound)
       socket.off("message:new", handleNewMessage)
       socket.off("chat:removed", handleChatRemoved)
-      if (activeTicketId) socket.emit("chat:leave", activeTicketId)
     }
-  }, [activeTicketId, queryClient, clearChat, session, play])
+  }, [activeTicketId, queryClient, clearChat, session, play, scrollToBottom])
 
   const handleRenameSubmit = () => {
     if (newTitle === chatDisplayTitle) return
@@ -206,7 +246,7 @@ export const ChatWindow = () => {
 
   if (!activeTicketId) {
     return (
-      <div className="flex h-full select-none items-center justify-center bg-muted/10 px-2 text-muted-foreground text-sm">
+      <div className="flex h-full items-center justify-center bg-muted/10 px-2 text-muted-foreground text-sm">
         Выберите чат в списке слева, чтобы начать
       </div>
     )
@@ -250,24 +290,52 @@ export const ChatWindow = () => {
       <div className="relative mx-auto flex min-h-0 w-full flex-1 flex-col">
         <ScrollArea className="h-full w-full px-4" ref={setScrollContainerRef}>
           <div className="mx-auto w-full max-w-2xl p-3">
-            {!messagesData && isLoading && (
-              <div className="animate-pulse py-4 text-center text-muted-foreground text-xs">
-                Загрузка переписки...
+            {/* Индикатор подгрузки старых сообщений */}
+            {isFetchingNextPage && (
+              <div className="flex justify-center py-3">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
               </div>
             )}
 
+            {/* Сообщение о начале переписки */}
+            {!hasNextPage && serverMessages.length > 0 && !isFetchingNextPage && (
+              <div className="py-4 text-center text-muted-foreground/70 text-xs">
+                Это начало вашей переписки
+              </div>
+            )}
+
+            {/* Скелетон первой загрузки */}
+            {isLoading && serverMessages.length === 0 && (
+              <div className="animate-pulse space-y-3 py-4">
+                <div className="mx-auto h-6 w-32 rounded-full bg-muted/60" />
+                <div className="ml-auto h-10 w-3/4 rounded-xl bg-muted/40" />
+                <div className="h-10 w-3/4 rounded-xl bg-muted/40" />
+                <div className="ml-auto h-10 w-2/3 rounded-xl bg-muted/40" />
+              </div>
+            )}
+
+            {/* Обработка ошибки */}
             {error && (
-              <div className="py-4 text-center text-destructive text-xs">
-                Не удалось обновить историю
+              <div className="flex flex-col items-center gap-3 py-6">
+                <div className="rounded-full bg-destructive/10 p-3 text-destructive">
+                  <AlertCircle className="h-6 w-6" />
+                </div>
+                <p className="text-destructive text-xs">Не удалось загрузить историю сообщений</p>
+                <Button className="text-xs" onClick={() => refetch()} size="sm" variant="outline">
+                  <RefreshCw className="mr-1.5 h-3 w-3" />
+                  Повторить
+                </Button>
               </div>
             )}
 
+            {/* Пустое состояние */}
             {!isLoading && !error && serverMessages.length === 0 && (
               <div className="py-4 text-center text-muted-foreground text-xs">
                 В этой теме пока нет сообщений. Напишите что-нибудь!
               </div>
             )}
 
+            {/* Список сообщений */}
             {serverMessages.map((msg) => {
               const time = new Date(msg.createdAt).toLocaleTimeString([], {
                 hour: "2-digit",
@@ -308,33 +376,28 @@ export const ChatWindow = () => {
                     </span>
                   </div>
                   <MessageItem
-                    id={msg.id}
                     attachments={(msg.attachments as AttachmentMeta[]) ?? []}
+                    id={msg.id}
+                    replyTo={msg.replyTo ?? null}
                     sender={isMe ? "user" : "support"}
                     senderName={msg.profile?.name || "Участник"}
                     text={msg.text}
                     timestamp={time}
-                    replyTo={msg.replyTo ?? null}
                   />
                 </div>
               )
             })}
+
+            <div className="h-0 w-full" ref={bottomAnchorRef} />
           </div>
         </ScrollArea>
 
-        {/* Кнопка скролла вниз с счётчиком непрочитанных */}
         {showScrollDown && (
           <button
-            type="button"
-            onClick={() => {
-              scrollViewportRef.current?.scrollTo({
-                top: scrollViewportRef.current.scrollHeight,
-                behavior: "smooth",
-              })
-              setUnreadCount(0)
-            }}
-            className="absolute bottom-4 right-6 z-10 flex items-center gap-1 rounded-full border border-border bg-background shadow-lg text-foreground transition-all hover:bg-muted animate-in fade-in slide-in-from-bottom-2 duration-200"
+            className="fade-in slide-in-from-bottom-2 absolute right-6 bottom-4 z-10 flex animate-in items-center gap-1 rounded-full border border-border bg-background text-foreground shadow-lg transition-all duration-200 hover:bg-muted"
+            onClick={() => scrollToBottom(true)}
             title="К последнему сообщению"
+            type="button"
           >
             <div className="flex size-10 items-center justify-center">
               <ChevronDown className="size-5" />
@@ -348,6 +411,7 @@ export const ChatWindow = () => {
         )}
       </div>
 
+      {/* Индикатор состояния сокета */}
       {socketStatus !== "connected" && (
         <div className="w-full animate-pulse border-amber-500/20 border-t bg-amber-500/10 py-1.5 text-center font-medium text-amber-600 text-xs dark:text-amber-400">
           {socketStatus === "connecting"
@@ -355,6 +419,8 @@ export const ChatWindow = () => {
             : "❌ Нет связи с сервером поддержки"}
         </div>
       )}
+
+      {/* Поле ввода сообщений */}
       <div className="w-full shrink-0">
         {chat && !chat?.isContractActive ? (
           <div className="rounded-md bg-muted p-4 text-center text-muted-foreground text-sm">
@@ -368,6 +434,7 @@ export const ChatWindow = () => {
   )
 }
 
+// Вспомогательный компонент для переименования чата
 const RenameChatField = ({
   isEditing,
   isRenaming,

@@ -1,14 +1,13 @@
 import { useCallback } from "react"
-import { useQueryClient } from "@tanstack/react-query"
+import { type InfiniteData, useQueryClient } from "@tanstack/react-query"
 import { fetchMessages } from "@/entities/chat/api/fetchClient"
-import type { ChatItem } from "@/entities/chat/api/types"
+import type { ChatItem, MessagesResponse } from "@/entities/chat/api/types"
 import {
   useActiveTicketId,
   useSetActiveTicketId,
   useSetCurrentOrganization,
 } from "@/store/useChatStore"
 
-// src/entities/chat/lib/useChatListActions.ts
 export function useChatListActions() {
   const activeTicketId = useActiveTicketId()
   const setActiveTicketId = useSetActiveTicketId()
@@ -17,9 +16,22 @@ export function useChatListActions() {
 
   const handlePrefetch = useCallback(
     (chatId: string) => {
-      queryClient.prefetchQuery({
+      queryClient.prefetchInfiniteQuery<
+        MessagesResponse,
+        Error,
+        InfiniteData<MessagesResponse, string | null>,
+        [string, string],
+        string | null
+      >({
         queryKey: ["messages", chatId],
-        queryFn: () => fetchMessages(chatId),
+        queryFn: async ({ pageParam }) => {
+          const params = new URLSearchParams({ limit: "50" })
+          if (pageParam) params.set("cursor", pageParam)
+          return await fetchMessages(chatId, params)
+        },
+        initialPageParam: null,
+
+        getNextPageParam: (lastPage: MessagesResponse) => lastPage.nextCursor ?? undefined,
         staleTime: 60_000,
       })
     },

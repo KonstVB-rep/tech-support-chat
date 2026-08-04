@@ -15,9 +15,16 @@ export const fetchChatsServer = async (): Promise<Chat[]> => {
   return data.chats
 }
 
-export const fetchMessagesServer = async (chatId: string): Promise<MessagesResponse> => {
+export const fetchMessagesServerInfinite = async (
+  chatId: string,
+  cursor: string | null,
+): Promise<MessagesResponse> => {
   const cookieStore = await cookies()
-  const res = await fetch(`${getBaseUrl()}/api/chats/${chatId}/messages`, {
+
+  const params = new URLSearchParams({ limit: "50" })
+  if (cursor) params.set("cursor", cursor)
+
+  const res = await fetch(`${getBaseUrl()}/api/chats/${chatId}/messages?${params.toString()}`, {
     headers: { cookie: cookieStore.toString() },
   })
 

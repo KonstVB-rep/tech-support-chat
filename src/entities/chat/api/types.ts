@@ -78,7 +78,7 @@ export type Message = {
   timestamp: string
   attachments: AttachmentMeta[]
   replyTo: ReplyToData | null
-  profile: {                        
+  profile: {
     id: string
     name: string
     userId: string
@@ -95,4 +95,6 @@ export type MessagesResponse = {
       name: string
     } | null
   } | null
+  hasMore: boolean
+  nextCursor: string | null
 }

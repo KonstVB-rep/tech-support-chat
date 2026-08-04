@@ -1,16 +1,16 @@
 // src/features/send-message/ui/MessageInput.tsx
 "use client"
 
+import { useEffect, useRef, useState } from "react"
+import { Plus, Send, Upload, X } from "lucide-react"
+import Image from "next/image"
+import { toast } from "sonner"
 import { useSendMessage, useUploadMutation } from "@/features/send-message"
 import AttachMenu from "@/features/send-message/ui/AttachMenu"
 import { compressImage } from "@/shared/lib/image-compressor"
 import { Button } from "@/shared/ui/components/button"
 import { Input } from "@/shared/ui/components/input"
 import { useActiveTicketId, useChatStore } from "@/store/useChatStore"
-import { Plus, Send, Upload, X } from "lucide-react"
-import Image from "next/image"
-import { useEffect, useRef, useState } from "react"
-import { toast } from "sonner"
 
 type PendingFile = {
   id: string
@@ -59,10 +59,7 @@ export const MessageInput = ({ overrideTicketId }: { overrideTicketId?: string |
 
       const tempId = crypto.randomUUID()
 
-      setPendingFiles((prev) => [
-        ...prev,
-        { id: tempId, file, preview: null, isCompressing: true },
-      ])
+      setPendingFiles((prev) => [...prev, { id: tempId, file, preview: null, isCompressing: true }])
 
       try {
         let processedFile = file
@@ -87,16 +84,12 @@ export const MessageInput = ({ overrideTicketId }: { overrideTicketId?: string |
 
         setPendingFiles((prev) =>
           prev.map((pf) =>
-            pf.id === tempId
-              ? { ...pf, file: processedFile, preview, isCompressing: false }
-              : pf,
+            pf.id === tempId ? { ...pf, file: processedFile, preview, isCompressing: false } : pf,
           ),
         )
       } catch {
         setPendingFiles((prev) =>
-          prev.map((pf) =>
-            pf.id === tempId ? { ...pf, isCompressing: false } : pf,
-          ),
+          prev.map((pf) => (pf.id === tempId ? { ...pf, isCompressing: false } : pf)),
         )
       }
     }
@@ -145,7 +138,7 @@ export const MessageInput = ({ overrideTicketId }: { overrideTicketId?: string |
         {
           onSuccess: () => {
             setText("")
-            clearReply() // ✅ Добавить
+            clearReply()
           },
         },
       )
@@ -167,7 +160,7 @@ export const MessageInput = ({ overrideTicketId }: { overrideTicketId?: string |
           {pendingFiles.map((pf) => (
             <div className="group relative" key={pf.id}>
               {pf.preview && pf.file.type.startsWith("image/") ? (
-                <div className="relative overflow-hidden rounded-lg border border-border h-12 w-12">
+                <div className="relative h-12 w-12 overflow-hidden rounded-lg border border-border">
                   <Image alt="" className="object-cover" fill src={pf.preview} unoptimized />
                 </div>
               ) : pf.preview && pf.file.type.startsWith("video/") ? (
@@ -178,7 +171,7 @@ export const MessageInput = ({ overrideTicketId }: { overrideTicketId?: string |
                   <track default kind="captions" label="Без субтитров" srcLang="ru" />
                 </video>
               ) : (
-                <div className="flex flex-col items-center justify-center rounded-lg border border-border bg-muted px-1 h-12 w-12">
+                <div className="flex h-12 w-12 flex-col items-center justify-center rounded-lg border border-border bg-muted px-1">
                   <span className="text-lg">📎</span>
                   <span className="w-full truncate px-0.5 text-center text-[9px]">
                     {pf.file.name}
@@ -205,18 +198,21 @@ export const MessageInput = ({ overrideTicketId }: { overrideTicketId?: string |
       )}
 
       {replyTo && (
-        <div className="flex items-center gap-2 border-l-2 border-primary px-3 py-1.5 mx-2 mt-1 bg-muted/30 rounded-r-lg animate-in slide-in-from-bottom-1 duration-150">
+        <div className="slide-in-from-bottom-1 mx-2 mt-1 flex animate-in items-center gap-2 rounded-r-lg border-primary border-l-2 bg-muted/30 px-3 py-1.5 duration-150">
           {replyTo.attachments.length > 0 && !replyTo.text && (
             <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded border border-border">
               {replyTo.attachments[0].type.startsWith("video") ? (
                 <>
                   <video
-                    className="h-full w-full object-cover pointer-events-none"
+                    className="pointer-events-none h-full w-full object-cover"
                     preload="metadata"
                     src={replyTo.attachments[0].url.replace(/\\/g, "/")}
-                  />
+                  >
+                    <track default kind="captions" label="Без субтитров" srcLang="ru" />
+                  </video>
+                  
                   <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                    <span className="text-white text-[10px]">▶</span>
+                    <span className="text-[10px] text-white">▶</span>
                   </div>
                 </>
               ) : replyTo.attachments[0].type.startsWith("image") ? (
@@ -235,23 +231,20 @@ export const MessageInput = ({ overrideTicketId }: { overrideTicketId?: string |
             </div>
           )}
 
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-primary truncate">
-              {replyTo.senderName}
-            </p>
-            <p className="text-xs text-muted-foreground truncate">
-              {replyTo.text || (
-                replyTo.attachments.length > 0
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-medium text-primary text-xs">{replyTo.senderName}</p>
+            <p className="truncate text-muted-foreground text-xs">
+              {replyTo.text ||
+                (replyTo.attachments.length > 0
                   ? `${replyTo.attachments[0].type.startsWith("video") ? "Видео" : replyTo.attachments[0].type.startsWith("image") ? "Фото" : "Файл"}${replyTo.attachments.length > 1 ? ` +${replyTo.attachments.length - 1}` : ""}`
-                  : "Сообщение"
-              )}
+                  : "Сообщение")}
             </p>
           </div>
 
           <button
-            type="button"
+            className="shrink-0 rounded p-0.5 transition-colors hover:bg-muted"
             onClick={clearReply}
-            className="shrink-0 p-0.5 rounded hover:bg-muted transition-colors"
+            type="button"
           >
             <X className="h-3.5 w-3.5 text-muted-foreground" />
           </button>
@@ -272,7 +265,6 @@ export const MessageInput = ({ overrideTicketId }: { overrideTicketId?: string |
         </Button>
 
         <Input
-          ref={inputRef}
           autoComplete="off"
           className="h-10 flex-1 rounded-xl border-muted-foreground/20 focus-visible:ring-primary"
           disabled={isPending}
@@ -284,6 +276,7 @@ export const MessageInput = ({ overrideTicketId }: { overrideTicketId?: string |
             }
           }}
           placeholder={hasFiles ? "Добавьте подпись..." : "Напишите сообщение..."}
+          ref={inputRef}
           type="text"
           value={text}
         />
