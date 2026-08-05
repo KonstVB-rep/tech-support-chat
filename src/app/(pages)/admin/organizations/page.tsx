@@ -1,21 +1,11 @@
 // src/app/(pages)/admin/organizations/page.tsx
+
 import { Suspense } from "react"
-import { getOrganizations } from "@/entities/organization"
+import { OrganizationsTableLoader } from "@/app/(pages)/admin/organizations/ui/OrganizationsTableLoader"
 import { AddOrganizationDialog } from "@/features/manage-organization"
 import ButtonBack from "@/shared/ui/custom/ButtonBack"
+import LoaderCircle from "@/shared/ui/custom/LoaderCircle"
 import WrapperHeaderScreen from "@/shared/ui/custom/WrapperHeaderScreen"
-import { OrganizationsTable } from "@/widgets/organizations-table"
-import OrganizationListMobile from "@/widgets/organizations-table/OrganizationListMobile"
-
-const OrganizationsTableLoader = async () => {
-  const organizations = await getOrganizations()
-  return (
-    <div className="wrapper">
-      <OrganizationsTable data={organizations} />
-      <OrganizationListMobile organizations={organizations} />
-    </div>
-  )
-}
 
 const OrganizationsPage = () => {
   return (
@@ -30,13 +20,7 @@ const OrganizationsPage = () => {
           <AddOrganizationDialog />
         </div>
 
-        <Suspense
-          fallback={
-            <div className="animate-pulse p-4 text-muted-foreground text-sm">
-              Загрузка списка клиентов...
-            </div>
-          }
-        >
+        <Suspense fallback={<LoaderCircle />}>
           <OrganizationsTableLoader />
         </Suspense>
       </div>

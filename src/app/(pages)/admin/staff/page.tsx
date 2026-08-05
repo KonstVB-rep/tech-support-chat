@@ -1,13 +1,11 @@
-import { getSupportEngineers } from "@/entities/support-engineer"
-import EngineerListMobile from "@/entities/support-engineer/ui/EngineerListMobile"
+import { Suspense } from "react"
+import EngineersDataStream from "@/app/(pages)/admin/staff/ui/EngineersDataStream"
 import { AddSupportEngineerDialog } from "@/features/manage-support-engineer"
 import ButtonBack from "@/shared/ui/custom/ButtonBack"
+import LoaderCircle from "@/shared/ui/custom/LoaderCircle"
 import WrapperHeaderScreen from "@/shared/ui/custom/WrapperHeaderScreen"
-import { SupportEngineersTable } from "@/widgets/support-engineers-table"
 
 export default async function SupportEngineersPage() {
-  const engineers = await getSupportEngineers()
-
   return (
     <div className="h-full w-full space-y-3">
       <WrapperHeaderScreen>
@@ -21,13 +19,9 @@ export default async function SupportEngineersPage() {
       <div className="grid w-full gap-2 p-2">
         <AddSupportEngineerDialog />
 
-        <div className="hidden h-full w-full md:block">
-          <SupportEngineersTable data={engineers} />
-        </div>
-
-        <div className="block w-full md:hidden">
-          <EngineerListMobile data={engineers} />
-        </div>
+        <Suspense fallback={<LoaderCircle />}>
+          <EngineersDataStream />
+        </Suspense>
       </div>
     </div>
   )

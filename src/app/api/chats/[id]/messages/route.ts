@@ -70,18 +70,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const access = await checkChatAccess(chatId, session, userProfile.id, {
       checkContract: false,
     })
+
     if (!access.allowed) {
       return NextResponse.json({ error: access.error }, { status: access.status ?? 403 })
     }
 
-    // Пагинация с cursor
     const messages = await prisma.message.findMany({
       where: { chatId },
-      orderBy: { createdAt: "desc" }, // Сначала новые
-      take: limit + 1, // Берем на 1 больше, чтобы понять, есть ли следующая страница
+      orderBy: { createdAt: "desc" },
+      take: limit + 1,
       ...(cursor && {
         cursor: { id: cursor },
-        skip: 1, // Пропускаем сам cursor
+        skip: 1,
       }),
       include: {
         profile: {

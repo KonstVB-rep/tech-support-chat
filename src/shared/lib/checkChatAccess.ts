@@ -59,14 +59,18 @@ export const checkChatAccess = async (
       },
       select: { role: true },
     })
-    if (orgMembership && orgMembership.role === "RESPONSIBLE") {
+    if (orgMembership) {
       return { allowed: true }
     }
   }
 
+  console.log(userProfileId, chatId, "userProfileId,chatId")
+
   const isChatMember = await prisma.chatMember.findUnique({
     where: { chatId_profileId: { chatId, profileId: userProfileId } },
   })
+
+  console.log(isChatMember, "isChatMember")
   if (isChatMember) return { allowed: true }
 
   return {

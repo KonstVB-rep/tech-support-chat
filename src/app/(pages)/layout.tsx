@@ -7,7 +7,7 @@ interface PageLayoutProps {
   children: React.ReactNode
 }
 
-const PageLayout = async ({ children }: PageLayoutProps) => {
+const PageLayout = ({ children }: PageLayoutProps) => {
   return (
     <div className="flex min-h-screen w-full">
       <div className="flex h-full">

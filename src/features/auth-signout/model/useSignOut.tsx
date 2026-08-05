@@ -1,13 +1,16 @@
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { authClient } from "@/app/lib/auth-client"
+import { resetAllStores } from "@/shared/lib/zustand"
 
 export function useSignOut() {
   const router = useRouter()
 
-  const handleSignOut = async (e: React.FormEvent) => {
+  const handleSignOut = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
-    // Вызываем клиентский метод, чтобы мгновенно обнулить useSession() в хедере
+
+    resetAllStores()
+
     const { error } = await authClient.signOut()
 
     if (error) {
@@ -15,7 +18,6 @@ export function useSignOut() {
       return
     }
 
-    // Очищаем историю и уходим на вход
     router.replace("/auth/sign-in")
   }
 

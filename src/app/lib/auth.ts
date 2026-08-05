@@ -1,3 +1,4 @@
+// src/app/lib/auth.ts
 import { APIError, betterAuth, type User } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 import { nextCookies } from "better-auth/next-js"

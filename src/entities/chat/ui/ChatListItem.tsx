@@ -1,9 +1,11 @@
 // src/entities/chat/ui/ChatListItem.tsx
 
+import { OrgRole } from "@prisma/client"
 import { MessageSquareOff } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import type { ChatItem } from "@/entities/chat/api/types"
+import { useGetCurrentMemberRole } from "@/entities/employee/api/useGetCurrentMemberRole"
 import { useMyProfile } from "@/entities/profile/api"
 import { cn } from "@/shared/lib/utils"
 import { Avatar, AvatarFallback } from "@/shared/ui/components/avatar"
@@ -32,15 +34,12 @@ const formatTime = (dateStr: string) => {
   return date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" })
 }
 
-const LinkPath = {
-  user: "/user-organizations",
-  admin: (id: string) => `/admin/organizations/${id}`,
-}
-
 const ChatListItem = ({ chat, isActive, onSelect, onPrefetch }: ChatListItemProps) => {
   const displayTitle = chat.title || chat.organization?.name || "Обращение в поддержку"
 
   const { data: profile } = useMyProfile()
+
+  const roleInOrganization = useGetCurrentMemberRole(chat.organization?.id)
 
   const lastMsg = chat.lastMessage ?? null
   const attachments = lastMsg?.attachments ?? []
@@ -54,28 +53,34 @@ const ChatListItem = ({ chat, isActive, onSelect, onPrefetch }: ChatListItemProp
   const hasUnreadMessages = !!(chat.isContractActive && chat.unreadCount && chat.unreadCount > 0)
   const badgeText = chat.unreadCount && chat.unreadCount > 99 ? "99+" : chat.unreadCount
 
+  const isHasPermission =
+    profile?.user.role === "admin" || roleInOrganization === OrgRole.RESPONSIBLE
+
   return (
     <div className="relative rounded-lg">
-      {!chat.isContractActive && (
-        <Link
-          className="absolute right-2 bottom-1 z-10 rounded-full p-2 text-white text-xs md:hover:bg-primary/15"
-          href={
-            profile?.user?.role === "admin"
-              ? LinkPath.admin(chat?.organization?.id || "")
-              : LinkPath.user
-          }
-          title="Договор не активен.Подробнее"
-        >
-          <MessageSquareOff className="font-semibold text-red-600" />
-        </Link>
-      )}
+      {!chat.isContractActive &&
+        (isHasPermission ? (
+          <Link
+            className="absolute right-2 bottom-1 z-10 rounded-full p-2 text-white text-xs"
+            href={`/organization/${chat?.organization?.id}`}
+            title="Договор не активен.Подробнее"
+          >
+            <MessageSquareOff className="font-semibold text-red-600" />
+          </Link>
+        ) : (
+          <div
+            className="absolute right-2 bottom-1 z-10 rounded-full p-2 text-white text-xs"
+            title="Договор не активен.Подробнее"
+          >
+            <MessageSquareOff className="font-semibold text-red-600" />
+          </div>
+        ))}
 
       <Button
         className={cn(
           "relative flex h-auto w-full items-center gap-3 rounded-md bg-transparent px-3 py-2.5 text-left transition-colors hover:bg-primary/15",
           isActive && "md:bg-primary/10 md:hover:bg-primary/15",
-          !chat.isContractActive &&
-            "pointer-events-none border-1 border-primary/15 border-dashed opacity-50",
+          !chat.isContractActive && "border-1 border-primary/15 border-dashed opacity-50",
         )}
         data-chat-id={chat.id}
         onClick={onSelect}

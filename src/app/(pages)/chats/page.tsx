@@ -23,7 +23,7 @@ interface ChatsPageProps {
   searchParams: Promise<{ chat?: string }>
 }
 
-const Chats = async ({ searchParams }: ChatsPageProps) => {
+const Chats = ({ searchParams }: ChatsPageProps) => {
   return (
     <Suspense fallback={<ChatsSkeleton />}>
       <AuthGuard />
@@ -32,7 +32,7 @@ const Chats = async ({ searchParams }: ChatsPageProps) => {
   )
 }
 
-async function ChatsContent({ searchParams }: ChatsPageProps) {
+const ChatsContent = async ({ searchParams }: ChatsPageProps) => {
   const { chat: chatIdFromUrl } = await searchParams
   const queryClient = new QueryClient()
 
@@ -44,7 +44,6 @@ async function ChatsContent({ searchParams }: ChatsPageProps) {
     })
   } catch {}
 
-  // ✅ ИСПРАВЛЕНО: prefetchInfiniteQuery для useInfiniteQuery
   if (chatIdFromUrl) {
     try {
       await queryClient.prefetchInfiniteQuery<

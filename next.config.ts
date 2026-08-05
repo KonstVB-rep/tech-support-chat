@@ -10,27 +10,33 @@ const withPWA = withPWAInit({
 const nextConfig: NextConfig = {
   reactCompiler: true,
   cacheComponents: true,
+  partialPrefetching: true,
+  typedRoutes: true,          
   output: "standalone",
+  
   experimental: {
+    optimizePackageImports: [
+      "lucide-react",
+      "@radix-ui/react-icons",
+      "date-fns",
+    ],
     serverActions: {
       bodySizeLimit: "50mb",
     },
   },
+  
   images: {
     remotePatterns: [
-      // ✅ ВСЕ HTTPS домены (для продакшена)
       {
         protocol: "https",
         hostname: "**",
       },
-      // ✅ Локальная разработка (HTTP localhost)
       {
         protocol: "http",
         hostname: "localhost",
         port: "3000",
         pathname: "/uploads/**",
       },
-      // ✅ Для LAN доступа (если открываешь с телефона)
       {
         protocol: "http",
         hostname: "192.168.*.*",
@@ -43,6 +49,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  
   async rewrites() {
     return [
       {
@@ -51,17 +58,19 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  
   turbopack: {},
+  
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {
       config.watchOptions = {
         ...config.watchOptions,
-        ignored:
-          /node_modules|public\/sw\.js|public\/workbox-.*\.js|public\/manifest\.json/,
+        ignored: /node_modules|public\/sw\.js|public\/workbox-.*\.js|public\/manifest\.json/,
       };
     }
     return config;
   },
+  
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
   },

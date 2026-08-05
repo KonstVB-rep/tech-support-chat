@@ -7,7 +7,6 @@ import type { ChatItem } from "@/entities/chat/api/types"
 import { useChatListActions } from "@/entities/chat/api/useChatListActions"
 import ChatListItem from "@/entities/chat/ui/ChatListItem"
 import { DrawerComponent } from "@/shared/ui/custom/DrawerComponent"
-import { useCurrentOrganizationId, useSetCurrentOrganization } from "@/store/useChatStore"
 import { ChatWindow } from "@/widgets/chat-window"
 
 type ChatListProps = {
@@ -16,8 +15,6 @@ type ChatListProps = {
 
 export const SidebarChatList = ({ chats }: ChatListProps) => {
   const searchParams = useSearchParams()
-  const setCurrentOrganization = useSetCurrentOrganization()
-  const currentOrganizationId = useCurrentOrganizationId()
 
   const [isMobileChatOpen, setIsMobileChatOpen] = useState(false)
   const { activeTicketId, handlePrefetch, handleChatSelect } = useChatListActions()
@@ -31,14 +28,6 @@ export const SidebarChatList = ({ chats }: ChatListProps) => {
     },
     [handleChatSelect],
   )
-
-  useEffect(() => {
-    if (currentOrganizationId) return
-    const firstOrgChat = chats.find((c) => c.organization && c.memberRole)
-    if (firstOrgChat?.organization) {
-      setCurrentOrganization(firstOrgChat.organization.id, firstOrgChat.memberRole)
-    }
-  }, [chats, currentOrganizationId, setCurrentOrganization])
 
   useEffect(() => {
     const chatFromUrl = searchParams.get("chat")

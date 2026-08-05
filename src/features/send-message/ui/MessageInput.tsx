@@ -210,7 +210,7 @@ export const MessageInput = ({ overrideTicketId }: { overrideTicketId?: string |
                   >
                     <track default kind="captions" label="Без субтитров" srcLang="ru" />
                   </video>
-                  
+
                   <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                     <span className="text-[10px] text-white">▶</span>
                   </div>

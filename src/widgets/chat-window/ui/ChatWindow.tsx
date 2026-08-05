@@ -30,7 +30,7 @@ import { Input } from "@/shared/ui/components/input"
 import { ScrollArea } from "@/shared/ui/components/scroll-area"
 import WrapperHeaderScreen from "@/shared/ui/custom/WrapperHeaderScreen"
 import WrapperScreen from "@/shared/ui/custom/WrapperScreen"
-import { useActiveTicketId, useClearChat } from "@/store/useChatStore"
+import { useActiveTicketId, useClearChat, useCurrentOrganizationId } from "@/store/useChatStore"
 import { ChatHeaderActions } from "@/widgets/chat-window/ui/ChatHeaderActions"
 import DropdownChatActions from "@/widgets/chat-window/ui/DropdownChatActions"
 import { useGetChatById } from "@/widgets/sidebar/api/useGetChatById"
@@ -42,6 +42,8 @@ export const ChatWindow = () => {
   const clearChat = useClearChat()
   const queryClient = useQueryClient()
   const activeTicketId = useActiveTicketId()
+
+  const _otgId = useCurrentOrganizationId()
   const { play } = useNotificationSound()
 
   const { data: session } = authClient.useSession()
@@ -73,7 +75,6 @@ export const ChatWindow = () => {
 
   useEffect(() => {
     setIsEditMode(false)
-    setNewTitle("")
     setUnreadCount(0)
     setShowScrollDown(false)
     isAtBottomRef.current = true
@@ -100,8 +101,6 @@ export const ChatWindow = () => {
     setUnreadCount(0)
   }, [])
 
-  const chatDisplayTitle = chatInfo?.title || "Загрузка чата..."
-
   // Обработчик скролла для отслеживания и подгрузки
   const setScrollContainerRef = useCallback(
     (node: HTMLDivElement | null) => {
@@ -123,7 +122,6 @@ export const ChatWindow = () => {
       }
 
       const handleScroll = () => {
-        //  Отслеживание позиции пользователя
         const threshold = 100
         const distanceFromBottom =
           viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight
@@ -134,14 +132,12 @@ export const ChatWindow = () => {
 
         if (nearBottom) setUnreadCount(0)
 
-        // Подгрузка старых сообщений при скролле вверх
         if (
           viewport.scrollTop < 150 &&
           hasNextPage === true &&
           !isFetchingNextPage &&
           typeof fetchNextPage === "function"
         ) {
-          // Запоминаем высоту ДО подгрузки
           const prevScrollHeight = viewport.scrollHeight
 
           fetchNextPage()
@@ -197,7 +193,6 @@ export const ChatWindow = () => {
     const handleNewMessage = (message: Message) => {
       if (message.chatId !== activeTicketId) return
 
-      // Используем утилиту вместо большого блока setQueryData
       if (activeTicketId) {
         addMessageToCache(queryClient, activeTicketId, message)
       }
@@ -212,7 +207,6 @@ export const ChatWindow = () => {
         setUnreadCount((prev) => prev + 1)
       }
 
-      // ✅ Сброс unreadCount через утилиту
       resetUnreadCount(queryClient, activeTicketId)
     }
 
@@ -230,6 +224,8 @@ export const ChatWindow = () => {
       socket.off("chat:removed", handleChatRemoved)
     }
   }, [activeTicketId, queryClient, clearChat, session, play, scrollToBottom])
+
+  const chatDisplayTitle = chatInfo?.title || "Загрузка чата..."
 
   const handleRenameSubmit = () => {
     if (newTitle === chatDisplayTitle) return
@@ -269,7 +265,7 @@ export const ChatWindow = () => {
             </Button>
 
             <RenameChatField
-              chatDisplayTitle={chatInfo?.title}
+              chatDisplayTitle={chatDisplayTitle}
               handleRenameSubmit={handleRenameSubmit}
               isEditing={isEditing}
               isRenaming={isRenaming}
@@ -290,7 +286,6 @@ export const ChatWindow = () => {
       <div className="relative mx-auto flex min-h-0 w-full flex-1 flex-col">
         <ScrollArea className="h-full w-full px-4" ref={setScrollContainerRef}>
           <div className="mx-auto w-full max-w-2xl p-3">
-            {/* Индикатор подгрузки старых сообщений */}
             {isFetchingNextPage && (
               <div className="flex justify-center py-3">
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -453,17 +448,18 @@ const RenameChatField = ({
   handleRenameSubmit: () => void
 }) => {
   return (
-    <ProtectByRole requiredRole={USER_ROLE.ADMIN}>
-      <div className="flex items-center gap-2">
-        {isEditing ? (
+    <div className="flex items-center gap-2">
+      {!isEditing && (
+        <h2 className="font-semibold text-primary text-sm">{chatDisplayTitle?.toUpperCase()}</h2>
+      )}
+      <ProtectByRole requiredRole={USER_ROLE.ADMIN}>
+        {isEditing && (
           <Input
             className="h-10 rounded-lg text-lg md:text-lg"
             disabled={isRenaming}
             onChange={(e) => setNewTitle(e.target.value)}
             value={newTitle}
           />
-        ) : (
-          <h2 className="font-semibold text-primary text-sm">{chatDisplayTitle?.toUpperCase()}</h2>
         )}
         {isEditing && (
           <Button
@@ -477,20 +473,20 @@ const RenameChatField = ({
             <Save className="size-4" />
           </Button>
         )}
-        {chatDisplayTitle && (
-          <ProtectByRole requiredRole={USER_ROLE.ADMIN}>
-            <Button
-              className="flex h-10 w-10 items-center justify-center gap-2 rounded-md text-primary hover:bg-primary/30 focus-visible:bg-primary/30"
-              onClick={() => setIsEditMode(!isEditing)}
-              size="icon"
-              title="Переименовать"
-              variant="ghost"
-            >
-              {!isEditing ? <Pencil className="size-5" /> : <PenOff className="size-5" />}
-            </Button>
-          </ProtectByRole>
-        )}
-      </div>
-    </ProtectByRole>
+      </ProtectByRole>
+      {chatDisplayTitle && (
+        <ProtectByRole requiredRole={USER_ROLE.ADMIN}>
+          <Button
+            className="flex h-10 w-10 items-center justify-center gap-2 rounded-md text-primary hover:bg-primary/30 focus-visible:bg-primary/30"
+            onClick={() => setIsEditMode(!isEditing)}
+            size="icon"
+            title="Переименовать"
+            variant="ghost"
+          >
+            {!isEditing ? <Pencil className="size-5" /> : <PenOff className="size-5" />}
+          </Button>
+        </ProtectByRole>
+      )}
+    </div>
   )
 }

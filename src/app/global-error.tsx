@@ -5,15 +5,8 @@ import { useEffect } from "react"
 import { RotateCcw, ShieldAlert } from "lucide-react"
 import { Button } from "@/shared/ui/components/button"
 
-export default function GlobalError({
-  error,
-  reset, // Next.js передает reset для global-error
-}: {
-  error: Error & { digest?: string }
-  reset: () => void
-}) {
+export default function GlobalError({ error }: { error: Error & { digest?: string } }) {
   useEffect(() => {
-    // Отправляем в Sentry/Datadog. Это фатальная ошибка, важно знать о ней сразу.
     console.error("CRITICAL GLOBAL ERROR:", error)
   }, [error])
 

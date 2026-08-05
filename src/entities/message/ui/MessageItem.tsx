@@ -144,7 +144,7 @@ export const MessageItem = ({
                           preload="metadata"
                           src={item.url.replace(/\\/g, "/")}
                         >
-                        <track default kind="captions" label="Без субтитров" srcLang="ru" />
+                          <track default kind="captions" label="Без субтитров" srcLang="ru" />
                         </video>
                         <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                           <span className="text-lg text-white">▶</span>
@@ -278,8 +278,9 @@ const ReplyToBlock = ({ replyTo }: { replyTo: ReplyToData }) => {
                   className="pointer-events-none h-full w-full object-cover"
                   preload="metadata"
                   src={replyTo.attachments[0].url.replace(/\\/g, "/")}
-                />
-                <track default kind="captions" label="Без субтитров" srcLang="ru" />
+                >
+                  <track default kind="captions" label="Без субтитров" srcLang="ru" />
+                </video>
                 <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                   <span className="text-[8px] text-white">▶</span>
                 </div>
@@ -418,15 +419,17 @@ const ImageWithPreview = ({
     return (
       <div className="absolute inset-0">
         {!isLoaded && <div className="absolute inset-0 animate-pulse bg-muted/30" />}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           alt={alt}
           className={cn(
             "h-full w-full object-cover transition-opacity duration-300",
             isLoaded ? "opacity-100" : "opacity-0",
           )}
+          fill
           onLoad={() => setIsLoaded(true)}
+          sizes="100vw"
           src={normalizedSrc}
+          unoptimized
         />
       </div>
     )

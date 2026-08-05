@@ -2,7 +2,7 @@
 import type { OrgRole } from "@prisma/client"
 import { useGetUserMembership } from "./useGetUserMembership"
 
-export function useGetCurrentMemberRole(organizationId?: string | null): OrgRole | null {
+export const useGetCurrentMemberRole = (organizationId?: string | null): OrgRole | null => {
   const { data: memberships = [] } = useGetUserMembership()
 
   if (!organizationId) return null
