@@ -1,0 +1,70 @@
+"use server"
+
+import { OrgRole } from "@prisma/client"
+import { cacheTag } from "next/cache"
+import { prisma } from "@/prisma/prisma-client"
+import { getSession } from "@/shared/lib/server-current-user"
+import type { EmployeeWithProfile } from "../model"
+
+export const fetchEmployeesByOrgId = async (orgId: string) => {
+  "use cache"
+  cacheTag(`employees-${orgId}`)
+  if (!orgId) return null
+  return await prisma.organizationMember.findMany({
+    where: {
+      organizationId: orgId,
+      profile: {
+        user: {
+          isActive: true,
+        },
+      },
+    },
+    include: {
+      profile: {
+        include: {
+          user: {
+            select: {
+              email: true,
+              role: true,
+              isActive: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: { createdAt: "asc" },
+  })
+}
+
+export const getEmployeesByOrgId = async (orgId: string): Promise<EmployeeWithProfile[]> => {
+  const session = await getSession()
+  if (!session?.user) throw new Error("Не авторизован")
+
+  const organization = await prisma.organization.findUnique({
+    where: { id: orgId },
+  })
+
+  if (!organization) {
+    throw new Error("Организация не найдена")
+  }
+
+  const isResponsible = await prisma.organizationMember.findFirst({
+    where: {
+      organizationId: orgId,
+      role: OrgRole.RESPONSIBLE,
+      profile: {
+        userId: session.user.id,
+      },
+    },
+  })
+
+  const isGlobalAdmin = session.user.role === "admin"
+
+  if (!isGlobalAdmin && !isResponsible) {
+    throw new Error("Forbidden: Недостаточно прав для просмотра списка сотрудников")
+  }
+
+  const employees = await fetchEmployeesByOrgId(orgId)
+
+  return employees ?? []
+}

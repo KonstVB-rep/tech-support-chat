@@ -1,0 +1,78 @@
+{
+  "WillLuke.nextjs.addTypesOnSave": true,
+  "WillLuke.nextjs.hasPrompted": true,
+
+  "editor.formatOnSave": true,
+
+  "editor.codeActionsOnSave": {
+    "source.fixAll" : "explicit",
+    "source.organizeImports": "explicit"
+  },
+  
+  "notebook.defaultFormatter": "esbenp.prettier-vscode",
+
+  // ✅ Исключаем из file watcher (снижает нагрузку на CPU)
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/.next/**": true,
+    "**/coverage/**": true,
+    "**/dist/**": true,
+    "**/out/**": true,
+    "**/.turbo/**": true
+  },
+
+  // ✅ Исключаем из глобального поиска (Ctrl+Shift+F)
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/coverage": true,
+    "**/dist": true,
+    "**/out": true,
+    "**/.git": true,
+    "**/.turbo": true,
+    "**/package-lock.json": true,
+    "**/yarn.lock": true,
+    "**/pnpm-lock.yaml": true
+  },
+
+  // ✅ Скрываем из файлового дерева (Explorer)
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/.next": true,
+    "**/coverage": true,
+    "**/.turbo": true
+  },
+
+  "unwantedRecommendations": ["ms-vscode.vscode-typescript-next"],
+
+  // ✅ TypeScript: Автоимпорт с @/ алиасами
+  "js/ts.preferences.importModuleSpecifier": "non-relative",
+  "js/ts.preferences.useAliasesForRenames": true,
+  "js/ts.suggest.autoImports": true,
+  "js/ts.validate.enable": true,
+
+
+  // ✅ Tailwind CSS
+  "tailwindCSS.emmetCompletions": false,
+  "tailwindCSS.classAttributes": ["class", "className", "tw", "class:list"],
+
+  // ✅ Редактор
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": false
+  },
+  "editor.suggestOnTriggerCharacters": true,
+  "editor.acceptSuggestionOnCommitCharacter": false,
+  "editor.minimap.enabled": false,
+  "editor.renderWhitespace": "selection",
+
+  // ✅ Git
+  "git.autorefresh": false,
+  "git.detectSubmodules": false,
+  "scm.diffDecorations": "none"
+}

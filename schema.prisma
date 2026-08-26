@@ -1,0 +1,248 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum OrgRole {
+  RESPONSIBLE // Ответственное лицо (назначает ТОЛЬКО админ)
+  MEMBER      // Сотрудник
+}
+
+enum ChatType {
+  PRIVATE
+  GROUP
+}
+
+enum ChatRole {
+  ADMIN
+  MEMBER
+}
+
+model User {
+  id               String    @id @default(cuid())  // ✅
+  name             String    @db.VarChar(255) 
+  email            String    @unique @db.VarChar(255)
+  emailVerified    Boolean   @default(false)
+  image            String?   @db.Text
+  role             String    @default("user")
+  isActive         Boolean   @default(true)
+  
+  canCreateGroups  Boolean   @default(false)
+  twoFactorEnabled Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  banned           Boolean   @default(false)
+  banReason        String?   @db.Text
+  banExpires       DateTime?
+
+  accounts  Account[]
+  sessions  Session[]
+  profile   Profile?
+  twoFactor TwoFactor?
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(cuid())  // ✅ ДОБАВЛЕНО
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?  @db.Text
+  userAgent String?  @db.Text
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(cuid())  // ✅ ДОБАВЛЕНО
+  accountId             String    @db.Text
+  providerId            String    @db.Text
+  userId                String
+  accessToken           String?   @db.Text
+  refreshToken          String?   @db.Text
+  idToken               String?   @db.Text
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?   @db.Text
+  password              String?   @db.Text
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(cuid())  // ✅ ДОБАВЛЕНО
+  identifier String   @db.Text
+  value      String   @db.Text
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier(length: 191)])
+  @@map("verification")
+}
+
+model TwoFactor {
+  id          String  @id @default(cuid())  // ✅
+  secret      String  @db.Text
+  backupCodes String  @db.Text
+  userId      String  @unique
+  verified    Boolean @default(false)
+  
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("two_factor")
+}
+
+model Profile {
+  id        String   @id @default(cuid()) 
+  userId    String   @unique
+  name      String
+  imageUrl  String?  @db.Text
+  email     String  @unique @db.VarChar(255)
+  phone     String?  @db.Text 
+  username  String?  
+  lastSeen  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  pushEnabled      Boolean            @default(true)
+  pushSubscription Json?              
+  deactivationLabel  String?  
+  deletedAt          DateTime?
+
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdChats       Chat[]             @relation("ChatCreator")
+  memberships        ChatMember[]
+  messages           Message[]
+  organizationMembers OrganizationMember[] 
+  supportEngineer     SupportEngineer? 
+
+  @@map("profile")
+}
+
+model SupportEngineer {
+  id        String   @id @default(cuid())
+  profileId String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("support_engineer")
+}
+
+model Organization {
+  id              String   @id @default(cuid())
+  name            String   @db.Text
+  inn             String   @unique
+  contractNumber  String   @unique
+  contractStart   DateTime   
+  contractEnd     DateTime
+  timeSupportFrom String   @default("09:00:00")
+  timeSupportTo   String   @default("18:00:00")
+  description     String?  @db.Text
+  legalAddress    String   @db.Text
+  actualAddress   String?  @db.Text
+  isActive       Boolean   @default(true) 
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  members OrganizationMember[]
+  chats   Chat[]  
+
+  @@index([inn])
+  @@map("organization")
+}
+
+
+model OrganizationMember {
+  id             String   @id @default(cuid())  
+  organizationId String
+  profileId      String 
+  role           OrgRole  @default(MEMBER)
+  position       String?  @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  profile      Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, profileId]) 
+  @@index([organizationId, role])
+  @@index([profileId]) 
+  @@map("organization_member")
+}
+
+model Chat {
+  id             String   @id @default(cuid()) 
+  title          String?
+  imageUrl       String?  @db.Text
+  type           ChatType @default(GROUP)
+  creatorId      String
+  organizationId String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  creator      Profile       @relation("ChatCreator", fields: [creatorId], references: [id], onDelete: Restrict)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  members      ChatMember[]
+  messages     Message[]
+
+  @@index([creatorId])
+  @@index([organizationId])
+  @@map("chat")
+}
+
+model ChatMember {
+  id        String   @id @default(cuid())  // ✅
+  chatId    String
+  profileId String
+  role      ChatRole @default(MEMBER)
+  lastReadAt DateTime? //  Когда пользователь последний раз читал этот чат
+  joinedAt  DateTime @default(now())
+
+  chat    Chat    @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([chatId, profileId])
+  @@index([chatId])
+  @@index([profileId])              
+  @@index([profileId, lastReadAt]) 
+  @@map("chat_member")
+}
+
+model Message {
+  id        String   @id @default(cuid()) 
+  text      String   @db.Text
+  chatId    String
+  profileId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  replyToId String?
+  replyTo   Message?  @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies   Message[] @relation("MessageReplies")
+
+  attachments Json? 
+
+  chat    Chat    @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Restrict)
+
+  @@index([chatId, createdAt]) 
+  @@index([profileId])
+  @@index([replyToId]) 
+  @@map("message")
+}

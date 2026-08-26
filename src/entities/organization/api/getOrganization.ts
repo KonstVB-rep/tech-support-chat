@@ -1,0 +1,66 @@
+// src/entities/organization/api/getOrganization.ts
+"use server"
+
+import { cacheTag } from "next/cache"
+import { redirect } from "next/navigation"
+import { prisma } from "@/prisma/prisma-client"
+import { getSession } from "@/shared/lib/server-current-user"
+import type { SingleOrganizationWithCounts } from "../model/types"
+
+const fetchOrganization = async (id: string): Promise<SingleOrganizationWithCounts | null> => {
+  "use cache"
+  cacheTag(`organization-${id}`)
+
+  return prisma.organization.findUnique({
+    where: { id },
+    include: {
+      _count: {
+        select: {
+          members: true,
+          chats: true,
+        },
+      },
+    },
+  })
+}
+
+export const getOrganization = async (id: string): Promise<SingleOrganizationWithCounts> => {
+  const session = await getSession()
+  if (!session?.user) {
+    redirect("/auth/sign-in?error=unauthorized")
+  }
+
+  const isGlobalAdmin = session.user.role.toLowerCase() === "admin"
+
+  if (!isGlobalAdmin) {
+    const userProfile = await prisma.profile.findUnique({
+      where: { userId: session.user.id },
+    })
+
+    if (!userProfile) {
+      redirect("/chats?error=profile_not_found")
+    }
+
+    const membership = await prisma.organizationMember.findUnique({
+      where: {
+        organizationId_profileId: {
+          organizationId: id,
+          profileId: userProfile.id,
+        },
+      },
+      select: { role: true },
+    })
+
+    if (!membership || membership.role !== "RESPONSIBLE") {
+      redirect("/chats?error=forbidden")
+    }
+  }
+
+  const organization = await fetchOrganization(id)
+
+  if (!organization) {
+    redirect("/chats?error=not_found")
+  }
+
+  return organization
+}

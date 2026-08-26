@@ -1,0 +1,16 @@
+{
+  "$schema": "https://unpkg.com",
+  "next": {
+    "entry": [
+      "src/app/**/page.tsx",
+      "src/app/**/layout.tsx",
+      "src/app/**/route.ts",
+      "src/proxy.ts",
+      "next.config.{js,mjs}",
+      "src/app/sw/push-handler.ts"
+    ]
+  },
+  "ignoreDependencies": [".prisma", ".css"],
+  "ignore": ["src/shared/ui/**"],
+  "project": ["src/**/*.{ts,tsx,js,jsx}"]
+}
