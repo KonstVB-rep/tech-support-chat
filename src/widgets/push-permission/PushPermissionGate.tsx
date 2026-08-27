@@ -50,24 +50,40 @@ export const PushPermissionGate = () => {
     setIsMounted(true)
 
     if ("Notification" in window) {
-      // Если разрешение изменилось на не-denied → сбрасываем localStorage
       if (Notification.permission !== "denied") {
         localStorage.removeItem(PUSH_DISMISSED_KEY)
       }
 
-      // Проверяем оба источника: localStorage И реальную подписку
       const dismissed = localStorage.getItem(PUSH_DISMISSED_KEY) === "true"
-      const hasSubscription = Notification.permission === "granted"
-      setIsResolved(dismissed || hasSubscription)
+      const permissionGranted = Notification.permission === "granted"
+
+      if (dismissed) {
+        setIsResolved(true)
+      } else if (permissionGranted && profile?.id) {
+
+        fetch("/api/push/subscription-status", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.hasSubscription) {
+              setIsResolved(true)
+            }
+          })
+          .catch(() => {
+          })
+      }
+
     }
-  }, [])
+  }, [profile?.id])
 
   const resolvePermanently = () => {
     localStorage.setItem(PUSH_DISMISSED_KEY, "true")
     setIsResolved(true)
   }
 
-  // Синхронизация отказа с сервером
+
   useEffect(() => {
     if (isMounted && Notification.permission === "denied" && profile?.id) {
       fetch("/api/push/unsubscribe", {
@@ -81,10 +97,15 @@ export const PushPermissionGate = () => {
   const handleSubscribe = async () => {
     if (!("Notification" in window)) return
     if (!VAPID_PUBLIC_KEY) return
+
     try {
       setIsSubscribing(true)
+
       const perm = await Notification.requestPermission()
-      if (perm !== "granted") return
+      if (perm !== "granted") {
+        setIsResolved(false)
+        return
+      }
 
       const registration = await navigator.serviceWorker.ready
       const subscription = await registration.pushManager.subscribe({
@@ -92,14 +113,34 @@ export const PushPermissionGate = () => {
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       })
 
-      const res = await fetch("/api/push/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(subscription.toJSON()),
-      })
-      if (!res.ok) throw new Error("Ошибка сохранения подписки")
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000)
 
-      setIsResolved(true)
+      try {
+        const res = await fetch("/api/push/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(subscription.toJSON()),
+          signal: controller.signal,
+        })
+
+        clearTimeout(timeoutId)
+
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}))
+          console.error("❌ Ошибка API подписки:", res.status, errorData)
+          return
+        }
+
+        setIsResolved(true)
+      } catch (fetchError) {
+        clearTimeout(timeoutId)
+        if (fetchError instanceof DOMException && fetchError.name === "AbortError") {
+          console.error("❌ Таймаут запроса подписки")
+        } else {
+          console.error("❌ Ошибка сети при подписке:", fetchError)
+        }
+      }
     } catch (error) {
       console.error("❌ Ошибка подписки на push:", error)
     } finally {
@@ -107,7 +148,7 @@ export const PushPermissionGate = () => {
     }
   }
 
-  // Читаем permission напрямую — не храним в state
+
   const permission: NotificationPermission =
     isMounted && "Notification" in window ? Notification.permission : "default"
 
@@ -115,7 +156,7 @@ export const PushPermissionGate = () => {
     return null
   }
 
-  // Инженер + denied → обязательная модалка (НЕ скрывается через dismiss)
+
   if (isSupportEngineer && permission === "denied") {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
@@ -136,7 +177,6 @@ export const PushPermissionGate = () => {
     )
   }
 
-  // Обычный сотрудник + denied → баннер с кнопкой закрытия
   if (!isSupportEngineer && permission === "denied") {
     return (
       <div className="slide-in-from-bottom-4 fixed right-4 bottom-4 z-50 max-w-xs animate-in rounded-2xl border border-border bg-card p-4 shadow-xl">
@@ -151,7 +191,7 @@ export const PushPermissionGate = () => {
               className="w-full text-xs"
               onClick={resolvePermanently}
               size="sm"
-              variant="outline" // ← Сохраняем в localStorage
+              variant="outline"
             >
               Понятно
             </Button>
@@ -161,7 +201,6 @@ export const PushPermissionGate = () => {
     )
   }
 
-  // permission === "default" → баннер с двумя кнопками
   return (
     <div className="slide-in-from-bottom-4 fixed right-4 bottom-4 z-50 z-[999] max-w-xs animate-in rounded-2xl border border-border bg-card p-4 shadow-xl">
       <div className="flex items-start gap-3">
@@ -181,7 +220,7 @@ export const PushPermissionGate = () => {
               <Button
                 className="flex-1"
                 disabled={isSubscribing}
-                onClick={resolvePermanently} // ← Сохраняем в localStorage
+                onClick={resolvePermanently}
                 size="sm"
                 variant="outline"
               >
