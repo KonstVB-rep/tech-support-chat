@@ -71,9 +71,9 @@ export function useSendMessage() {
     mutationFn: ({ chatId, text }: { chatId: string; text: string }) => sendMessage(chatId, text),
 
     onMutate: async ({ chatId, text }) => {
-      await queryClient.cancelQueries({ queryKey: ["messages", chatId] })
+      await queryClient.cancelQueries({ queryKey: ["messages", chatId] });
 
-      const previousData = queryClient.getQueryData<MessagesResponse>(["messages", chatId])
+      const previousData = queryClient.getQueryData<MessagesResponse>(["messages", chatId]);
 
       const optimisticMessage: Message = {
         id: `temp-${Date.now()}`,
@@ -82,15 +82,30 @@ export function useSendMessage() {
         profileId: "me",
         createdAt: new Date().toISOString(),
         attachments: [],
-        profile: { id: "me", name: "Вы", imageUrl: "", userId: "" },
-      }
+        profile: { id: "me", name: "Вы", imageUrl: null, userId: "" },
+        sender: "user",
+        senderName: "Вы",
+        timestamp: new Date().toISOString(),
+        replyTo: null,
+      };
 
-      queryClient.setQueryData<MessagesResponse>(["messages", chatId], (old) => ({
-        messages: [...(old?.messages || []), optimisticMessage],
-        chat: old?.chat || null,
-      }))
+      queryClient.setQueryData<MessagesResponse>(["messages", chatId], (old) => {
+        if (!old) {
+          return {
+            messages: [optimisticMessage],
+            chat: null,
+            hasMore: false,
+            nextCursor: null,
+          };
+        }
 
-      return { previousData }
+        return {
+          ...old, 
+          messages: [...old.messages, optimisticMessage],
+        };
+      });
+
+      return { previousData };
     },
 
     onError: (_err, variables, context) => {
@@ -99,12 +114,23 @@ export function useSendMessage() {
       }
     },
 
-    onSuccess: (serverMessage, variables) => {
-      queryClient.setQueryData<MessagesResponse>(["messages", variables.chatId], (old) => ({
-        messages: (old?.messages || []).map((m) => (m.id.startsWith("temp-") ? serverMessage : m)),
-        chat: old?.chat || null,
-      }))
-      queryClient.invalidateQueries({ queryKey: ["chats"] })
+      onSuccess: (serverMessage, variables) => {
+      queryClient.setQueryData<MessagesResponse>(["messages", variables.chatId], (old) => {
+        if (!old) {
+          return {
+            messages: [serverMessage],
+            chat: null,
+            hasMore: false,
+            nextCursor: null,
+          };
+        }
+        
+        return {
+          ...old,
+          messages: old.messages.map((m) => (m.id.startsWith("temp-") ? serverMessage : m)),
+        };
+      });
+      queryClient.invalidateQueries({ queryKey: ["chats"] });
     },
   })
 }

@@ -117,7 +117,7 @@ export const deleteSupportEngineerAction = async (
         profile.imageUrl.startsWith("/uploads/")
       ) {
         const relativePath = profile.imageUrl.replace(/^\/uploads\//, "").replace(/\\/g, "/")
-        const filePath = path.join(uploadDir, relativePath)
+        const filePath = path.join(/* turbopackIgnore: true */ uploadDir, relativePath)
 
         try {
           await unlink(filePath)
