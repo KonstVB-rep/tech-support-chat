@@ -42,12 +42,6 @@ export const auth = betterAuth({
         })
       }
     },
-    // afterDelete: async (user: User, request: Request | undefined) => {
-    //   // Perform any cleanup or additional actions here
-    // },
-    // sendDeleteAccountVerification: async ({ user, url, token }) => {
-    //   console.log(user,url, token)
-    // },
   },
   databaseHooks: {
     user: {
@@ -104,7 +98,6 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     disableSignUp: true,
-    //requireEmailVerification: true, //запретить вход без подтверждения email
 
     sendResetPassword: async ({ user, url }) => {
       console.log("👉 ССЫЛКА ДЛЯ ТЕСТИРОВАНИЯ СБРОСА ПАРОЛЯ:", url)
@@ -133,31 +126,12 @@ export const auth = betterAuth({
         throw error
       }
     },
-    //   onPasswordReset: async ({ user }, request) => {
-    //   // your logic here
-    //   console.log(`Password for user ${user.email} has been reset.`);
-    // },
   },
   onSignOut: {
     redirect: "/auth/sign-in", // Куда редиректить после выхода
   },
+  trustHost: true,
   baseURL: process.env.BETTER_AUTH_URL,
-  // emailVerification: {
-  //   sendOnSignUp: true, // отправлять сразу при регистрации
-  //   autoSignInAfterVerification: true,
-  //   sendVerificationEmail: async ({ user, url }) => {
-  //     const { error } = await resend.emails.send({
-  //       from: "Acme <onboarding@resend.dev>", // замени на свой домен после верификации
-  //       to: user.email,
-  //       subject: "Подтвердите ваш Email",
-  //       html: `<p>Нажмите на ссылку для подтверждения: <a href="${url}">${url}</a></p>`,
-  //     });
-
-  //     if (error) {
-  //       console.error("Ошибка отправки письма через Resend:", error);
-  //     }
-  //   },
-  // },
   plugins: [
     admin(),
     nextCookies(),
@@ -165,5 +139,3 @@ export const auth = betterAuth({
   ],
 })
 
-// export type Session = typeof auth.$Infer.Session;
-// export type UserCustom = Session["user"];
