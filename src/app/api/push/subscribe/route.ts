@@ -1,3 +1,4 @@
+// /api/push/subscribe
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/prisma/prisma-client"
 import { getSession } from "@/shared/lib/server-current-user"
