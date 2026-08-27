@@ -128,7 +128,7 @@ export const deleteEmployeeAction = async (
         profile.imageUrl.startsWith("/uploads/")
       ) {
         const normalizedUrl = profile.imageUrl.replace(/^\/uploads\//, "").replace(/\\/g, "/")
-        const filePath = path.join(uploadDir, normalizedUrl)
+        const filePath = path.join(/* turbopackIgnore: true */ uploadDir, normalizedUrl)
 
         try {
           await unlink(filePath)

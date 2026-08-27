@@ -29,17 +29,16 @@ const contentTypes: Record<string, string> = {
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   try {
-    // ✅ Защита от directory traversal
     const { path: segments } = await params
-    const filePath = path.join(UPLOAD_DIR, ...segments)
+    const filePath = path.join(/* turbopackIgnore: true */ UPLOAD_DIR, ...segments)
+     const uploadRoot = path.resolve(/* turbopackIgnore: true */ UPLOAD_DIR)
     const resolved = path.resolve(filePath)
-    const uploadRoot = path.resolve(UPLOAD_DIR)
+ 
 
     if (!resolved.startsWith(uploadRoot)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    // ✅ Читаем файл БЕЗ авторизации
     const buffer = await readFile(resolved)
     const ext = path.extname(resolved).toLowerCase()
     const contentType = contentTypes[ext] || "application/octet-stream"

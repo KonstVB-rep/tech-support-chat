@@ -70,7 +70,7 @@ const deleteAccountAction = async (password: string): Promise<void> => {
 
   if (user?.image && typeof user.image === "string" && user.image.startsWith("/uploads/")) {
     const relativePath = user.image.replace(/^\/uploads\//, "").replace(/\\/g, "/")
-    const filePath = path.join(uploadDir, relativePath)
+    const filePath = path.join(/* turbopackIgnore: true */ uploadDir, relativePath)
     try {
       await unlink(filePath)
     } catch {}
@@ -82,7 +82,7 @@ const deleteAccountAction = async (password: string): Promise<void> => {
     currentProfile.imageUrl.startsWith("/uploads/")
   ) {
     const relativePath = currentProfile.imageUrl.replace(/^\/uploads\//, "").replace(/\\/g, "/")
-    const filePath = path.join(uploadDir, relativePath)
+    const filePath = path.join(/* turbopackIgnore: true */ uploadDir, relativePath)
     try {
       await unlink(filePath)
     } catch {}
