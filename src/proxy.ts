@@ -17,6 +17,8 @@ export async function proxy(request: NextRequest) {
 
   const staticPaths = [
     "/manifest.webmanifest",
+    "/manifest.json",
+     "/icons",
     "/sw.js",
     "/icon-192x192.png",
     "/icon-512x512.png",
