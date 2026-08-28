@@ -18,7 +18,7 @@ const EmployeeActionsMenu = ({
       <div className="no-scrollbar flex h-full flex-col gap-3 overflow-hidden overflow-y-auto p-4">
         <UpdateEmployee employee={data} />
         <PushSettingsToggle
-          isSupportEngineer={false}
+          isStaffMember={false}
           isViewedByAdmin={false}
           organizationId={data.organizationId}
           profileId={data.profileId}

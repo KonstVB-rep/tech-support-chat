@@ -13,7 +13,7 @@ export const useUserUpdates = () => {
 
     const handleUserUpdated = () => {
       queryClient.invalidateQueries({ queryKey: ["session"] })
-      queryClient.invalidateQueries({ queryKey: ["support-engineers"] })
+      queryClient.invalidateQueries({ queryKey: ["staff"] })
       queryClient.invalidateQueries({ queryKey: ["chats"] })
       queryClient.invalidateQueries({ queryKey: ["messages"] })
     }

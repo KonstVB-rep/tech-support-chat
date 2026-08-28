@@ -1,0 +1,170 @@
+// src/features/manage-staff/actions/delete.ts
+"use server"
+
+import { unlink } from "node:fs/promises"
+import path from "node:path"
+import { updateTag } from "next/cache"
+import { headers } from "next/headers"
+import { auth } from "@/app/lib/auth"
+import { prisma } from "@/prisma/prisma-client"
+import { USER_ROLE } from "@/shared/constants"
+import { getSession } from "@/shared/lib/server-current-user"
+import { triggerSocketEvent } from "@/shared/lib/socket-trigger"
+import type { DeleteActionState } from "@/shared/lib/types"
+
+export const deleteStaffMemberAction = async (
+  ids: string | string[],
+): Promise<DeleteActionState> => {
+  try {
+    const session = await getSession()
+    if (!session?.user || session.user.role.toLowerCase() !== USER_ROLE.ADMIN.toLowerCase()) {
+      return {
+        success: false,
+        deletedCount: 0,
+        error: "Доступ запрещен. Требуются права администратора системы.",
+      }
+    }
+
+    const idsArray = Array.isArray(ids) ? ids : [ids]
+    const validIds = idsArray.filter((id) => id && id.trim() !== "")
+
+    if (!validIds.length) {
+      return {
+        success: false,
+        deletedCount: 0,
+        error: "Не переданы валидные ID для удаления",
+      }
+    }
+
+    const staffData = await prisma.staffMember.findMany({
+      where: { id: { in: validIds } },
+      select: {
+        id: true,
+        profile: {
+          select: {
+            id: true,
+            email: true,
+            userId: true,
+            username: true,
+            name: true,
+            imageUrl: true,
+          },
+        },
+      },
+    })
+
+    if (!staffData.length) {
+      return {
+        success: false,
+        deletedCount: 0,
+        error: "Специалисты техподдержки не найдены",
+      }
+    }
+
+    const timestamp = Math.floor(Date.now() / 1000)
+    const suffix = `_deleted_${timestamp}`
+
+    const updateOperations = staffData.flatMap((staffMember) => {
+      const profile = staffMember.profile
+      if (!profile) return []
+
+      const newFakeEmail = `${profile.email}${suffix}`
+      const originalName = profile.name || "Без имени"
+
+      return [
+        prisma.user.update({
+          where: { id: profile.userId },
+          data: {
+            isActive: false,
+            banned: true,
+            email: newFakeEmail,
+            name: originalName,
+            image: null,
+          },
+        }),
+        prisma.profile.update({
+          where: { id: profile.id },
+          data: {
+            name: originalName,
+            deactivationLabel: "Уволен",
+            email: newFakeEmail,
+            phone: null,
+            username: profile.username ? `${profile.username}${suffix}` : null,
+            imageUrl: null,
+            deletedAt: new Date(),
+          },
+        }),
+        prisma.staffMember.delete({
+          where: { id: staffMember.id },
+        }),
+      ]
+    })
+
+    if (updateOperations.length > 0) {
+      await prisma.$transaction(updateOperations)
+    }
+
+    const uploadDir = process.env.UPLOAD_DIR || "/opt/chat-app/uploads"
+    const requestHeaders = await headers()
+
+    for (const staffMember of staffData) {
+      const profile = staffMember.profile
+      if (!profile) continue
+
+      if (
+        profile.imageUrl &&
+        typeof profile.imageUrl === "string" &&
+        profile.imageUrl.startsWith("/uploads/")
+      ) {
+        const relativePath = profile.imageUrl.replace(/^\/uploads\//, "").replace(/\\/g, "/")
+        const filePath = path.join(/* turbopackIgnore: true */ uploadDir, relativePath)
+
+        try {
+          await unlink(filePath)
+        } catch {}
+      }
+
+      try {
+        await auth.api.banUser({
+          body: { userId: profile.userId },
+          headers: requestHeaders,
+        })
+      } catch (e) {
+        console.error(`⚠️ Не удалось заблокировать аккаунт ${profile.userId}:`, e)
+      }
+    }
+
+    updateTag("staff")
+    for (const id of validIds) {
+      updateTag(`staff-${id}`)
+    }
+
+    for (const staffMember of staffData) {
+      const profile = staffMember.profile
+      if (!profile) continue
+
+      await triggerSocketEvent("srv:user:updated", {
+        userId: profile.userId,
+        profileId: profile.id,
+        organizationId: null,
+        name: profile.name || "Без имени",
+        deactivationLabel: "Уволен",
+        image: null,
+        isStaffMember: false,
+      })
+    }
+
+    return {
+      success: true,
+      deletedCount: staffData.length,
+      error: null,
+    }
+  } catch (error) {
+    console.error("Критическая ошибка в deleteStaffMemberAction:", error)
+    return {
+      success: false,
+      deletedCount: 0,
+      error: "Системная ошибка при деактивации и обезличивании специалистов техподдержки",
+    }
+  }
+}

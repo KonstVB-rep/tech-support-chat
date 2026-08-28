@@ -11,7 +11,7 @@ import { Switch } from "@/shared/ui/components/switch"
 
 interface Props {
   profileId: string
-  isSupportEngineer: boolean
+  isStaffMember: boolean
   pushEnabled: boolean
   isViewedByAdmin: boolean
   source: PushSettingsSource
@@ -20,7 +20,7 @@ interface Props {
 
 export const PushSettingsToggle = ({
   profileId,
-  isSupportEngineer,
+  isStaffMember,
   pushEnabled,
   isViewedByAdmin,
   source,
@@ -28,7 +28,7 @@ export const PushSettingsToggle = ({
 }: Props) => {
   const [isPending, startTransition] = useTransition()
 
-  const isSupport = isSupportEngineer
+  const isSupport = isStaffMember
   const isEditable = !isSupport || isViewedByAdmin
 
   const handleToggle = () => {

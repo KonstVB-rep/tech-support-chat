@@ -75,7 +75,7 @@ export const UpdateEmployee = ({ employee, onSuccess }: UpdateEmployeeProps) => 
   const handleFormAction = async (formData: FormData) => {
     const isValid = await form.trigger()
     if (!isValid) return
-
+    formData.append("name", employee.profile.name)
     formData.append("employeeId", employee.id)
     formData.append("organizationId", employee.organizationId)
 
@@ -185,6 +185,7 @@ const UpdateEmployeeForm = ({
           <CardFooter className="border-none bg-transparent">
             <Field orientation="horizontal">
               <Button
+                className="flex-1"
                 disabled={isPending}
                 onClick={() => form.reset()}
                 type="button"
@@ -192,7 +193,7 @@ const UpdateEmployeeForm = ({
               >
                 Сбросить
               </Button>
-              <Button disabled={isPending} form="employee-form" type="submit">
+              <Button className="flex-1" disabled={isPending} form="employee-form" type="submit">
                 {isPending ? "Сохранение..." : submitText}
               </Button>
             </Field>

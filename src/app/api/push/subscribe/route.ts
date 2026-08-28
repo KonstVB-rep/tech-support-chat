@@ -5,11 +5,11 @@ import { getSession } from "@/shared/lib/server-current-user"
 
 export async function POST(request: NextRequest) {
   console.log("🔔 [PUSH SUBSCRIBE] Запрос получен")
-  
+
   try {
     const session = await getSession()
     console.log("🔔 [PUSH SUBSCRIBE] Сессия:", session?.user?.id || "НЕТ")
-    
+
     if (!session?.user) {
       return NextResponse.json({ error: "Не авторизован" }, { status: 401 })
     }

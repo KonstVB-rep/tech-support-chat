@@ -24,7 +24,7 @@ export const updatePushSettingsAction = async ({
     const session = await getSession()
     if (!session?.user) return { success: false, error: "Не авторизован" }
 
-    const isTargetSupport = await prisma.supportEngineer.findUnique({
+    const isTargetSupport = await prisma.staffMember.findUnique({
       where: { profileId: targetProfileId },
     })
 

@@ -47,7 +47,7 @@ export const LINKS_NAV: NavigationLink[] = [
   },
   {
     href: "/admin/staff",
-    title: "Инженеры",
+    title: "Сотрудники",
     icon: <UserRoundCog className="size-5" />,
     isAdminOnly: true,
   },

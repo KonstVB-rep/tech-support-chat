@@ -1,8 +1,8 @@
 // server.js
+import dotenv from "dotenv";
 import "dotenv/config";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import dotenv from "dotenv";
 import { prisma } from "./prisma/prisma-client.ts";
 
 dotenv.config({ path: ".env.development" });
@@ -86,11 +86,11 @@ const httpServer = createServer((req, res) => {
             });
 
             for (const member of chatMembers) {
-              const isSupport = await prisma.supportEngineer.findUnique({
+              const isStaffMember = await prisma.staffMember.findUnique({
                 where: { profileId: member.profileId },
               });
 
-              if (isSupport) {
+              if (isStaffMember) {
                 sendPushNotification(member.profileId, {
                   title: "Новое сообщение",
                   body: payload.message.text?.substring(0, 100) || "📎 Медиа",

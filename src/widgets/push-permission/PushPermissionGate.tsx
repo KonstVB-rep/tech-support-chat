@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Bell, BellOff, ShieldAlert } from "lucide-react"
 import { authClient } from "@/app/lib/auth-client"
-import { getIsSupportEngineerAction } from "@/entities/profile/api/getIsSupportEngineerAction"
+import { getIsStaffMemberAction } from "@/entities/profile/api/getIsStaffMemberAction"
 import { useMyProfile } from "@/entities/profile/api/useMyProfile"
 import { Button } from "@/shared/ui/components/button"
 
@@ -26,11 +26,11 @@ function urlBase64ToUint8Array(base64String: string): BufferSource {
   return outputArray.buffer as ArrayBuffer
 }
 
-const useIsSupportEngineer = () => {
+const useIsStaffMember = () => {
   const { data: session } = authClient.useSession()
   return useQuery({
-    queryKey: ["is-support-engineer", session?.user?.id],
-    queryFn: () => getIsSupportEngineerAction(),
+    queryKey: ["is-staff", session?.user?.id],
+    queryFn: () => getIsStaffMemberAction(),
     enabled: !!session?.user?.id,
     staleTime: 5 * 60 * 1000,
     initialData: false,
@@ -44,45 +44,43 @@ export const PushPermissionGate = () => {
 
   const { data: session } = authClient.useSession()
   const { data: profile } = useMyProfile()
-  const { data: isSupportEngineer } = useIsSupportEngineer()
+  const { data: isStaffMember } = useIsStaffMember()
+
+  const {
+    data: subscriptionStatus,
+    isLoading: isCheckingSubscription,
+    fetchStatus,
+  } = useQuery({
+    queryKey: ["push-subscription-status", profile?.id],
+    queryFn: () => fetch("/api/push/subscription-status").then((r) => r.json()),
+    enabled:
+      typeof window !== "undefined" && !!profile?.id && Notification.permission === "granted",
+    staleTime: 5 * 60 * 1000,
+  })
 
   useEffect(() => {
     setIsMounted(true)
 
-    if ("Notification" in window) {
-      if (Notification.permission !== "denied") {
-        localStorage.removeItem(PUSH_DISMISSED_KEY)
-      }
-
-      const dismissed = localStorage.getItem(PUSH_DISMISSED_KEY) === "true"
-      const permissionGranted = Notification.permission === "granted"
-
-      if (dismissed) {
-        setIsResolved(true)
-      } else if (permissionGranted && profile?.id) {
-
-        fetch("/api/push/subscription-status", {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.hasSubscription) {
-              setIsResolved(true)
-            }
-          })
-          .catch(() => {
-          })
-      }
-
+    if ("Notification" in window && Notification.permission !== "denied") {
+      localStorage.removeItem(PUSH_DISMISSED_KEY)
     }
-  }, [profile?.id])
+
+    const dismissed = localStorage.getItem(PUSH_DISMISSED_KEY) === "true"
+    if (dismissed) {
+      setIsResolved(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (subscriptionStatus?.hasSubscription) {
+      setIsResolved(true)
+    }
+  }, [subscriptionStatus])
 
   const resolvePermanently = () => {
     localStorage.setItem(PUSH_DISMISSED_KEY, "true")
     setIsResolved(true)
   }
-
 
   useEffect(() => {
     if (isMounted && Notification.permission === "denied" && profile?.id) {
@@ -107,7 +105,13 @@ export const PushPermissionGate = () => {
         return
       }
 
-      const registration = await navigator.serviceWorker.ready
+      const registration = await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise<ServiceWorkerRegistration>((_, reject) =>
+          setTimeout(() => reject(new Error("SW не готов (таймаут 5с)")), 5000),
+        ),
+      ])
+
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
@@ -148,23 +152,28 @@ export const PushPermissionGate = () => {
     }
   }
 
+  const isChecking = !isMounted || isCheckingSubscription || fetchStatus === "idle"
 
-  const permission: NotificationPermission =
-    isMounted && "Notification" in window ? Notification.permission : "default"
-
-  if (!isMounted || !session?.user || isResolved || !("Notification" in window)) {
+  if (isChecking || !session?.user || isResolved) {
     return null
   }
 
+  const permission: NotificationPermission =
+    "Notification" in window ? Notification.permission : "default"
 
-  if (isSupportEngineer && permission === "denied") {
+  if (!("Notification" in window)) {
+    return null
+  }
+
+  if (isStaffMember && permission === "denied") {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
         <div className="w-full max-w-sm space-y-3 rounded-2xl border border-destructive/30 bg-card p-6">
           <ShieldAlert className="mx-auto h-10 w-10 text-destructive" />
           <h2 className="text-center font-bold text-lg">Уведомления заблокированы</h2>
           <p className="text-center text-muted-foreground text-sm">
-            Инженеры обязаны получать push-уведомления. Разрешите уведомления в настройках браузера.
+            Сотрудники тех поддержки обязаны получать push-уведомления. Разрешите уведомления в
+            настройках браузера.
           </p>
           <Button
             className="w-full"
@@ -177,7 +186,7 @@ export const PushPermissionGate = () => {
     )
   }
 
-  if (!isSupportEngineer && permission === "denied") {
+  if (!isStaffMember && permission === "denied") {
     return (
       <div className="slide-in-from-bottom-4 fixed right-4 bottom-4 z-50 max-w-xs animate-in rounded-2xl border border-border bg-card p-4 shadow-xl">
         <div className="flex items-start gap-3">
@@ -208,15 +217,15 @@ export const PushPermissionGate = () => {
         <div className="flex-1 space-y-2">
           <p className="font-medium text-sm">Включить уведомления?</p>
           <p className="text-muted-foreground text-xs">
-            {isSupportEngineer
-              ? "Инженеры получают обязательные оповещения о новых тикетах"
+            {isStaffMember
+              ? "Сотрудники техподдержки получают обязательные оповещения о новых тикетах"
               : "Получайте оповещения о новых сообщениях"}
           </p>
           <div className="flex gap-2">
             <Button className="flex-1" disabled={isSubscribing} onClick={handleSubscribe} size="sm">
               {isSubscribing ? "Подключение..." : "Разрешить"}
             </Button>
-            {!isSupportEngineer && (
+            {!isStaffMember && (
               <Button
                 className="flex-1"
                 disabled={isSubscribing}

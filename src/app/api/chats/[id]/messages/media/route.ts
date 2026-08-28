@@ -41,11 +41,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     })
 
     const isGlobalAdmin = session.user.role.toLowerCase() === "admin"
-    const isSupportEngineer = await prisma.supportEngineer.findUnique({
+    const isStaffMember = await prisma.staffMember.findUnique({
       where: { profileId: userProfile.id },
     })
 
-    if (!chatMember && !isGlobalAdmin && !isSupportEngineer) {
+    if (!chatMember && !isGlobalAdmin && !isStaffMember) {
       return NextResponse.json({ error: "Нет доступа к этому чату" }, { status: 403 })
     }
 

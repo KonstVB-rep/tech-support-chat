@@ -46,15 +46,15 @@ export const removeAvatarAction = async (profileId: string): Promise<{ success: 
 
   updateTag(`profile-${profileId}`)
 
-  const [isEngineer, membership] = await Promise.all([
-    prisma.supportEngineer.findUnique({ where: { profileId } }),
+  const [isStaffMember, membership] = await Promise.all([
+    prisma.staffMember.findUnique({ where: { profileId } }),
     prisma.organizationMember.findFirst({
       where: { profileId },
       select: { organizationId: true },
     }),
   ])
 
-  if (isEngineer) updateTag("support-engineers")
+  if (isStaffMember) updateTag("staff")
   if (membership) updateTag(`employees-${membership.organizationId}`)
 
   await triggerSocketEvent("srv:user:updated", {
@@ -62,7 +62,7 @@ export const removeAvatarAction = async (profileId: string): Promise<{ success: 
     profileId,
     organizationId: membership?.organizationId ?? null,
     image: null,
-    isEngineer: !!isEngineer,
+    isStaffMember: !!isStaffMember,
   })
 
   return { success: true }

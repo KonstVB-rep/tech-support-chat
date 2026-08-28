@@ -131,7 +131,7 @@ const deleteAccountAction = async (password: string): Promise<void> => {
   // Инвалидация кэша
   if (profileId) updateTag(`profile-${profileId}`)
   if (organizationId) updateTag(`employees-${organizationId}`)
-  updateTag("support-engineers")
+  updateTag("staff")
 
   // Real-time
   await triggerSocketEvent("srv:user:updated", {
@@ -141,6 +141,6 @@ const deleteAccountAction = async (password: string): Promise<void> => {
     name: originalName,
     deactivationLabel: "Аккаунт удалён",
     image: null,
-    isEngineer: false,
+    isStaffMember: false,
   })
 }

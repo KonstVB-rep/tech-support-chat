@@ -17,10 +17,10 @@ export const checkChatAccess = async (
   const isGlobalAdmin = session.user.role.toLowerCase() === "admin"
   if (isGlobalAdmin) return { allowed: true }
 
-  const isSupportEngineer = await prisma.supportEngineer.findUnique({
+  const isStaffMember = await prisma.staffMember.findUnique({
     where: { profileId: userProfileId },
   })
-  if (isSupportEngineer) return { allowed: true }
+  if (isStaffMember) return { allowed: true }
 
   const chat = await prisma.chat.findUnique({
     where: { id: chatId },
@@ -64,13 +64,10 @@ export const checkChatAccess = async (
     }
   }
 
-  console.log(userProfileId, chatId, "userProfileId,chatId")
-
   const isChatMember = await prisma.chatMember.findUnique({
     where: { chatId_profileId: { chatId, profileId: userProfileId } },
   })
 
-  console.log(isChatMember, "isChatMember")
   if (isChatMember) return { allowed: true }
 
   return {

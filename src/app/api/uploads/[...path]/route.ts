@@ -31,9 +31,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pat
   try {
     const { path: segments } = await params
     const filePath = path.join(/* turbopackIgnore: true */ UPLOAD_DIR, ...segments)
-     const uploadRoot = path.resolve(/* turbopackIgnore: true */ UPLOAD_DIR)
+    const uploadRoot = path.resolve(/* turbopackIgnore: true */ UPLOAD_DIR)
     const resolved = path.resolve(filePath)
- 
 
     if (!resolved.startsWith(uploadRoot)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })

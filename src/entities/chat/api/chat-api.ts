@@ -71,9 +71,9 @@ export function useSendMessage() {
     mutationFn: ({ chatId, text }: { chatId: string; text: string }) => sendMessage(chatId, text),
 
     onMutate: async ({ chatId, text }) => {
-      await queryClient.cancelQueries({ queryKey: ["messages", chatId] });
+      await queryClient.cancelQueries({ queryKey: ["messages", chatId] })
 
-      const previousData = queryClient.getQueryData<MessagesResponse>(["messages", chatId]);
+      const previousData = queryClient.getQueryData<MessagesResponse>(["messages", chatId])
 
       const optimisticMessage: Message = {
         id: `temp-${Date.now()}`,
@@ -87,7 +87,7 @@ export function useSendMessage() {
         senderName: "Вы",
         timestamp: new Date().toISOString(),
         replyTo: null,
-      };
+      }
 
       queryClient.setQueryData<MessagesResponse>(["messages", chatId], (old) => {
         if (!old) {
@@ -96,16 +96,16 @@ export function useSendMessage() {
             chat: null,
             hasMore: false,
             nextCursor: null,
-          };
+          }
         }
 
         return {
-          ...old, 
+          ...old,
           messages: [...old.messages, optimisticMessage],
-        };
-      });
+        }
+      })
 
-      return { previousData };
+      return { previousData }
     },
 
     onError: (_err, variables, context) => {
@@ -114,7 +114,7 @@ export function useSendMessage() {
       }
     },
 
-      onSuccess: (serverMessage, variables) => {
+    onSuccess: (serverMessage, variables) => {
       queryClient.setQueryData<MessagesResponse>(["messages", variables.chatId], (old) => {
         if (!old) {
           return {
@@ -122,15 +122,15 @@ export function useSendMessage() {
             chat: null,
             hasMore: false,
             nextCursor: null,
-          };
+          }
         }
-        
+
         return {
           ...old,
           messages: old.messages.map((m) => (m.id.startsWith("temp-") ? serverMessage : m)),
-        };
-      });
-      queryClient.invalidateQueries({ queryKey: ["chats"] });
+        }
+      })
+      queryClient.invalidateQueries({ queryKey: ["chats"] })
     },
   })
 }

@@ -32,7 +32,6 @@ export const EmployeeCard = ({ employee }: EmployeeCardProps) => {
 
   return (
     <div className="group relative flex min-w-0 min-w-72 flex-col gap-4 rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:border-primary/30 hover:shadow-md">
-      {/* Шапка: Аватар + Имя + Роль */}
       <div className="flex items-start gap-4">
         <Avatar className="h-14 w-14 border-2 border-border/50 shadow-sm">
           {employee.profile.imageUrl ? (

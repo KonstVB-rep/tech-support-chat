@@ -150,7 +150,7 @@ export const deleteEmployeeAction = async (
       updateTag(`employee-${id}`)
     }
     updateTag(`employees-${organizationId}`)
-    updateTag("support-engineers")
+    updateTag("staff")
 
     // 6. Real-time уведомление
     for (const member of membersData) {
@@ -164,7 +164,7 @@ export const deleteEmployeeAction = async (
         name: profile.name || "Без имени",
         deactivationLabel: "Уволен",
         image: null,
-        isEngineer: false,
+        isStaffMember: false,
       })
     }
 

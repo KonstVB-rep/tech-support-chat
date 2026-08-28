@@ -26,8 +26,6 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       checkContract: false,
     })
 
-    console.log(access, "access")
-
     if (!access.allowed) {
       return NextResponse.json({ error: access.error }, { status: access.status ?? 403 })
     }

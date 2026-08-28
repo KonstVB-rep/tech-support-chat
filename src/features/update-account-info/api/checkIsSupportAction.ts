@@ -16,12 +16,12 @@ export const checkIsSupportAction = async (): Promise<boolean> => {
 
     if (!userProfile) return false
 
-    const isSupportEngineer = await prisma.supportEngineer.findUnique({
+    const isStaffMember = await prisma.staffMember.findUnique({
       where: { profileId: userProfile.id },
       select: { id: true },
     })
 
-    return !!isSupportEngineer
+    return !!isStaffMember
   } catch (error) {
     console.error("❌ [checkIsSupportAction] Ошибка проверки роли инженера:", error)
     return false
@@ -33,14 +33,14 @@ export const checkIsSupportActionMyProfileId = async (profileId: string): Promis
     const session = await getSession()
     if (!session?.user) return false
 
-    const isSupportEngineer = await prisma.supportEngineer.findUnique({
+    const isStaffMember = await prisma.staffMember.findUnique({
       where: { profileId },
       select: { id: true },
     })
 
-    return !!isSupportEngineer
+    return !!isStaffMember
   } catch (error) {
-    console.error("❌ [checkIsSupportActionMyProfileId] Ошибка проверки роли инженера:", error)
+    console.error("❌ [checkIsSupportActionMyProfileId] Ошибка проверки роли пользователя:", error)
     return false
   }
 }

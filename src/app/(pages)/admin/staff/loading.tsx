@@ -1,6 +1,6 @@
 "use client"
 
-const SupportEngineersLoading = () => {
+const StaffMemberLoading = () => {
   return (
     <div className="h-full w-full animate-pulse select-none space-y-3">
       <div className="flex h-14 w-full shrink-0 items-center border-border/40 border-b bg-background">
@@ -65,4 +65,4 @@ const SupportEngineersLoading = () => {
   )
 }
 
-export default SupportEngineersLoading
+export default StaffMemberLoading

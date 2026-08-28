@@ -69,7 +69,7 @@ export const updateEmployeeAction = async (
       where: { id: employeeId },
       data: {
         position: position || null,
-        role: role as "RESPONSIBLE" | "MEMBER", // Пишем только OrgRole enum
+        role: role as "RESPONSIBLE" | "MEMBER",
       },
     })
 
@@ -77,7 +77,7 @@ export const updateEmployeeAction = async (
 
     return {
       success: true,
-      message: `Данные сотрудника ${name} успешно сохранены`,
+      message: `Данные сотрудника - ${name?.toUpperCase} успешно сохранены`,
       error: null,
     }
   } catch (error) {

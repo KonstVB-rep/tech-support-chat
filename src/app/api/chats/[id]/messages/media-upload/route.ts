@@ -40,11 +40,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       where: { chatId_profileId: { chatId, profileId: userProfile.id } },
     })
     const isAdmin = session.user.role.toLowerCase() === "admin"
-    const isSupport = await prisma.supportEngineer.findUnique({
+    const isStaffMember = await prisma.staffMember.findUnique({
       where: { profileId: userProfile.id },
     })
 
-    if (!isMember && !isAdmin && !isSupport) {
+    if (!isMember && !isAdmin && !isStaffMember) {
       return NextResponse.json({ error: "Нет доступа" }, { status: 403 })
     }
 

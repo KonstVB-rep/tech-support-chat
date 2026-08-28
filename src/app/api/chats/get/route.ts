@@ -22,7 +22,7 @@ export async function GET() {
       return NextResponse.json({ error: "Профиль не найден" }, { status: 404 })
     }
 
-    const isSupportEngineer = await prisma.supportEngineer.findUnique({
+    const isStaffMember = await prisma.staffMember.findUnique({
       where: { profileId: userProfile.id },
     })
     const isGlobalAdmin = session.user.role.toLowerCase() === "admin"
@@ -61,7 +61,7 @@ export async function GET() {
 
     let chats = []
 
-    if (isGlobalAdmin || isSupportEngineer) {
+    if (isGlobalAdmin || isStaffMember) {
       chats = await prisma.chat.findMany({
         orderBy: { updatedAt: "desc" },
         include: chatInclude,

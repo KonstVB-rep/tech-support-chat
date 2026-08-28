@@ -35,7 +35,6 @@ export const useChatStore = create<ChatState>()(
       clearReply: () => set({ replyTo: null }),
       setActiveTicketId: (id) => {
         set({ activeTicketId: id })
-        console.log(`[Zustand] Активный тикет переключен на: ${id}`)
       },
       clearChat: () => set({ activeTicketId: null }),
 

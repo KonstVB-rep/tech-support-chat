@@ -18,7 +18,9 @@ export const POST = async (request: Request) => {
 
     if (!session?.user || session.user.role.toLowerCase() !== "admin") {
       return NextResponse.json(
-        { error: "Доступ запрещен. Только администратор системы может создавать новые темы." },
+        {
+          error: "Доступ запрещен. Только администратор системы может создавать новые темы.",
+        },
         { status: 403 },
       )
     }
@@ -80,7 +82,7 @@ export const POST = async (request: Request) => {
         },
       })
 
-      const activeEngineers = await tx.supportEngineer.findMany({
+      const activeStaffMember = await tx.staffMember.findMany({
         where: {
           profile: {
             user: { isActive: true },
@@ -97,16 +99,20 @@ export const POST = async (request: Request) => {
         select: { profileId: true },
       })
 
-      const engineerProfileIds = new Set(activeEngineers.map((e) => e.profileId))
+      const staffMembersProfileIds = new Set(activeStaffMember.map((e) => e.profileId))
 
       const allUniqueProfileIds = Array.from(
-        new Set([adminProfile.id, ...engineerProfileIds, ...clientMembers.map((m) => m.profileId)]),
+        new Set([
+          adminProfile.id,
+          ...staffMembersProfileIds,
+          ...clientMembers.map((m) => m.profileId),
+        ]),
       )
 
       const membersData = allUniqueProfileIds.map((profileId) => ({
         chatId: chat.id,
         profileId,
-        role: (engineerProfileIds.has(profileId) || profileId === adminProfile.id
+        role: (staffMembersProfileIds.has(profileId) || profileId === adminProfile.id
           ? "ADMIN"
           : "MEMBER") as ChatRole,
       }))

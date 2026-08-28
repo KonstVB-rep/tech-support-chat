@@ -23,7 +23,7 @@ export const ProfilePageContent = ({
       <ChangePhoneForm phoneProfile={profile.phone} profileId={profile.id} />
       <PasswordChangeForm />
       <PushSettingsToggle
-        isSupportEngineer={isSupport}
+        isStaffMember={isSupport}
         isViewedByAdmin={!isSupport}
         profileId={profile.id}
         pushEnabled={profile.pushEnabled}

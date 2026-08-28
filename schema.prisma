@@ -128,12 +128,12 @@ model Profile {
   memberships        ChatMember[]
   messages           Message[]
   organizationMembers OrganizationMember[] 
-  supportEngineer     SupportEngineer? 
+  staffMember         StaffMember? 
 
   @@map("profile")
 }
 
-model SupportEngineer {
+model StaffMember {
   id        String   @id @default(cuid())
   profileId String   @unique
   createdAt DateTime @default(now())
@@ -141,7 +141,7 @@ model SupportEngineer {
   
   profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
-  @@map("support_engineer")
+  @@map("staff_member")
 }
 
 model Organization {

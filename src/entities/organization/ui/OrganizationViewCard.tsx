@@ -111,7 +111,7 @@ export const OrganizationViewCard = ({
 
               <div className="flex w-full gap-2">
                 <Field className="flex-1">
-                  <FieldLabel>Дата начала договора</FieldLabel>
+                  <FieldLabel>Начала договора</FieldLabel>
                   <div
                     className={cn(
                       "field-height flex items-center rounded-md bg-muted px-2 font-medium text-foreground text-sm",
@@ -122,7 +122,7 @@ export const OrganizationViewCard = ({
                 </Field>
 
                 <Field className="flex-1">
-                  <FieldLabel>Дата окончания договора</FieldLabel>
+                  <FieldLabel>Окончания договора</FieldLabel>
                   <div
                     className={cn(
                       "field-height flex items-center rounded-md bg-muted px-2 font-medium text-foreground text-sm",
